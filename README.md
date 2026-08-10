@@ -30,6 +30,12 @@ python -m http.server 8123 -d word2pdf-site
 3. 仓库 Settings → Pages → Source 选 `Deploy from a branch`，Branch 选 `main` / `/(root)`，Save。
 4. 等 1~3 分钟，访问 `https://<你的用户名>.github.io/word2pdf/`。
 
+## 文末署名
+
+导出的 PDF 末尾会带一行淡灰小字「本文档由 wenhuo.top 免费生成」，用来做自然传播。用户点「去除文末署名」会弹出赞赏码，点「去除署名」即永久去掉（存在 localStorage，纯诚实系统，不做校验）。再点一次按钮可以恢复。
+
+改署名文字：搜 `SIGN_TEXT`。改样式：搜 `.sign`（主样式表和打印样式表里各一份，两处都要改）。
+
 ## 放收款码
 
 把两张收款码图片命名为 `wechat-qr.png` 和 `alipay-qr.png`，放在 `index.html` 同一目录即可，页面底部赞赏区会自动显示。没有放图时会自动淡化，不影响工具使用。

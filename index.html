@@ -45,6 +45,10 @@
   .opts label{display:flex;gap:6px;align-items:center;cursor:pointer}
   select{font:inherit;font-size:13px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:#fff}
 
+  .hint{margin-top:10px;font-size:13px;color:#8a6d1f;background:#fff8e1;
+    border:1px solid #f3e0a8;border-radius:8px;padding:8px 12px}
+  .hint b{color:#6b5310}
+
   #status{margin-top:12px;font-size:14px;min-height:22px}
   .s-ok{color:var(--ok)} .s-err{color:var(--err)} .s-run{color:var(--brand)}
 
@@ -71,6 +75,8 @@
   /* 分页控制 */
   #paper h1,#paper h2,#paper h3{page-break-after:avoid;break-after:avoid}
   #paper table,#paper img,#paper tr,#paper li{page-break-inside:avoid;break-inside:avoid}
+  #paper .sign{margin-top:30px;padding-top:8px;border-top:1px solid #e8e8e8;
+    text-align:right;font-family:sans-serif;font-size:11px;color:#b2b2b2;letter-spacing:.3px}
   .empty{color:#9aa0a8;text-align:center;padding:80px 0;font-family:sans-serif}
 
   .tips{font-size:13px;color:var(--muted)}
@@ -86,6 +92,16 @@
   .qr figure{margin:0}
   .qr img{width:150px;height:150px;object-fit:cover;border:1px solid var(--line);border-radius:8px;background:#fafafa}
   .qr figcaption{font-size:12px;color:var(--muted);margin-top:6px}
+
+  /* 首次导出提示弹窗 */
+  .mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;
+    align-items:center;justify-content:center;padding:16px;z-index:99}
+  .mask.on{display:flex}
+  .modal{background:#fff;border-radius:14px;padding:24px;max-width:440px;width:100%}
+  .modal h3{margin:0 0 10px;font-size:17px}
+  .modal p{margin:0 0 10px;font-size:14px;color:#4b5563}
+  .modal ol{margin:0 0 12px;padding-left:22px;font-size:14px;line-height:2}
+  .modal .note{font-size:13px;color:var(--muted);background:#f6f7f9;border-radius:8px;padding:8px 12px;margin-bottom:16px}
 
   @media(max-width:860px){
     #preview{padding:10px}
@@ -137,8 +153,11 @@
     <div class="row">
       <button id="btnPrint" class="btn-p" disabled>🖨 导出 PDF（推荐 · 文字可选中）</button>
       <button id="btnDl" class="btn-s" disabled>⬇ 直接下载 PDF（图片版）</button>
+      <button id="btnSign" class="btn-s">✨ 去除文末署名</button>
       <button id="btnClear" class="btn-s" disabled>清空</button>
     </div>
+
+    <div class="hint">💡 打印窗口里展开「更多设置」，<b>取消勾选「页眉和页脚」</b>，PDF 就不会带日期和网址</div>
 
     <div id="status"></div>
   </div>
@@ -183,11 +202,44 @@
   </footer>
 </div>
 
+<div class="mask" id="mask">
+  <div class="modal">
+    <h3>导出前看一眼，只需设置一次</h3>
+    <p>浏览器打印窗口默认会在 PDF 上印<b>日期和网址</b>，去掉它：</p>
+    <ol>
+      <li>点开右侧的「<b>更多设置</b>」</li>
+      <li>取消勾选「<b>页眉和页脚</b>」</li>
+      <li>目标选「<b>另存为 PDF</b>」，点保存</li>
+    </ol>
+    <div class="note">浏览器会记住这个设置，以后导出不用再改。</div>
+    <div class="row" style="margin-top:0">
+      <button id="mOk" class="btn-p">知道了，继续导出</button>
+      <button id="mCancel" class="btn-s">取消</button>
+    </div>
+  </div>
+</div>
+
+<div class="mask" id="tipMask">
+  <div class="modal">
+    <h3>☕ 去除文末署名</h3>
+    <p>这个工具永久免费，转换也永远不限次数。文末那行小字是它唯一的"广告位"，靠它被更多人看到。</p>
+    <p>如果它帮到了你，请作者喝杯奶茶（1 块也是心意）。赞赏后点下面的按钮，署名就永久去掉了——全凭自愿，不赞赏也能直接点。</p>
+    <div class="qr" style="margin:16px 0">
+      <figure><img src="wechat-qr.png" alt="微信赞赏码" onerror="this.style.opacity=.25"><figcaption>微信</figcaption></figure>
+      <figure><img src="alipay-qr.png" alt="支付宝收款码" onerror="this.style.opacity=.25"><figcaption>支付宝</figcaption></figure>
+    </div>
+    <div class="row" style="margin-top:0">
+      <button id="tipOk" class="btn-p">去除署名</button>
+      <button id="tipNo" class="btn-s">保留署名</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   const $ = s => document.querySelector(s);
   const drop = $('#drop'), fileIn = $('#file'), paper = $('#paper'), statusEl = $('#status');
-  const btnPrint = $('#btnPrint'), btnDl = $('#btnDl'), btnClear = $('#btnClear');
+  const btnPrint = $('#btnPrint'), btnDl = $('#btnDl'), btnClear = $('#btnClear'), btnSign = $('#btnSign');
   const selMargin = $('#margin'), selSize = $('#fsize');
 
   let baseName = '';        // 不含扩展名的文件名
@@ -195,6 +247,23 @@
 
   const say = (msg, cls='') => { statusEl.className = cls; statusEl.textContent = msg; };
   const setBusy = b => { [btnPrint,btnDl,btnClear].forEach(x => x.disabled = b || !hasDoc); };
+
+  // ---------- 文末署名（自愿去除） ----------
+  const SIGN_OFF = 'w2p_sign_off';
+  const SIGN_TEXT = '本文档由 wenhuo.top 免费生成';
+  const isSignOff = () => { try { return localStorage.getItem(SIGN_OFF) === '1'; } catch(e) { return false; } };
+
+  function refreshSign(){
+    const old = paper.querySelector('.sign');
+    if (old) old.remove();
+    if (hasDoc && !isSignOff()) {
+      const d = document.createElement('div');
+      d.className = 'sign';
+      d.textContent = SIGN_TEXT;
+      paper.appendChild(d);
+    }
+    btnSign.textContent = isSignOff() ? '署名已去除 ✓（点击恢复）' : '✨ 去除文末署名';
+  }
 
   // ---------- 选择文件 ----------
   drop.addEventListener('click', () => fileIn.click());
@@ -251,7 +320,7 @@
         const html = (res.value || '').trim();
         if (!html) { say('文档解析成功，但内容为空（可能整篇是图片或文本框）。', 's-err'); setBusy(false); return; }
         paper.innerHTML = html;
-        hasDoc = true; setBusy(false);
+        hasDoc = true; setBusy(false); refreshSign();
         const warn = (res.messages || []).filter(m => m.type === 'warning').length;
         say('✅ 解析完成，可以导出了' + (warn ? `（有 ${warn} 处样式未能完全还原）` : ''), 's-ok');
       })).catch(finish(err => {
@@ -272,8 +341,7 @@
   selSize.addEventListener('change', applyOpts);
 
   // ---------- 方式一：打印导出（矢量文字，推荐） ----------
-  btnPrint.addEventListener('click', () => {
-    if (!hasDoc) return;
+  function doPrint(){
     const mm = (parseInt(selMargin.value,10) / 96 * 25.4).toFixed(1);
     const css = `
       @page{size:A4;margin:${mm}mm}
@@ -289,6 +357,8 @@
       th{background:#f2f2f2}
       ul,ol{padding-left:2em;margin:0 0 .8em}
       blockquote{margin:1em 0;padding-left:1em;border-left:3px solid #ccc;color:#444}
+      .sign{margin-top:30px;padding-top:8px;border-top:1px solid #e8e8e8;
+        text-align:right;font-family:sans-serif;font-size:11px;color:#b2b2b2;letter-spacing:.3px}
       h1,h2,h3{break-after:avoid;page-break-after:avoid}
       table,img,tr,li{break-inside:avoid;page-break-inside:avoid}
     `;
@@ -314,7 +384,24 @@
     const done = () => { if (--left <= 0) setTimeout(go, 120); };
     imgs.forEach(im => im.complete ? done() : (im.onload = im.onerror = done));
     setTimeout(() => { if (left > 0) { left = 0; go(); } }, 5000);
+  }
+
+  // 首次导出弹一次说明，之后直接走
+  const mask = $('#mask'), SEEN = 'w2p_tip_seen';
+  const closeMask = () => mask.classList.remove('on');
+  btnPrint.addEventListener('click', () => {
+    if (!hasDoc) return;
+    let seen = false;
+    try { seen = localStorage.getItem(SEEN) === '1'; } catch(e){}
+    if (seen) return doPrint();
+    mask.classList.add('on');
   });
+  $('#mOk').addEventListener('click', () => {
+    try { localStorage.setItem(SEEN, '1'); } catch(e){}
+    closeMask(); doPrint();
+  });
+  $('#mCancel').addEventListener('click', closeMask);
+  mask.addEventListener('click', e => { if (e.target === mask) closeMask(); });
 
   // ---------- 方式二：直接下载（html2pdf，截图版） ----------
   btnDl.addEventListener('click', () => {
@@ -342,10 +429,30 @@
   btnClear.addEventListener('click', () => {
     paper.innerHTML = '<div class="empty">还没有内容，先上传一个 .docx 文件</div>';
     fileIn.value = ''; baseName = ''; hasDoc = false;
-    setBusy(false); say('');
+    setBusy(false); refreshSign(); say('');
   });
 
+  // ---------- 去除 / 恢复署名 ----------
+  const tipMask = $('#tipMask');
+  const closeTip = () => tipMask.classList.remove('on');
+  btnSign.addEventListener('click', () => {
+    if (isSignOff()) {
+      try { localStorage.removeItem(SIGN_OFF); } catch(e){}
+      refreshSign();
+      return say('已恢复文末署名，谢谢你帮我留着这行小字 🙏', 's-ok');
+    }
+    tipMask.classList.add('on');
+  });
+  $('#tipOk').addEventListener('click', () => {
+    try { localStorage.setItem(SIGN_OFF, '1'); } catch(e){}
+    closeTip(); refreshSign();
+    say('✅ 署名已去除，以后导出都不会再带。感谢支持！', 's-ok');
+  });
+  $('#tipNo').addEventListener('click', closeTip);
+  tipMask.addEventListener('click', e => { if (e.target === tipMask) closeTip(); });
+
   applyOpts();
+  refreshSign();
 })();
 </script>
 </body>
