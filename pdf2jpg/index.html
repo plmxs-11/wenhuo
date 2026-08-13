@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF 转图片 · 转 JPG / PNG（文件不上传）| 文火工具箱</title>
+<meta name="description" content="把 PDF 每一页导出成 JPG 或 PNG，清晰度可调，多页自动打包 zip。全程在浏览器本地完成，文件不上传服务器。">
+<link rel="stylesheet" href="/assets/common.css">
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+</head>
+<body>
+<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="wrap">
+
+  <header>
+    <h1>PDF 转图片</h1>
+    <p class="sub">把 PDF 每一页导出成 JPG 或 PNG。文件不上传，全部在本机完成。</p>
+    <div class="badges">
+      <span class="badge">🔒 文件不上传</span>
+      <span class="badge">🔍 清晰度可调</span>
+      <span class="badge">📦 多页自动打包</span>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="drop" id="drop">
+      <div class="ico">🖼️</div>
+      <div class="t">点击选择，或把 PDF 拖到这里</div>
+      <div class="h">一次处理一个文件</div>
+    </div>
+    <input type="file" id="file" accept=".pdf,application/pdf">
+
+    <div id="info" class="status"></div>
+
+    <div class="opts">
+      <label>格式
+        <select id="fmt">
+          <option value="jpg">JPG（体积小）</option>
+          <option value="png">PNG（无损，支持透明）</option>
+        </select>
+      </label>
+      <label>清晰度
+        <select id="scale">
+          <option value="1.5">标准（约 110 dpi）</option>
+          <option value="2" selected>清晰（约 150 dpi）</option>
+          <option value="3">高清（约 220 dpi）</option>
+          <option value="4">超清（约 290 dpi，很慢很占内存）</option>
+        </select>
+      </label>
+      <label>页码范围
+        <input type="text" id="pages" placeholder="留空=全部，如 1-5,8">
+      </label>
+    </div>
+
+    <div class="row">
+      <button id="btnGo" class="btn-p" disabled>🖼️ 导出图片</button>
+      <button id="btnClear" class="btn-s" disabled>清空</button>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card" id="prevCard" style="display:none">
+    <h2>预览 <span style="font-weight:400;color:var(--muted);font-size:12px" id="prevNote"></span></h2>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="card tips">
+    <b>说明</b>
+    <ul>
+      <li>转出来的是<b>图片</b>，文字不能再复制和搜索。需要保留文字请用其他工具。</li>
+      <li>只有 1 页时直接下载图片，多页时自动打包成一个 zip。</li>
+      <li>清晰度越高越慢越占内存。上百页的文件建议先用「页码范围」分批导。</li>
+      <li>加密（设了打开密码）的 PDF 无法处理，请先取消密码。</li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="/assets/common.js"></script>
+<script>
+(function(){
+  const { $, fmtSize, download, setupDrop, statusOf, parsePages, baseName, initPdfJs, renderToCanvas } = W;
+  initPdfJs('3.11.174');
+
+  const say = statusOf($('#status'));
+  const info = statusOf($('#info'));
+  const btnGo = $('#btnGo'), btnClear = $('#btnClear');
+  const grid = $('#grid'), prevCard = $('#prevCard');
+
+  let file = null, pdf = null, total = 0;
+  const MAX_PREVIEW = 24;
+
+  const renderPage = async (n, scale) => renderToCanvas(await pdf.getPage(n), scale);
+
+  async function showPreview(){
+    grid.innerHTML = '';
+    const n = Math.min(total, MAX_PREVIEW);
+    $('#prevNote').textContent = total > MAX_PREVIEW ? `（共 ${total} 页，只预览前 ${MAX_PREVIEW} 页）` : '';
+    prevCard.style.display = '';
+    for (let i = 1; i <= n; i++) {
+      const cv = await renderPage(i, 0.32);
+      const box = document.createElement('div');
+      box.className = 'thumb';
+      box.appendChild(cv);
+      const cap = document.createElement('div');
+      cap.className = 'cap';
+      cap.textContent = '第 ' + i + ' 页';
+      box.appendChild(cap);
+      grid.appendChild(box);
+    }
+  }
+
+  async function load(files){
+    const f = files[0];
+    if (!f || !/\.pdf$/i.test(f.name)) return say('只支持 .pdf 文件。', 's-err');
+    say('正在读取…', 's-run');
+    try {
+      const data = new Uint8Array(await f.arrayBuffer());
+      pdf = await pdfjsLib.getDocument({ data }).promise;
+      total = pdf.numPages;
+      file = f;
+      info(`${f.name} · 共 ${total} 页 · ${fmtSize(f.size)}`, 's-ok');
+      btnGo.disabled = false; btnClear.disabled = false;
+      say('正在生成预览…', 's-run');
+      await showPreview();
+      say('');
+    } catch (e) {
+      console.error(e);
+      file = null; pdf = null; total = 0;
+      info(''); prevCard.style.display = 'none';
+      btnGo.disabled = true;
+      say('无法读取这个 PDF（可能已加密或文件损坏）。', 's-err');
+    }
+  }
+
+  setupDrop($('#drop'), $('#file'), load);
+
+  btnClear.addEventListener('click', () => {
+    file = null; pdf = null; total = 0; $('#file').value = '';
+    grid.innerHTML = ''; prevCard.style.display = 'none';
+    info(''); say(''); btnGo.disabled = true; btnClear.disabled = true;
+  });
+
+  const toBlob = (cv, fmt) => new Promise(res =>
+    cv.toBlob(res, fmt === 'png' ? 'image/png' : 'image/jpeg', fmt === 'png' ? undefined : 0.92));
+
+  btnGo.addEventListener('click', async () => {
+    if (!pdf) return;
+
+    const fmt = $('#fmt').value;
+    const scale = parseFloat($('#scale').value);
+    const expr = $('#pages').value.trim();
+
+    let idx;
+    if (expr) {
+      const r = parsePages(expr, total);
+      if (r.invalid.length) return say(`这些页码写得不对或超出范围（共 ${total} 页）：${r.invalid.join('、')}`, 's-err');
+      if (!r.pages.length) return say('页码范围没解析出有效页，留空表示全部。', 's-err');
+      idx = r.pages.map(i => i + 1);
+    } else {
+      idx = Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    btnGo.disabled = true;
+    const base = baseName(file.name);
+    const ext = fmt === 'png' ? 'png' : 'jpg';
+
+    try {
+      if (idx.length === 1) {
+        say('正在渲染…', 's-run');
+        const cv = await renderPage(idx[0], scale);
+        const blob = await toBlob(cv, fmt);
+        download(blob, `${base}_第${idx[0]}页.${ext}`);
+        say(`✅ 完成（${cv.width}×${cv.height}），已开始下载`, 's-ok');
+      } else {
+        const zip = new JSZip();
+        const pad = String(total).length;
+        for (let k = 0; k < idx.length; k++) {
+          say(`正在渲染第 ${k + 1} / ${idx.length} 张…`, 's-run');
+          const cv = await renderPage(idx[k], scale);
+          const blob = await toBlob(cv, fmt);
+          zip.file(`${base}_${String(idx[k]).padStart(pad, '0')}.${ext}`, blob);
+          cv.width = cv.height = 0;      // 及时释放，长文档否则很容易爆内存
+          await new Promise(r => setTimeout(r, 0));
+        }
+        say('正在打包…', 's-run');
+        const blob = await zip.generateAsync({ type: 'blob' });
+        download(blob, `${base}_图片.zip`);
+        say(`✅ 完成，共 ${idx.length} 张图片已打包下载`, 's-ok');
+      }
+    } catch (e) {
+      console.error(e);
+      say('导出失败：' + (e && e.message ? e.message : '未知错误') + '。页数很多时可以降低清晰度或分批导出。', 's-err');
+    }
+    btnGo.disabled = false;
+  });
+
+  W.mountFooter(document.querySelector('.wrap'));
+})();
+</script>
+</body>
+</html>

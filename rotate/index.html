@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>旋转 PDF · 纠正页面方向（文件不上传）| 文火工具箱</title>
+<meta name="description" content="旋转 PDF 页面方向，可整体旋转也可单页微调，所见即所得。全程在浏览器本地完成，文件不上传服务器。">
+<link rel="stylesheet" href="/assets/common.css">
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<style>
+  .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .thumb .pv{height:160px;display:flex;align-items:center;justify-content:center;
+    overflow:hidden;background:#f6f7f9}
+  .thumb .pv canvas{transition:transform .18s;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+  .thumb .cap{display:flex;align-items:center;gap:4px;justify-content:center;padding:6px 4px}
+  .thumb .no{margin-right:auto;padding-left:4px}
+  .thumb.dirty{border-color:var(--brand)}
+  .deg{font-size:11px;color:var(--brand);min-width:34px;text-align:left}
+</style>
+</head>
+<body>
+<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="wrap">
+
+  <header>
+    <h1>旋转 PDF</h1>
+    <p class="sub">纠正扫描歪了、方向不对的页面。所见即所得，文件不上传。</p>
+    <div class="badges">
+      <span class="badge">🔒 文件不上传</span>
+      <span class="badge">🎯 零质量损失</span>
+      <span class="badge">👁️ 所见即所得</span>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="drop" id="drop">
+      <div class="ico">🔄</div>
+      <div class="t">点击选择，或把 PDF 拖到这里</div>
+      <div class="h">一次处理一个文件</div>
+    </div>
+    <input type="file" id="file" accept=".pdf,application/pdf">
+
+    <div id="info" class="status"></div>
+
+    <div class="row" id="bulk" style="display:none">
+      <button id="allL" class="btn-s">↺ 全部左转 90°</button>
+      <button id="allR" class="btn-s">↻ 全部右转 90°</button>
+      <button id="all180" class="btn-s">↕ 全部转 180°</button>
+      <button id="reset" class="btn-s">复位</button>
+    </div>
+
+    <div class="row">
+      <button id="btnGo" class="btn-p" disabled>💾 保存并下载</button>
+      <button id="btnClear" class="btn-s" disabled>清空</button>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card" id="prevCard" style="display:none">
+    <h2>页面预览 <span style="font-weight:400;color:var(--muted);font-size:12px" id="prevNote"></span></h2>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="card tips">
+    <b>说明</b>
+    <ul>
+      <li>旋转只改页面的方向属性，<b>不重新渲染内容</b>，文字仍然可以复制搜索，画质无任何损失。</li>
+      <li>每页缩略图下方可以单独左转右转，上面的按钮则作用于所有页。</li>
+      <li>被改过方向的页会用蓝框标出来，右下角显示相对原来转了多少度。</li>
+      <li>加密（设了打开密码）的 PDF 无法处理，请先取消密码。</li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="/assets/common.js"></script>
+<script>
+(function(){
+  const { $, $$, fmtSize, download, setupDrop, statusOf, baseName, initPdfJs, renderToCanvas } = W;
+  initPdfJs('3.11.174');
+
+  const say = statusOf($('#status'));
+  const info = statusOf($('#info'));
+  const grid = $('#grid'), prevCard = $('#prevCard'), bulk = $('#bulk');
+  const btnGo = $('#btnGo'), btnClear = $('#btnClear');
+
+  const MAX_THUMB = 100;
+  let file = null, pdf = null, total = 0;
+  let delta = [];   // 每页相对原始方向的增量角度，0/90/180/270
+
+  const norm = d => ((d % 360) + 360) % 360;
+
+  function paint(i){
+    const box = grid.children[i];
+    if (!box) return;                       // 超出缩略图上限的页没有 DOM
+    const cv = box.querySelector('canvas');
+    const d = delta[i];
+    cv.style.transform = `rotate(${d}deg)`;
+    box.classList.toggle('dirty', d !== 0);
+    box.querySelector('.deg').textContent = d ? '+' + d + '°' : '';
+  }
+
+  function rotateOne(i, by){
+    delta[i] = norm(delta[i] + by);
+    paint(i);
+  }
+
+  function rotateAll(by){
+    for (let i = 0; i < total; i++) { delta[i] = norm(delta[i] + by); paint(i); }
+    say('');
+  }
+
+  async function buildThumbs(){
+    grid.innerHTML = '';
+    const n = Math.min(total, MAX_THUMB);
+    $('#prevNote').textContent = total > MAX_THUMB
+      ? `（共 ${total} 页，只显示前 ${MAX_THUMB} 页缩略图；上方的"全部"按钮仍然作用于所有页）` : '';
+    prevCard.style.display = '';
+
+    for (let i = 1; i <= n; i++) {
+      const page = await pdf.getPage(i);
+      const v1 = page.getViewport({ scale: 1 });
+      const cv = await renderToCanvas(page, 110 / Math.max(v1.width, v1.height));
+
+      const box = document.createElement('div');
+      box.className = 'thumb';
+      const pv = document.createElement('div');
+      pv.className = 'pv';
+      pv.appendChild(cv);
+      box.appendChild(pv);
+      const cap = document.createElement('div');
+      cap.className = 'cap';
+      cap.innerHTML =
+        `<span class="no">${i}</span>` +
+        `<button class="btn-mini" data-act="l">↺</button>` +
+        `<button class="btn-mini" data-act="r">↻</button>` +
+        `<span class="deg"></span>`;
+      cap.querySelectorAll('button').forEach(b => b.addEventListener('click', () =>
+        rotateOne(i - 1, b.dataset.act === 'l' ? -90 : 90)));
+      box.appendChild(cap);
+      grid.appendChild(box);
+      paint(i - 1);
+    }
+  }
+
+  async function load(files){
+    const f = files[0];
+    if (!f || !/\.pdf$/i.test(f.name)) return say('只支持 .pdf 文件。', 's-err');
+    say('正在读取…', 's-run');
+    try {
+      const data = new Uint8Array(await f.arrayBuffer());
+      pdf = await pdfjsLib.getDocument({ data }).promise;
+      total = pdf.numPages;
+      delta = new Array(total).fill(0);
+      file = f;
+      info(`${f.name} · 共 ${total} 页 · ${fmtSize(f.size)}`, 's-ok');
+      btnGo.disabled = false; btnClear.disabled = false;
+      bulk.style.display = '';
+      say('正在生成预览…', 's-run');
+      await buildThumbs();
+      say('');
+    } catch (e) {
+      console.error(e);
+      file = null; pdf = null; total = 0; delta = [];
+      info(''); prevCard.style.display = 'none'; bulk.style.display = 'none';
+      btnGo.disabled = true;
+      say('无法读取这个 PDF（可能已加密或文件损坏）。', 's-err');
+    }
+  }
+
+  setupDrop($('#drop'), $('#file'), load);
+
+  $('#allL').addEventListener('click', () => rotateAll(-90));
+  $('#allR').addEventListener('click', () => rotateAll(90));
+  $('#all180').addEventListener('click', () => rotateAll(180));
+  $('#reset').addEventListener('click', () => {
+    for (let i = 0; i < total; i++) { delta[i] = 0; paint(i); }
+    say('已复位到原始方向', 's-ok');
+  });
+
+  btnClear.addEventListener('click', () => {
+    file = null; pdf = null; total = 0; delta = []; $('#file').value = '';
+    grid.innerHTML = ''; prevCard.style.display = 'none'; bulk.style.display = 'none';
+    info(''); say(''); btnGo.disabled = true; btnClear.disabled = true;
+  });
+
+  btnGo.addEventListener('click', async () => {
+    if (!file) return;
+    if (delta.every(d => d === 0)) return say('还没有旋转任何页面，先转一下再保存。', 's-err');
+
+    btnGo.disabled = true;
+    say('正在保存…', 's-run');
+    try {
+      const doc = await PDFLib.PDFDocument.load(await file.arrayBuffer(), { ignoreEncryption: true });
+      const pages = doc.getPages();
+      let changed = 0;
+      pages.forEach((p, i) => {
+        if (!delta[i]) return;
+        const cur = p.getRotation().angle || 0;
+        p.setRotation(PDFLib.degrees(norm(cur + delta[i])));
+        changed++;
+      });
+      const bytes = await doc.save();
+      download(new Blob([bytes], { type: 'application/pdf' }), baseName(file.name) + '_旋转.pdf');
+      say(`✅ 完成，共调整 ${changed} 页，已开始下载`, 's-ok');
+    } catch (e) {
+      console.error(e);
+      say('保存失败：' + (e && e.message ? e.message : '未知错误'), 's-err');
+    }
+    btnGo.disabled = false;
+  });
+
+  W.mountFooter(document.querySelector('.wrap'));
+})();
+</script>
+</body>
+</html>

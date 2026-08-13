@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>图片转 PDF · JPG/PNG 合成 PDF（文件不上传）| 文火工具箱</title>
+<meta name="description" content="把多张图片合成一个 PDF，可选 A4 或按原图尺寸，支持排序。全程在浏览器本地完成，文件不上传服务器。">
+<link rel="stylesheet" href="/assets/common.css">
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<style>
+  .thumb .cap{display:flex;align-items:center;gap:4px;justify-content:center;padding:6px 4px}
+  .thumb .no{margin-right:auto;padding-left:4px}
+  .thumb img{height:120px;object-fit:contain;background:#f6f7f9}
+</style>
+</head>
+<body>
+<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="wrap">
+
+  <header>
+    <h1>图片转 PDF</h1>
+    <p class="sub">把多张图片按顺序合成一个 PDF。文件不上传，全部在本机完成。</p>
+    <div class="badges">
+      <span class="badge">🔒 文件不上传</span>
+      <span class="badge">📐 A4 或原图尺寸</span>
+      <span class="badge">↕️ 可排序</span>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="drop" id="drop">
+      <div class="ico">📎</div>
+      <div class="t">点击选择，或把图片拖到这里</div>
+      <div class="h">支持 JPG、PNG、WebP、BMP；可以分几次添加</div>
+    </div>
+    <input type="file" id="file" accept="image/*" multiple>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="opts">
+      <label>页面尺寸
+        <select id="size">
+          <option value="auto">A4 · 自动方向（推荐）</option>
+          <option value="p">A4 · 纵向</option>
+          <option value="l">A4 · 横向</option>
+          <option value="fit">按图片原尺寸</option>
+        </select>
+      </label>
+      <label>页边距
+        <select id="margin">
+          <option value="0">无</option>
+          <option value="10" selected>小 1cm</option>
+          <option value="20">中 2cm</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="row">
+      <button id="btnGo" class="btn-p" disabled>📎 合成 PDF</button>
+      <button id="btnSortName" class="btn-s" disabled>按文件名排序</button>
+      <button id="btnClear" class="btn-s" disabled>清空</button>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card tips">
+    <b>说明</b>
+    <ul>
+      <li>一张图片占一页，顺序就是下面缩略图的顺序，用 ↑ ↓ 调整。</li>
+      <li><b>A4 自动方向</b>：横图自动用横向页、竖图用纵向页，图片等比缩放居中，不会变形。</li>
+      <li><b>按图片原尺寸</b>：页面大小跟着图片走，适合尺寸统一的扫描件。</li>
+      <li>JPG 和 PNG 直接嵌入不重新压缩；WebP、BMP 等格式会先转成 JPG 再嵌入。</li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="/assets/common.js"></script>
+<script>
+(function(){
+  const { $, fmtSize, download, setupDrop, statusOf, baseName } = W;
+  const say = statusOf($('#status'));
+  const grid = $('#grid');
+  const btnGo = $('#btnGo'), btnClear = $('#btnClear'), btnSortName = $('#btnSortName');
+
+  const A4 = { w: 595.28, h: 841.89 };   // pt
+  const MM = 2.8346;                      // 1mm = 2.8346pt
+
+  let items = [];   // {file, url, w, h}
+
+  const refresh = () => {
+    btnGo.disabled = items.length === 0;
+    btnClear.disabled = items.length === 0;
+    btnSortName.disabled = items.length < 2;
+  };
+
+  function render(){
+    grid.innerHTML = '';
+    items.forEach((it, i) => {
+      const box = document.createElement('div');
+      box.className = 'thumb';
+      box.innerHTML =
+        `<img src="${it.url}" alt="">` +
+        `<div class="cap">` +
+        `<span class="no">${i + 1}</span>` +
+        `<button class="btn-mini" data-act="up" ${i === 0 ? 'disabled' : ''}>↑</button>` +
+        `<button class="btn-mini" data-act="down" ${i === items.length - 1 ? 'disabled' : ''}>↓</button>` +
+        `<button class="btn-mini" data-act="del">✕</button>` +
+        `</div>`;
+      box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+        const act = b.dataset.act;
+        if (act === 'del') { URL.revokeObjectURL(items[i].url); items.splice(i, 1); }
+        else if (act === 'up') [items[i - 1], items[i]] = [items[i], items[i - 1]];
+        else [items[i + 1], items[i]] = [items[i], items[i + 1]];
+        render(); refresh();
+      }));
+      grid.appendChild(box);
+    });
+  }
+
+  const readSize = url => new Promise((res, rej) => {
+    const im = new Image();
+    im.onload = () => res({ w: im.naturalWidth, h: im.naturalHeight });
+    im.onerror = () => rej(new Error('图片无法解码'));
+    im.src = url;
+  });
+
+  async function addFiles(files){
+    const imgs = files.filter(f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|bmp|gif)$/i.test(f.name));
+    const skipped = files.length - imgs.length;
+    if (!imgs.length) return say('没有可用的图片文件。', 's-err');
+
+    say('正在读取图片…', 's-run');
+    let bad = 0;
+    for (const f of imgs) {
+      const url = URL.createObjectURL(f);
+      try {
+        const { w, h } = await readSize(url);
+        items.push({ file: f, url, w, h });
+      } catch (e) { URL.revokeObjectURL(url); bad++; }
+    }
+    render(); refresh();
+    say(`已添加 ${imgs.length - bad} 张，共 ${items.length} 张` +
+        (skipped ? `（忽略了 ${skipped} 个非图片文件）` : '') +
+        (bad ? `，${bad} 张无法解码已跳过` : ''), bad ? 's-err' : 's-ok');
+  }
+
+  setupDrop($('#drop'), $('#file'), addFiles);
+
+  btnSortName.addEventListener('click', () => {
+    items.sort((a, b) => a.file.name.localeCompare(b.file.name, 'zh-CN', { numeric: true }));
+    render(); say('已按文件名排序', 's-ok');
+  });
+
+  btnClear.addEventListener('click', () => {
+    items.forEach(i => URL.revokeObjectURL(i.url));
+    items = []; $('#file').value = '';
+    render(); refresh(); say('');
+  });
+
+  /** pdf-lib 只认 JPG 和 PNG，其余格式先过一遍 canvas 转成 JPG */
+  async function toEmbeddable(file){
+    const type = (file.type || '').toLowerCase();
+    const name = file.name.toLowerCase();
+    if (type === 'image/jpeg' || /\.jpe?g$/.test(name)) return { kind: 'jpg', bytes: await file.arrayBuffer() };
+    if (type === 'image/png' || /\.png$/.test(name)) return { kind: 'png', bytes: await file.arrayBuffer() };
+
+    const url = URL.createObjectURL(file);
+    try {
+      const im = await new Promise((res, rej) => {
+        const x = new Image();
+        x.onload = () => res(x); x.onerror = rej; x.src = url;
+      });
+      const cv = document.createElement('canvas');
+      cv.width = im.naturalWidth; cv.height = im.naturalHeight;
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(im, 0, 0);
+      const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.92));
+      return { kind: 'jpg', bytes: await blob.arrayBuffer() };
+    } finally { URL.revokeObjectURL(url); }
+  }
+
+  btnGo.addEventListener('click', async () => {
+    if (!items.length) return;
+    btnGo.disabled = true;
+    say('正在合成…', 's-run');
+
+    const sizeMode = $('#size').value;
+    const mg = parseFloat($('#margin').value) * MM;
+
+    try {
+      const doc = await PDFLib.PDFDocument.create();
+      for (let i = 0; i < items.length; i++) {
+        say(`正在处理第 ${i + 1} / ${items.length} 张…`, 's-run');
+        const it = items[i];
+        const { kind, bytes } = await toEmbeddable(it.file);
+        const img = kind === 'png' ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
+
+        let pw, ph;
+        if (sizeMode === 'fit') {
+          pw = img.width + mg * 2;
+          ph = img.height + mg * 2;
+        } else {
+          const landscape = sizeMode === 'l' || (sizeMode === 'auto' && img.width > img.height);
+          pw = landscape ? A4.h : A4.w;
+          ph = landscape ? A4.w : A4.h;
+        }
+
+        const page = doc.addPage([pw, ph]);
+        const availW = pw - mg * 2, availH = ph - mg * 2;
+        const k = Math.min(availW / img.width, availH / img.height);
+        const dw = img.width * k, dh = img.height * k;
+        page.drawImage(img, { x: (pw - dw) / 2, y: (ph - dh) / 2, width: dw, height: dh });
+
+        await new Promise(r => setTimeout(r, 0));
+      }
+
+      const out = await doc.save();
+      const name = (items.length === 1 ? baseName(items[0].file.name) : baseName(items[0].file.name) + '_等' + items.length + '张') + '.pdf';
+      download(new Blob([out], { type: 'application/pdf' }), name);
+      say(`✅ 完成，共 ${items.length} 页，已开始下载`, 's-ok');
+    } catch (e) {
+      console.error(e);
+      say('合成失败：' + (e && e.message ? e.message : '未知错误'), 's-err');
+    }
+    btnGo.disabled = false;
+  });
+
+  W.mountFooter(document.querySelector('.wrap'));
+})();
+</script>
+</body>
+</html>
