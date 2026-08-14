@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IP 归属地批量查询 · 离线查询不外发（文件不上传）| 文火工具箱</title>
+<meta name="description" content="批量查询 IP 归属地：国家、省份、城市、运营商，可导出 Excel。数据库下载到本地后离线比对，IP 不会发给任何服务器。">
+<link rel="stylesheet" href="/assets/common.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="wrap">
+
+  <header>
+    <h1>IP 归属地批量查询</h1>
+    <p class="sub">一次查几千条 IP 的国家、省份、城市和运营商。数据库下载到本地后<b>离线比对，IP 不外发</b>。</p>
+    <div class="badges">
+      <span class="badge">🔒 IP 不外发</span>
+      <span class="badge">📡 55 万条网段</span>
+      <span class="badge">♾️ 不限条数</span>
+      <span class="badge">📊 可导出 Excel</span>
+    </div>
+  </header>
+
+  <div class="hint">
+    <b>第一次使用需要下载约 11 MB 的 IP 数据库</b>，下载完会缓存在浏览器里，之后再用就是秒开、完全离线。
+    这样做是为了不把你的 IP 列表发给任何第三方接口——那类接口不但限流严重，数据也等于交出去了。
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-top:0;justify-content:space-between">
+      <div class="seg">
+        <button id="mPaste" class="on">粘贴 IP</button>
+        <button id="mFile">上传文件</button>
+      </div>
+      <button id="btnDemo" class="btn-mini">填入示例</button>
+    </div>
+
+    <div id="paneP" style="margin-top:14px">
+      <textarea class="ta" id="ta" placeholder="一行一个 IP，也可以从 Excel 或日志里整段粘过来。&#10;空格、逗号、制表符分隔都认，会自动挑出其中的 IP。&#10;&#10;114.114.114.114&#10;8.8.8.8"></textarea>
+      <div class="counter" id="cnt">0 个条目</div>
+    </div>
+
+    <div id="paneF" style="display:none;margin-top:14px">
+      <div class="drop" id="drop">
+        <div class="ico">📡</div>
+        <div class="t">点击选择，或把文件拖到这里</div>
+        <div class="h">支持 .txt / .csv / .xlsx / 日志文件</div>
+      </div>
+      <input type="file" id="file" accept=".txt,.csv,.log,.xlsx,.xlsm,.xls">
+    </div>
+
+    <div class="opts">
+      <label><input type="checkbox" id="chkDedup" checked> 自动去重（同一个 IP 只查一次）</label>
+    </div>
+
+    <div class="row">
+      <button id="btnGo" class="btn-p">🔍 开始查询</button>
+      <button id="btnClear" class="btn-s">清空</button>
+    </div>
+
+    <div class="prog" id="prog">
+      <div class="bar"><i id="bar"></i></div>
+      <div class="txt" id="progTxt"></div>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card" id="resCard" style="display:none">
+    <div class="summary" id="sum"></div>
+    <div class="row" style="margin-top:0;margin-bottom:12px">
+      <button id="btnXlsx" class="btn-s">⬇ 导出 Excel</button>
+      <button id="btnCsv" class="btn-s">⬇ 导出 CSV</button>
+      <button id="btnCopy" class="btn-s">📋 复制表格</button>
+    </div>
+    <div class="tblwrap" id="tbl"></div>
+  </div>
+
+  <div class="card tips">
+    <b>说明</b>
+    <ul>
+      <li>只支持 <b>IPv4</b>。IPv6 的库有 37 MB，体积太大暂时没做，有需要跟我说。</li>
+      <li>内网地址（10.x、192.168.x、127.x）会返回「保留地址」，这是正常的——它们本来就没有地理位置。</li>
+      <li>不提供「查我自己的 IP」。浏览器拿不到自己的公网 IP，那必须请求第三方接口，和这个工具「不外发」的前提冲突。</li>
+      <li>库里空缺的字段（比如境外 IP 常常没有城市）会留空，不编造。</li>
+    </ul>
+    <b style="display:block;margin-top:12px">数据来源与准确度</b>
+    <ul>
+      <li>来自开源项目 <span style="color:var(--text)">lionsoul2014/ip2region</span>，55 万条网段。</li>
+      <li>IP 库都有滞后和误差，尤其是移动网络和 CDN 节点。<b>结果仅供参考，不能作为唯一依据。</b></li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="/assets/common.js"></script>
+<script src="/assets/batch.js"></script>
+<script src="/assets/xdb.js"></script>
+<script>
+(function(){
+  const { $, setupDrop, statusOf, fmtSize } = W;
+  const say = statusOf($('#status'));
+  const ta = $('#ta'), cnt = $('#cnt');
+  const resCard = $('#resCard'), tbl = $('#tbl'), sum = $('#sum');
+  const prog = $('#prog'), bar = $('#bar'), progTxt = $('#progTxt');
+
+  const HEADERS = ['序号','IP','国家/地区','省份','城市','运营商','出现次数'];
+  const DB_URL = '/assets/data/ip2region.xdb';
+  let rows = [], entries = [];
+
+  const setMode = p => {
+    $('#mPaste').classList.toggle('on', p);
+    $('#mFile').classList.toggle('on', !p);
+    $('#paneP').style.display = p ? '' : 'none';
+    $('#paneF').style.display = p ? 'none' : '';
+  };
+  $('#mPaste').addEventListener('click', () => setMode(true));
+  $('#mFile').addEventListener('click', () => setMode(false));
+
+  const countPasted = () => {
+    entries = Batch.readPasted(ta.value);
+    cnt.textContent = entries.length + ' 个条目';
+  };
+  ta.addEventListener('input', countPasted);
+
+  $('#btnDemo').addEventListener('click', () => {
+    setMode(true);
+    ta.value = ['114.114.114.114','223.5.5.5','8.8.8.8','202.96.128.86',
+                '61.135.169.121','1.2.3.4','192.168.1.1','999.1.1.1'].join('\n');
+    countPasted();
+    say('已填入示例，点「开始查询」看效果', 's-ok');
+  });
+
+  setupDrop($('#drop'), $('#file'), async files => {
+    try {
+      say('正在读取文件…', 's-run');
+      entries = await Batch.readEntries(files[0]);
+      say(`已从 ${files[0].name} 读到 ${entries.length} 个条目`, 's-ok');
+    } catch (e) { say('读取失败：' + e.message, 's-err'); }
+  });
+
+  $('#btnClear').addEventListener('click', () => {
+    ta.value = ''; $('#file').value = ''; entries = []; rows = [];
+    countPasted(); resCard.style.display = 'none'; prog.classList.remove('on'); say('');
+  });
+
+  function onProgress(got, total){
+    prog.classList.add('on');
+    if (got === -1) { bar.style.width = '100%'; progTxt.textContent = '正在读取本地缓存的数据库…'; return; }
+    const pct = Math.round(got / total * 100);
+    bar.style.width = pct + '%';
+    progTxt.textContent = `正在下载 IP 数据库 ${fmtSize(got)} / ${fmtSize(total)}（${pct}%），只需下载这一次`;
+  }
+
+  $('#btnGo').addEventListener('click', async () => {
+    if ($('#mPaste').classList.contains('on')) countPasted();
+    if (!entries.length) return say('还没有输入 IP。', 's-err');
+
+    $('#btnGo').disabled = true;
+    try {
+      if (!XDB.isLoaded()) {
+        say('正在准备 IP 数据库…', 's-run');
+        await XDB.load(DB_URL, onProgress);
+        prog.classList.remove('on');
+      }
+      say('正在查询…', 's-run');
+
+      // 去重时保留首次出现的顺序，并记下每个 IP 出现了几次
+      const dedup = $('#chkDedup').checked;
+      const order = [], times = new Map();
+      entries.forEach(e => {
+        const k = String(e).trim();
+        if (!times.has(k)) { times.set(k, 0); order.push(k); }
+        times.set(k, times.get(k) + 1);
+      });
+      const list = dedup ? order : entries.map(e => String(e).trim());
+
+      let ok = 0, bad = 0, resv = 0;
+      rows = list.map((ip, i) => {
+        const n = dedup ? times.get(ip) : 1;
+        if (XDB.ipToLong(ip) === null) {
+          bad++;
+          return [ i+1, {v: ip, cls:'mono'}, {v:'不是合法的 IPv4 地址', cls:'fail'}, '', '', '', n ];
+        }
+        const r = XDB.search(ip);
+        if (!r) { bad++; return [ i+1, {v: ip, cls:'mono'}, {v:'库中无记录', cls:'fail'}, '', '', '', n ]; }
+        if (r.country === 'Reserved') {
+          resv++;
+          return [ i+1, {v: ip, cls:'mono'}, {v:'保留地址（内网/回环）', cls:'dim'}, '', '', '', n ];
+        }
+        ok++;
+        return [ i+1, {v: ip, cls:'mono'}, r.country, r.province, r.city,
+                 r.isp || {v:'—', cls:'dim'}, n ];
+      });
+
+      sum.innerHTML =
+        `<span class="all">共 <b>${rows.length}</b> 条</span>` +
+        `<span class="ok">查到 <b>${ok}</b></span>` +
+        (resv ? `<span>保留地址 <b>${resv}</b></span>` : '') +
+        `<span class="bad">无结果 <b>${bad}</b></span>` +
+        (dedup && entries.length !== rows.length ? `<span>已去重（原 <b>${entries.length}</b> 条）</span>` : '');
+      Batch.renderTable(tbl, HEADERS, rows);
+      resCard.style.display = '';
+      say(`✅ 查询完成，查到 ${ok} 条`, 's-ok');
+      resCard.scrollIntoView({ block:'start', behavior:'smooth' });
+    } catch (e) {
+      console.error(e);
+      prog.classList.remove('on');
+      say('查询失败：' + e.message, 's-err');
+    }
+    $('#btnGo').disabled = false;
+  });
+
+  const guard = fn => () => {
+    if (!rows.length) return say('还没有结果可以导出。', 's-err');
+    try { fn(); } catch (e) { say('导出失败：' + e.message, 's-err'); }
+  };
+  $('#btnXlsx').addEventListener('click', guard(() => {
+    Batch.exportXlsx(HEADERS, rows, `IP归属地_${Batch.stamp()}.xlsx`);
+    say('✅ Excel 已导出', 's-ok');
+  }));
+  $('#btnCsv').addEventListener('click', guard(() => {
+    Batch.exportCsv(HEADERS, rows, `IP归属地_${Batch.stamp()}.csv`);
+    say('✅ CSV 已导出', 's-ok');
+  }));
+  $('#btnCopy').addEventListener('click', guard(async () => {
+    try { await Batch.copyTsv(HEADERS, rows); say('✅ 已复制，可直接粘进 Excel', 's-ok'); }
+    catch (e) { say('复制失败，浏览器可能不允许访问剪贴板，请改用导出。', 's-err'); }
+  }));
+
+  countPasted();
+  W.mountFooter(document.querySelector('.wrap'));
+})();
+</script>
+</body>
+</html>

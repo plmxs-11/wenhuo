@@ -75,6 +75,44 @@ input[type=text]{min-width:220px}
 .thumb canvas,.thumb img{display:block;width:100%;height:auto;background:#fff}
 .thumb .cap{font-size:12px;color:var(--muted);padding:5px 4px;border-top:1px solid var(--line)}
 
+/* ===== 批量查询类工具：粘贴框 + 结果表格 ===== */
+textarea.ta{width:100%;min-height:150px;resize:vertical;font:13px/1.7 ui-monospace,Consolas,"Courier New",monospace;
+  padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text)}
+textarea.ta:focus{outline:none;border-color:var(--brand)}
+.counter{font-size:12px;color:var(--muted);margin-top:6px;text-align:right}
+
+/* 输入方式切换 */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}
+.seg button{border:0;border-radius:0;padding:8px 16px;font-size:13px;background:#fff;color:var(--muted)}
+.seg button.on{background:var(--brand);color:#fff}
+.seg button+button{border-left:1px solid var(--line)}
+
+/* 结果摘要 */
+.summary{display:flex;gap:18px;flex-wrap:wrap;padding:12px 14px;background:#f6f8fc;
+  border:1px solid #e2e8f5;border-radius:10px;margin-bottom:12px;font-size:13px}
+.summary b{font-size:17px;font-weight:700;margin-right:4px}
+.summary .ok b{color:var(--ok)} .summary .bad b{color:var(--err)} .summary .all b{color:var(--brand)}
+
+/* 结果表格 */
+.tblwrap{max-height:60vh;overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fff}
+table.res{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;white-space:nowrap}
+table.res th,table.res td{padding:8px 12px;border-bottom:1px solid #eef0f3;text-align:left}
+table.res thead th{position:sticky;top:0;z-index:1;background:#f6f7f9;font-weight:600;
+  border-bottom:1px solid var(--line);color:var(--muted)}
+table.res tbody tr:hover td{background:#f8fafd}
+table.res tbody tr:last-child td{border-bottom:0}
+table.res td.mono{font-family:ui-monospace,Consolas,monospace}
+table.res td.fail{color:var(--err)}
+table.res td.dim{color:var(--muted)}
+.trunc{font-size:12px;color:var(--muted);padding:10px 14px;text-align:center;background:#fbfcfd}
+
+/* 大文件加载进度 */
+.prog{margin-top:10px;display:none}
+.prog.on{display:block}
+.prog .bar{height:6px;background:#e8ebf0;border-radius:99px;overflow:hidden}
+.prog .bar i{display:block;height:100%;width:0;background:var(--brand);transition:width .2s}
+.prog .txt{font-size:12px;color:var(--muted);margin-top:6px}
+
 .tips{font-size:13px;color:var(--muted)}
 .tips b{color:var(--text)}
 .tips ul{padding-left:20px;margin:8px 0 0}

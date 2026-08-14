@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>银行卡号识别 · 批量查发卡行/卡种（卡号不上传）| 文火工具箱</title>
+<meta name="description" content="批量识别银行卡号的发卡行、卡种、BIN 号段并做 Luhn 校验，可导出 Excel。全部在浏览器本地完成，卡号不上传服务器。">
+<link rel="stylesheet" href="/assets/common.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="wrap">
+
+  <header>
+    <h1>银行卡号识别</h1>
+    <p class="sub">批量识别发卡行、卡种和 BIN 号段，并做 Luhn 校验。<b>卡号不上传</b>，全部在你自己的浏览器里比对。</p>
+    <div class="badges">
+      <span class="badge">🔒 卡号不上传</span>
+      <span class="badge">📇 3000+ BIN 号段</span>
+      <span class="badge">📊 可导出 Excel</span>
+      <span class="badge">👁️ 默认脱敏</span>
+    </div>
+  </header>
+
+  <div class="hint">
+    <b>先说清楚：卡号里没有开户地信息。</b>
+    这是 BIN 号段的固有限制，任何工具都做不到——号称能查「归属地」的多半是拿发卡行总部所在地糊弄你。
+    本工具只在发卡行本身是地方性银行（城商行/农商行/村镇银行）时，从行名反推所在地；
+    工农中建交这类全国性银行会直接标明判断不了，不猜。
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-top:0;justify-content:space-between">
+      <div class="seg">
+        <button id="mPaste" class="on">粘贴卡号</button>
+        <button id="mFile">上传文件</button>
+      </div>
+      <button id="btnDemo" class="btn-mini">填入示例</button>
+    </div>
+
+    <div id="paneP" style="margin-top:14px">
+      <textarea class="ta" id="ta" placeholder="一行一个卡号，也可以直接从 Excel 里复制一整列粘过来。&#10;空格、逗号、制表符分隔都认。&#10;&#10;6222021234567890123&#10;6217001234567890"></textarea>
+      <div class="counter" id="cnt">0 个卡号</div>
+    </div>
+
+    <div id="paneF" style="display:none;margin-top:14px">
+      <div class="drop" id="drop">
+        <div class="ico">📇</div>
+        <div class="t">点击选择，或把文件拖到这里</div>
+        <div class="h">支持 .txt / .csv / .xlsx，会自动抓出里面所有像卡号的内容</div>
+      </div>
+      <input type="file" id="file" accept=".txt,.csv,.xlsx,.xlsm,.xls">
+    </div>
+
+    <div class="opts">
+      <label><input type="checkbox" id="chkMask" checked> 结果里脱敏显示卡号（前6后4）</label>
+    </div>
+
+    <div class="row">
+      <button id="btnGo" class="btn-p">🔍 开始识别</button>
+      <button id="btnClear" class="btn-s">清空</button>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card" id="resCard" style="display:none">
+    <div class="summary" id="sum"></div>
+    <div class="row" style="margin-top:0;margin-bottom:12px">
+      <button id="btnXlsx" class="btn-s">⬇ 导出 Excel</button>
+      <button id="btnCsv" class="btn-s">⬇ 导出 CSV</button>
+      <button id="btnCopy" class="btn-s">📋 复制表格</button>
+    </div>
+    <div class="tblwrap" id="tbl"></div>
+  </div>
+
+  <div class="card tips">
+    <b>每一列是什么意思</b>
+    <ul>
+      <li><b>BIN</b>：卡号开头的银行识别码，本工具按最长前缀匹配，3～8 位不等。</li>
+      <li><b>长度校验</b>：实际位数和该卡种的标准位数是否一致，不一致多半是卡号抄漏或抄多了。</li>
+      <li><b>Luhn</b>：银行卡号的通用校验算法。不通过说明这串数字根本不是有效卡号。</li>
+      <li><b>可判归属地</b>：仅在发卡行是地方性银行时给出，全国性银行会明确标注判断不了。</li>
+    </ul>
+    <b style="display:block;margin-top:12px">数据来源</b>
+    <ul>
+      <li>BIN 库来自开源项目 <span style="color:var(--text)">amosnothing/card_bin</span>（MIT），共 3000 多条号段，随页面一起下载到本地比对。</li>
+      <li>号段库不可能覆盖全部新发卡产品，查不到不代表卡号无效，以 Luhn 校验结果为准。</li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="/assets/common.js"></script>
+<script src="/assets/batch.js"></script>
+<script src="/assets/bincard.js"></script>
+<script>
+(function(){
+  const { $, setupDrop, statusOf } = W;
+  const say = statusOf($('#status'));
+  const ta = $('#ta'), cnt = $('#cnt');
+  const resCard = $('#resCard'), tbl = $('#tbl'), sum = $('#sum');
+
+  const HEADERS = ['序号','卡号','发卡行','卡种','卡产品','BIN','可判归属地','长度校验','Luhn 校验'];
+  let rows = [], entries = [];
+
+  // ---------- 输入方式切换 ----------
+  const setMode = p => {
+    $('#mPaste').classList.toggle('on', p);
+    $('#mFile').classList.toggle('on', !p);
+    $('#paneP').style.display = p ? '' : 'none';
+    $('#paneF').style.display = p ? 'none' : '';
+  };
+  $('#mPaste').addEventListener('click', () => setMode(true));
+  $('#mFile').addEventListener('click', () => setMode(false));
+
+  const countPasted = () => {
+    entries = Batch.readPasted(ta.value);
+    cnt.textContent = entries.length + ' 个卡号';
+  };
+  ta.addEventListener('input', countPasted);
+
+  $('#btnDemo').addEventListener('click', () => {
+    setMode(true);
+    ta.value = [
+      '6222021234567890123',   // 工行
+      '6217001234567890',      // 建行
+      '6228480402564890018',   // 农行
+      '6214830000000000',      // 招行
+      '6230580000000000',      // 地方行
+      '1234567890123456'       // 故意错的
+    ].join('\n');
+    countPasted();
+    say('已填入示例，点「开始识别」看效果', 's-ok');
+  });
+
+  setupDrop($('#drop'), $('#file'), async files => {
+    try {
+      say('正在读取文件…', 's-run');
+      entries = await Batch.readEntries(files[0]);
+      say(`已从 ${files[0].name} 读到 ${entries.length} 个条目`, 's-ok');
+    } catch (e) { say('读取失败：' + e.message, 's-err'); }
+  });
+
+  $('#btnClear').addEventListener('click', () => {
+    ta.value = ''; $('#file').value = ''; entries = []; rows = [];
+    countPasted(); resCard.style.display = 'none'; say('');
+  });
+
+  // ---------- 识别 ----------
+  $('#btnGo').addEventListener('click', async () => {
+    if ($('#mPaste').classList.contains('on')) countPasted();
+    if (!entries.length) return say('还没有输入卡号。', 's-err');
+
+    $('#btnGo').disabled = true;
+    try {
+      say('正在加载 BIN 号段库…', 's-run');
+      await BinCard.load('/assets/data/bin.csv');
+
+      const doMask = $('#chkMask').checked;
+      let ok = 0, fail = 0;
+      rows = entries.map((raw, i) => {
+        const digits = String(raw).replace(/\D/g, '');
+        const info = digits ? BinCard.lookup(digits) : null;
+        const shown = doMask ? BinCard.mask(digits) : digits;
+
+        if (!info) {
+          fail++;
+          return [ i+1, {v: shown || raw, cls:'mono'},
+                   {v:'未匹配到 BIN', cls:'fail'}, '', '', '', '',
+                   digits ? '' : {v:'不是数字', cls:'fail'},
+                   digits ? (BinCard.luhnValid(digits) ? '通过' : {v:'不通过', cls:'fail'}) : '' ];
+        }
+        ok++;
+        return [
+          i+1,
+          {v: shown, cls:'mono'},
+          info.bankName,
+          info.cardTypeCn,
+          info.cardName,
+          {v: info.bin, cls:'mono'},
+          info.placeLevel === 'national' || info.placeLevel === 'unknown'
+            ? {v: info.place, cls:'dim'} : info.place,
+          info.lengthOk ? '正常' : {v:`异常(应${info.expectLen}位/实${info.cardNo.length}位)`, cls:'fail'},
+          info.luhnOk ? '通过' : {v:'不通过', cls:'fail'}
+        ];
+      });
+
+      sum.innerHTML =
+        `<span class="all">共 <b>${rows.length}</b> 条</span>` +
+        `<span class="ok">识别成功 <b>${ok}</b></span>` +
+        `<span class="bad">未匹配 <b>${fail}</b></span>` +
+        `<span>号段库 <b>${BinCard.stats().bins}</b> 条</span>`;
+      Batch.renderTable(tbl, HEADERS, rows);
+      resCard.style.display = '';
+      say(`✅ 识别完成，成功 ${ok} 条`, 's-ok');
+      resCard.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    } catch (e) {
+      console.error(e);
+      say('识别失败：' + e.message, 's-err');
+    }
+    $('#btnGo').disabled = false;
+  });
+
+  // ---------- 导出 ----------
+  const guard = fn => () => {
+    if (!rows.length) return say('还没有结果可以导出。', 's-err');
+    try { fn(); } catch (e) { say('导出失败：' + e.message, 's-err'); }
+  };
+  $('#btnXlsx').addEventListener('click', guard(() => {
+    Batch.exportXlsx(HEADERS, rows, `银行卡识别_${Batch.stamp()}.xlsx`);
+    say('✅ Excel 已导出', 's-ok');
+  }));
+  $('#btnCsv').addEventListener('click', guard(() => {
+    Batch.exportCsv(HEADERS, rows, `银行卡识别_${Batch.stamp()}.csv`);
+    say('✅ CSV 已导出', 's-ok');
+  }));
+  $('#btnCopy').addEventListener('click', guard(async () => {
+    try { await Batch.copyTsv(HEADERS, rows); say('✅ 已复制，可直接粘进 Excel', 's-ok'); }
+    catch (e) { say('复制失败，浏览器可能不允许访问剪贴板，请改用导出。', 's-err'); }
+  }));
+
+  countPasted();
+  W.mountFooter(document.querySelector('.wrap'));
+})();
+</script>
+</body>
+</html>

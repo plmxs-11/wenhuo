@@ -13,7 +13,9 @@
   .hero .sub{font-size:15px;max-width:560px;margin:0 auto}
   .hero .sub b{color:var(--text)}
 
-  .tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:6px}
+  .secttl{font-size:14px;color:var(--muted);margin:26px 0 10px;padding-left:2px;font-weight:600}
+  .secttl:first-of-type{margin-top:6px}
+  .tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
   .tool{display:block;text-decoration:none;color:inherit;background:var(--card);
     border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;transition:.15s}
   .tool:hover{border-color:var(--brand);transform:translateY(-2px);
@@ -42,6 +44,7 @@
     </div>
   </header>
 
+  <h2 class="secttl">PDF 工具</h2>
   <div class="tools">
     <a class="tool" href="/word2pdf/">
       <div class="ic">📄</div>
@@ -72,6 +75,20 @@
       <div class="ic">🔄</div>
       <div class="nm">旋转 PDF</div>
       <div class="ds">纠正方向错误的页面，可整体旋转也可单页微调</div>
+    </a>
+  </div>
+
+  <h2 class="secttl">数据查询工具</h2>
+  <div class="tools">
+    <a class="tool" href="/bincard/">
+      <div class="ic">📇</div>
+      <div class="nm">银行卡号识别</div>
+      <div class="ds">批量查发卡行、卡种、BIN 号段并做 Luhn 校验，可导出 Excel</div>
+    </a>
+    <a class="tool" href="/ip/">
+      <div class="ic">📡</div>
+      <div class="nm">IP 归属地查询</div>
+      <div class="ds">批量查国家、省份、城市、运营商，数据库下到本地离线比对</div>
     </a>
   </div>
 
