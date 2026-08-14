@@ -64,12 +64,17 @@
         const reader = resp.body.getReader();
         const chunks = [];
         let got = 0;
+        // GitHub Pages 会对 .xdb 做 gzip，此时 content-length 是压缩后的大小
+        // （4.1 MB），而流里读到的是解压后的字节（10.6 MB），直接相除进度会
+        // 冲到 258%。一旦读超了就说明服务器压缩过，总量不可信，改成只报已下载量。
+        let totalTrusted = true;
         for (;;) {
           const r = await reader.read();
           if (r.done) break;
           chunks.push(r.value);
           got += r.value.length;
-          onProgress && onProgress(got, total);
+          if (totalTrusted && got > total) totalTrusted = false;
+          onProgress && onProgress(got, totalTrusted ? total : 0);
         }
         const all = new Uint8Array(got);
         let off = 0;

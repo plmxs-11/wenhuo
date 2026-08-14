@@ -106,8 +106,24 @@
 
   const plain = rows => rows.map(r => r.map(c => (c && typeof c === 'object') ? c.v : c));
 
-  function exportXlsx(headers, rows, filename) {
+  /*
+   * 导出 Excel 的实测代价（9 列，Chrome）：
+   *   1 万条  编码 0.4 秒 /  4 MB
+   *   5 万条  编码 2.3 秒 / 21 MB
+   *  20 万条  编码 14 秒  / 85 MB   ← 期间页面完全冻住
+   * 同样数据导出 CSV 只要 0.5 秒、27 MB。瓶颈在 XLSX 的 zip 编码，
+   * 是同步的、没法分片，所以超过这个量就劝用户走 CSV。
+   */
+  const BIG_EXPORT = 50000;
+  const estimateXlsxSeconds = n => Math.max(1, Math.round(n / 14000));
+
+  async function exportXlsx(headers, rows, filename, onStatus) {
     if (typeof XLSX === 'undefined') throw new Error('Excel 库还没加载好，稍等一下再试');
+    if (onStatus) {
+      onStatus(`正在生成 Excel（${rows.length.toLocaleString()} 条，预计 ${estimateXlsxSeconds(rows.length)} 秒）…`);
+      // 让出一帧，否则下面的同步编码会把这句提示也一起卡住，用户看不到
+      await new Promise(r => setTimeout(r, 50));
+    }
     const aoa = [headers].concat(plain(rows));
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     // 列宽只用前 300 行估算。原先每列都遍历全表，10 万行 × 10 列 = 100 万次
@@ -180,6 +196,7 @@
 
   global.Batch = {
     MATCH, readEntries, readPasted, renderTable,
-    exportXlsx, exportCsv, copyTsv, stamp, mapChunked, debounce
+    exportXlsx, exportCsv, copyTsv, stamp, mapChunked, debounce,
+    BIG_EXPORT, estimateXlsxSeconds
   };
 })(window);

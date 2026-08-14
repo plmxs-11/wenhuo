@@ -173,6 +173,12 @@
   function onProgress(got, total){
     prog.classList.add('on');
     if (got === -1) { bar.style.width = '100%'; progTxt.textContent = '正在读取本地缓存的数据库…'; return; }
+    if (!total) {
+      // 服务器压缩传输，算不出百分比，就只报已下载量（库解压后约 10.6 MB）
+      bar.style.width = Math.min(97, got / 11122152 * 100) + '%';
+      progTxt.textContent = `正在下载 IP 数据库 ${fmtSize(got)}，只需下载这一次`;
+      return;
+    }
     const pct = Math.round(got / total * 100);
     bar.style.width = pct + '%';
     progTxt.textContent = `正在下载 IP 数据库 ${fmtSize(got)} / ${fmtSize(total)}（${pct}%），只需下载这一次`;
@@ -251,12 +257,19 @@
     $('#btnGo').disabled = false;
   });
 
-  const guard = fn => () => {
+  const guard = fn => async () => {
     if (!rows.length) return say('还没有结果可以导出。', 's-err');
-    try { fn(); } catch (e) { say('导出失败：' + e.message, 's-err'); }
+    try { await fn(); } catch (e) { say('导出失败：' + e.message, 's-err'); }
   };
-  $('#btnXlsx').addEventListener('click', guard(() => {
-    Batch.exportXlsx(HEADERS, rows, `IP归属地_${Batch.stamp()}.xlsx`);
+  $('#btnXlsx').addEventListener('click', guard(async () => {
+    // 大批量走 Excel 会同步冻住页面十几秒，先问一句
+    if (rows.length > Batch.BIG_EXPORT && !confirm(
+        `共 ${rows.length.toLocaleString()} 条，生成 Excel 大约需要 ${Batch.estimateXlsxSeconds(rows.length)} 秒，` +
+        `期间页面会没有反应，文件也会很大。\n\n导出 CSV 只要 1 秒左右、体积小得多，Excel 一样能打开。\n\n` +
+        `确定继续导出 Excel 吗？`)) {
+      return say('已取消，建议改用「导出 CSV」', 's-run');
+    }
+    await Batch.exportXlsx(HEADERS, rows, `IP归属地_${Batch.stamp()}.xlsx`, m => say(m, 's-run'));
     say('✅ Excel 已导出', 's-ok');
   }));
   $('#btnCsv').addEventListener('click', guard(() => {

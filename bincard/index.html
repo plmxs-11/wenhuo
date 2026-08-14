@@ -249,12 +249,19 @@
   });
 
   // ---------- 导出 ----------
-  const guard = fn => () => {
+  const guard = fn => async () => {
     if (!rows.length) return say('还没有结果可以导出。', 's-err');
-    try { fn(); } catch (e) { say('导出失败：' + e.message, 's-err'); }
+    try { await fn(); } catch (e) { say('导出失败：' + e.message, 's-err'); }
   };
-  $('#btnXlsx').addEventListener('click', guard(() => {
-    Batch.exportXlsx(HEADERS, rows, `银行卡识别_${Batch.stamp()}.xlsx`);
+  $('#btnXlsx').addEventListener('click', guard(async () => {
+    // 大批量走 Excel 会同步冻住页面十几秒，先问一句
+    if (rows.length > Batch.BIG_EXPORT && !confirm(
+        `共 ${rows.length.toLocaleString()} 条，生成 Excel 大约需要 ${Batch.estimateXlsxSeconds(rows.length)} 秒，` +
+        `期间页面会没有反应，文件也会很大。\n\n导出 CSV 只要 1 秒左右、体积小得多，Excel 一样能打开。\n\n` +
+        `确定继续导出 Excel 吗？`)) {
+      return say('已取消，建议改用「导出 CSV」', 's-run');
+    }
+    await Batch.exportXlsx(HEADERS, rows, `银行卡信息_${Batch.stamp()}.xlsx`, m => say(m, 's-run'));
     say('✅ Excel 已导出', 's-ok');
   }));
   $('#btnCsv').addEventListener('click', guard(() => {
