@@ -75,7 +75,7 @@
     淮北: '安徽', 铜陵: '安徽', 黄山: '安徽', 滁州: '安徽', 宿州: '安徽', 六安: '安徽', 宣城: '安徽',
     池州: '安徽', 亳州: '安徽', 徽商: '安徽', 安徽: '安徽',
     南昌: '江西', 赣州: '江西', 九江: '江西', 上饶: '江西', 宜春: '江西', 吉安: '江西', 抚州: '江西',
-    景德镇: '江西', 萍乡: '江西', 新余: '江西', 鹰潭: '江西', 江西: '江西', 赣州银行: '江西',
+    景德镇: '江西', 萍乡: '江西', 新余: '江西', 鹰潭: '江西', 江西: '江西',
     石家庄: '河北', 唐山: '河北', 保定: '河北', 邯郸: '河北', 秦皇岛: '河北', 张家口: '河北',
     承德: '河北', 沧州: '河北', 廊坊: '河北', 衡水: '河北', 邢台: '河北', 河北: '河北',
     太原: '山西', 大同: '山西', 运城: '山西', 长治: '山西', 晋城: '山西', 临汾: '山西', 阳泉: '山西',
@@ -102,8 +102,26 @@
     拉萨: '西藏', 西藏: '西藏'
   };
 
+  /**
+   * 这些键是银行字号，不是地名。它们能指示所属省份（徽商银行在安徽），
+   * 但显示成「安徽 · 徽商」会让人误以为「徽商」是个地方，所以只显示省。
+   */
+  const ALIAS = new Set([
+    '徽商', '晋商', '盛京', '稠州', '泰隆', '紫金', '南粤', '齐鲁', '中原', '富滇',
+    '秦农', '蒙商', '天山', '海峡', '北部湾', '桂东', '莱商', '三峡', '中关村',
+    '天府', '龙江', '浙商', '临商', '齐商', '包商', '湘江'
+  ]);
+
   // 长的地名优先匹配，防止「张家港」被「张家界」之外的短词或子串误伤
   const PLACE_KEYS = Object.keys(PLACE).sort((a, b) => b.length - a.length);
+
+  /** 命中某个键时该怎么显示 */
+  function fmtPlace(key) {
+    const prov = PLACE[key];
+    return (key === prov || ALIAS.has(key))
+      ? { text: prov, level: 'province' }
+      : { text: prov + ' · ' + key, level: 'city' };
+  }
 
   function luhnValid(digits) {
     let total = 0;
@@ -131,12 +149,7 @@
     if (isLocal) {
       // 地方性银行，试图从名字里抠地名
       for (const k of PLACE_KEYS) {
-        if (name.indexOf(k) >= 0) {
-          const prov = PLACE[k];
-          return k === prov
-            ? { text: prov, level: 'province' }
-            : { text: prov + ' · ' + k, level: 'city' };
-        }
+        if (name.indexOf(k) >= 0) return fmtPlace(k);
       }
       // 地方性但抠不出地名，也明确说是地方性而不是「未知」
       return { text: '地方性银行，卡号判断不出具体位置', level: 'local' };
@@ -155,12 +168,7 @@
 
     // 第四步：非全国也非地方，尝试从名字抠地名（比如一些小城市商业银行）
     for (const k of PLACE_KEYS) {
-      if (name.indexOf(k) >= 0) {
-        const prov = PLACE[k];
-        return k === prov
-          ? { text: prov, level: 'province' }
-          : { text: prov + ' · ' + k, level: 'city' };
-      }
+      if (name.indexOf(k) >= 0) return fmtPlace(k);
     }
 
     // 兜底：真的查不出来
