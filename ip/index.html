@@ -86,10 +86,26 @@
       <li>不提供「查我自己的 IP」。浏览器拿不到自己的公网 IP，那必须请求第三方接口，和这个工具「不外发」的前提冲突。</li>
       <li>库里空缺的字段（比如境外 IP 常常没有城市）会留空，不编造。</li>
     </ul>
+    <b style="display:block;margin-top:12px">「定位精度」这一列怎么看（重要）</b>
+    <ul>
+      <li>IP 库是按网段登记的。一条记录如果只覆盖 256 个地址，说明登记得细；
+          如果一条记录覆盖二十万个地址却只写一个城市，那这个城市基本是<b>凑出来的</b>。</li>
+      <li>本工具把命中的网段范围和地址数直接列出来，并按规模标注精度：
+          <b>精确</b>（≤1024）、<b>较精确</b>（≤16384）、<b>一般</b>（≤65536）、
+          <b style="color:var(--err)">粗略·存疑</b>（超过 65536）。</li>
+      <li>注意：库文件内部会把大网段在 /16 边界上切成几条，直接读会低估范围。
+          本工具已自动把切开的碎片合并还原，所以这里显示的是<b>真实登记范围</b>。</li>
+      <li>真实例子：<code>39.146.40.66</code> 真实网段是 <code>39.144.218.0 ~ 39.147.255.255</code>，
+          整整 206,336 个移动地址全被登记成「重庆市」，标为<b style="color:var(--err)">粗略·存疑</b>。
+          <b>这种结果不能用来判断实际位置</b>——换个 IP 库很可能给出完全不同的省份。</li>
+      <li>移动、联通的 4G/5G 出口地址是全国混编的，这类 IP 的归属地天然不可靠。
+          固网宽带（电信/联通的家庭宽带）通常准确得多。</li>
+    </ul>
     <b style="display:block;margin-top:12px">数据来源与准确度</b>
     <ul>
-      <li>来自开源项目 <span style="color:var(--text)">lionsoul2014/ip2region</span>，55 万条网段。</li>
-      <li>IP 库都有滞后和误差，尤其是移动网络和 CDN 节点。<b>结果仅供参考，不能作为唯一依据。</b></li>
+      <li>来自开源项目 <span style="color:var(--text)">lionsoul2014/ip2region</span>，55 万条网段，数据更新于 2026-08-10。</li>
+      <li>不同 IP 库对同一个地址给出不同答案是常态，尤其是移动网络和 CDN 节点。
+          <b>凡是标注「粗略」「很粗略」的结果，都不能作为定位依据。</b></li>
     </ul>
   </div>
 
@@ -106,7 +122,7 @@
   const resCard = $('#resCard'), tbl = $('#tbl'), sum = $('#sum');
   const prog = $('#prog'), bar = $('#bar'), progTxt = $('#progTxt');
 
-  const HEADERS = ['序号','IP','国家/地区','省份','城市','运营商','出现次数'];
+  const HEADERS = ['序号','IP','国家/地区','省份','城市','运营商','定位精度','匹配网段','网段地址数','出现次数'];
   const DB_URL = '/assets/data/ip2region.xdb';
   let rows = [], entries = [];
 
@@ -177,22 +193,28 @@
       });
       const list = dedup ? order : entries.map(e => String(e).trim());
 
-      let ok = 0, bad = 0, resv = 0;
+      let ok = 0, bad = 0, resv = 0, vague = 0;
       rows = list.map((ip, i) => {
         const n = dedup ? times.get(ip) : 1;
         if (XDB.ipToLong(ip) === null) {
           bad++;
-          return [ i+1, {v: ip, cls:'mono'}, {v:'不是合法的 IPv4 地址', cls:'fail'}, '', '', '', n ];
+          return [ i+1, {v: ip, cls:'mono'}, {v:'不是合法的 IPv4 地址', cls:'fail'}, '', '', '', '', '', '', n ];
         }
         const r = XDB.search(ip);
-        if (!r) { bad++; return [ i+1, {v: ip, cls:'mono'}, {v:'库中无记录', cls:'fail'}, '', '', '', n ]; }
+        if (!r) { bad++; return [ i+1, {v: ip, cls:'mono'}, {v:'库中无记录', cls:'fail'}, '', '', '', '', '', '', n ]; }
         if (r.country === 'Reserved') {
           resv++;
-          return [ i+1, {v: ip, cls:'mono'}, {v:'保留地址（内网/回环）', cls:'dim'}, '', '', '', n ];
+          return [ i+1, {v: ip, cls:'mono'}, {v:'保留地址（内网/回环）', cls:'dim'}, '', '', '', '', '', '', n ];
         }
         ok++;
+        // 网段特别大的，归属地是把一大片地址笼统归到一个城市，标红提醒
+        const p = r.precision;
+        if (p.level === 'vague') vague++;
+        const pCell = p.level === 'vague' ? {v: p.text, cls:'fail'}
+                    : p.level === 'fair' ? {v: p.text, cls:'dim'} : p.text;
         return [ i+1, {v: ip, cls:'mono'}, r.country, r.province, r.city,
-                 r.isp || {v:'—', cls:'dim'}, n ];
+                 r.isp || {v:'—', cls:'dim'},
+                 pCell, {v: r.segment, cls:'mono'}, r.segmentSize.toLocaleString(), n ];
       });
 
       sum.innerHTML =
@@ -200,6 +222,7 @@
         `<span class="ok">查到 <b>${ok}</b></span>` +
         (resv ? `<span>保留地址 <b>${resv}</b></span>` : '') +
         `<span class="bad">无结果 <b>${bad}</b></span>` +
+        (vague ? `<span class="bad">存疑 <b>${vague}</b></span>` : '') +
         (dedup && entries.length !== rows.length ? `<span>已去重（原 <b>${entries.length}</b> 条）</span>` : '');
       Batch.renderTable(tbl, HEADERS, rows);
       resCard.style.display = '';
