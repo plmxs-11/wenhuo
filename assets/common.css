@@ -106,6 +106,18 @@ table.res td.fail{color:var(--err)}
 table.res td.dim{color:var(--muted)}
 .trunc{font-size:12px;color:var(--muted);padding:10px 14px;text-align:center;background:#fbfcfd}
 
+/* 文件已上传的回执，替换掉拖放区显示 */
+.uploaded{display:none;border:1px solid #bfe3c9;background:#f2fbf5;border-radius:12px;padding:14px 16px}
+.uploaded.on{display:block}
+.uploaded .hd{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.uploaded .tick{width:20px;height:20px;border-radius:50%;background:var(--ok);color:#fff;
+  font-size:13px;line-height:20px;text-align:center;flex:none}
+.uploaded .fn{font-weight:600;word-break:break-all}
+.uploaded .meta{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.7}
+.uploaded .meta b{color:var(--text)}
+.uploaded .warn{color:var(--err)}
+.uploaded .acts{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+
 /* 大文件加载进度 */
 .prog{margin-top:10px;display:none}
 .prog.on{display:block}

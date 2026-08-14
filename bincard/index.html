@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>银行卡号识别 · 批量查发卡行/卡种（卡号不上传）| 文火工具箱</title>
-<meta name="description" content="批量识别银行卡号的发卡行、卡种、BIN 号段并做 Luhn 校验，可导出 Excel。全部在浏览器本地完成，卡号不上传服务器。">
+<title>银行卡信息查询 · 批量查发卡行/卡种（卡号不上传）| 文火工具箱</title>
+<meta name="description" content="批量查询银行卡的发卡行、卡种、BIN 号段并做 Luhn 校验，可导出 Excel。全部在浏览器本地完成，卡号不上传服务器。">
 <link rel="stylesheet" href="/assets/common.css">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -13,8 +13,8 @@
 <div class="wrap">
 
   <header>
-    <h1>银行卡号识别</h1>
-    <p class="sub">批量识别发卡行、卡种和 BIN 号段，并做 Luhn 校验。<b>卡号不上传</b>，全部在你自己的浏览器里比对。</p>
+    <h1>银行卡信息查询</h1>
+    <p class="sub">批量查询发卡行、卡种和 BIN 号段，并做 Luhn 校验。<b>卡号不上传</b>，全部在你自己的浏览器里比对。</p>
     <div class="badges">
       <span class="badge">🔒 卡号不上传</span>
       <span class="badge">📇 3000+ BIN 号段</span>
@@ -48,7 +48,12 @@
       <div class="drop" id="drop">
         <div class="ico">📇</div>
         <div class="t">点击选择，或把文件拖到这里</div>
-        <div class="h">支持 .txt / .csv / .xlsx，会自动抓出里面所有像卡号的内容</div>
+        <div class="h">支持 .txt / .csv / .xlsx，只挑出其中的卡号，表头和其他列会自动忽略</div>
+      </div>
+      <div class="uploaded" id="uploaded">
+        <div class="hd"><span class="tick">✓</span><span class="fn" id="upName"></span></div>
+        <div class="meta" id="upMeta"></div>
+        <div class="acts"><button id="btnReupload" class="btn-s">↻ 重新上传</button></div>
       </div>
       <input type="file" id="file" accept=".txt,.csv,.xlsx,.xlsm,.xls">
     </div>
@@ -60,6 +65,11 @@
     <div class="row">
       <button id="btnGo" class="btn-p">🔍 开始识别</button>
       <button id="btnClear" class="btn-s">清空</button>
+    </div>
+
+    <div class="prog" id="prog">
+      <div class="bar"><i id="bar"></i></div>
+      <div class="txt" id="progTxt"></div>
     </div>
 
     <div class="status" id="status"></div>
@@ -97,7 +107,7 @@
 <script src="/assets/bincard.js"></script>
 <script>
 (function(){
-  const { $, setupDrop, statusOf } = W;
+  const { $, setupDrop, statusOf, fmtSize } = W;
   const say = statusOf($('#status'));
   const ta = $('#ta'), cnt = $('#cnt');
   const resCard = $('#resCard'), tbl = $('#tbl'), sum = $('#sum');
@@ -116,10 +126,13 @@
   $('#mFile').addEventListener('click', () => setMode(false));
 
   const countPasted = () => {
-    entries = Batch.readPasted(ta.value);
-    cnt.textContent = entries.length + ' 个卡号';
+    const r = Batch.readPasted(ta.value, Batch.MATCH.card);
+    entries = r.items;
+    cnt.textContent = r.skipped.length
+      ? `识别出 ${r.items.length} 个卡号（另有 ${r.skipped.length} 项不像卡号，已忽略）`
+      : `${r.items.length} 个卡号`;
   };
-  ta.addEventListener('input', countPasted);
+  ta.addEventListener('input', Batch.debounce(countPasted, 200));
 
   $('#btnDemo').addEventListener('click', () => {
     setMode(true);
@@ -135,16 +148,40 @@
     say('已填入示例，点「开始识别」看效果', 's-ok');
   });
 
+  // ---------- 上传回执 ----------
+  const showUploaded = (file, r) => {
+    $('#upName').textContent = file.name;
+    const bits = [`大小 <b>${fmtSize(file.size)}</b>`, `识别出 <b>${r.items.length}</b> 个卡号`];
+    if (r.skipped.length) {
+      const eg = r.skipped.slice(0, 3).map(s => s.length > 12 ? s.slice(0, 12) + '…' : s).join('、');
+      bits.push(`已忽略 <b>${r.skipped.length}</b> 项不像卡号的内容（如 ${eg}）`);
+    }
+    $('#upMeta').innerHTML = bits.join('　·　') +
+      (r.items.length ? '' : '<div class="warn" style="margin-top:6px">没有识别到任何卡号，请确认文件里有 12～19 位的卡号。</div>');
+    $('#drop').style.display = 'none';
+    $('#uploaded').classList.add('on');
+  };
+  const resetUpload = () => {
+    $('#file').value = ''; entries = [];
+    $('#uploaded').classList.remove('on');
+    $('#drop').style.display = '';
+    say('');
+  };
+  $('#btnReupload').addEventListener('click', resetUpload);
+
   setupDrop($('#drop'), $('#file'), async files => {
     try {
       say('正在读取文件…', 's-run');
-      entries = await Batch.readEntries(files[0]);
-      say(`已从 ${files[0].name} 读到 ${entries.length} 个条目`, 's-ok');
+      const r = await Batch.readEntries(files[0], Batch.MATCH.card);
+      entries = r.items;
+      showUploaded(files[0], r);
+      say(r.items.length ? `✅ 文件已上传，识别出 ${r.items.length} 个卡号` : '⚠️ 文件已上传，但没识别到卡号',
+          r.items.length ? 's-ok' : 's-err');
     } catch (e) { say('读取失败：' + e.message, 's-err'); }
   });
 
   $('#btnClear').addEventListener('click', () => {
-    ta.value = ''; $('#file').value = ''; entries = []; rows = [];
+    ta.value = ''; rows = []; resetUpload();
     countPasted(); resCard.style.display = 'none'; say('');
   });
 
@@ -160,7 +197,14 @@
 
       const doMask = $('#chkMask').checked;
       let ok = 0, fail = 0;
-      rows = entries.map((raw, i) => {
+      const prog = $('#prog'), bar = $('#bar'), progTxt = $('#progTxt');
+      const tick = (done, total) => {
+        if (total < 5000) return;          // 量小就别闪进度条了
+        prog.classList.add('on');
+        bar.style.width = Math.round(done / total * 100) + '%';
+        progTxt.textContent = `正在识别 ${done.toLocaleString()} / ${total.toLocaleString()}`;
+      };
+      rows = await Batch.mapChunked(entries, (raw, i) => {
         const digits = String(raw).replace(/\D/g, '');
         const info = digits ? BinCard.lookup(digits) : null;
         const shown = doMask ? BinCard.mask(digits) : digits;
@@ -185,7 +229,8 @@
           info.lengthOk ? '正常' : {v:`异常(应${info.expectLen}位/实${info.cardNo.length}位)`, cls:'fail'},
           info.luhnOk ? '通过' : {v:'不通过', cls:'fail'}
         ];
-      });
+      }, tick);
+      prog.classList.remove('on');
 
       sum.innerHTML =
         `<span class="all">共 <b>${rows.length}</b> 条</span>` +

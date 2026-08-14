@@ -46,7 +46,12 @@
       <div class="drop" id="drop">
         <div class="ico">📡</div>
         <div class="t">点击选择，或把文件拖到这里</div>
-        <div class="h">支持 .txt / .csv / .xlsx / 日志文件</div>
+        <div class="h">支持 .txt / .csv / .xlsx / 日志文件，只挑出其中的 IP，表头和其他列会自动忽略</div>
+      </div>
+      <div class="uploaded" id="uploaded">
+        <div class="hd"><span class="tick">✓</span><span class="fn" id="upName"></span></div>
+        <div class="meta" id="upMeta"></div>
+        <div class="acts"><button id="btnReupload" class="btn-s">↻ 重新上传</button></div>
       </div>
       <input type="file" id="file" accept=".txt,.csv,.log,.xlsx,.xlsm,.xls">
     </div>
@@ -136,10 +141,13 @@
   $('#mFile').addEventListener('click', () => setMode(false));
 
   const countPasted = () => {
-    entries = Batch.readPasted(ta.value);
-    cnt.textContent = entries.length + ' 个条目';
+    const r = Batch.readPasted(ta.value, Batch.MATCH.ipv4);
+    entries = r.items;
+    cnt.textContent = r.skipped.length
+      ? `识别出 ${r.items.length} 个 IP（另有 ${r.skipped.length} 项不是 IP，已忽略）`
+      : `${r.items.length} 个 IP`;
   };
-  ta.addEventListener('input', countPasted);
+  ta.addEventListener('input', Batch.debounce(countPasted, 200));
 
   $('#btnDemo').addEventListener('click', () => {
     setMode(true);
@@ -194,7 +202,13 @@
       const list = dedup ? order : entries.map(e => String(e).trim());
 
       let ok = 0, bad = 0, resv = 0, vague = 0;
-      rows = list.map((ip, i) => {
+      const tick = (done, total) => {
+        if (total < 5000) return;          // 量小就别闪进度条了
+        prog.classList.add('on');
+        bar.style.width = Math.round(done / total * 100) + '%';
+        progTxt.textContent = `正在查询 ${done.toLocaleString()} / ${total.toLocaleString()}`;
+      };
+      rows = await Batch.mapChunked(list, (ip, i) => {
         const n = dedup ? times.get(ip) : 1;
         if (XDB.ipToLong(ip) === null) {
           bad++;
@@ -215,7 +229,8 @@
         return [ i+1, {v: ip, cls:'mono'}, r.country, r.province, r.city,
                  r.isp || {v:'—', cls:'dim'},
                  pCell, {v: r.segment, cls:'mono'}, r.segmentSize.toLocaleString(), n ];
-      });
+      }, tick);
+      prog.classList.remove('on');
 
       sum.innerHTML =
         `<span class="all">共 <b>${rows.length}</b> 条</span>` +
