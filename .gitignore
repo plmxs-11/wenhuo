@@ -1,0 +1,13 @@
+# 临时数据样本一律不进仓库。压测请用脚本生成的假数据，不要用工作中的真实数据。
+_sample*
+*.sample.json
+*.local.*
+*.private.*
+
+# 编辑器 / 系统
+.claude/
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
