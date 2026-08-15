@@ -186,7 +186,15 @@
 
       } else {
         // each / chunk 都会产生多个文件，打包成 zip
-        const size = mode === 'each' ? 1 : Math.max(1, parseInt($('#chunk').value, 10) || 1);
+        //
+        // 这里原先写的是 Math.max(1, parseInt(...) || 1)，手输 0 或负数会被悄悄
+        // 当成 1，用户填「每份 0 页」却拿到 10 个单页文件，还以为是自己设的。
+        // input 上的 min="1" 只在表单提交时生效，按钮点击拦不住，必须自己校验。
+        const size = mode === 'each' ? 1 : parseInt($('#chunk').value, 10);
+        if (mode === 'chunk' && (!Number.isFinite(size) || size < 1)) {
+          say('「每份多少页」要填 1 或更大的整数。', 's-err');
+          btnGo.disabled = false; return;
+        }
         const groups = [];
         for (let i = 0; i < total; i += size) {
           groups.push(src.getPageIndices().slice(i, i + size));
