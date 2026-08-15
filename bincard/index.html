@@ -6,7 +6,6 @@
 <title>银行卡信息查询 · 批量查发卡行/卡种（卡号不上传）| 文火工具箱</title>
 <meta name="description" content="批量查询银行卡的发卡行、卡种、BIN 号段并做 Luhn 校验，可导出 Excel。全部在浏览器本地完成，卡号不上传服务器。">
 <link rel="stylesheet" href="/assets/common.css">
-<script src="/assets/vendor/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="topbar"><a href="/">← 返回文火工具箱</a></div>
@@ -113,7 +112,12 @@
   const resCard = $('#resCard'), tbl = $('#tbl'), sum = $('#sum');
 
   const HEADERS = ['序号','卡号','发卡行','卡种','卡产品','BIN','可判归属地','长度校验','Luhn 校验'];
+  const BIN_URL = '/assets/data/bin.csv';
   let rows = [], entries = [];
+
+  // 号段库 211 KB，等用户粘完卡号再拉的话，那 0.5~1 秒全压在「开始查询」那一下。
+  // 页面一打开就在后台拉，用户还在粘贴时就下完了。失败不用管，查询时会再试一次。
+  BinCard.load(BIN_URL).catch(() => {});
 
   // ---------- 输入方式切换 ----------
   const setMode = p => {
@@ -192,8 +196,9 @@
 
     $('#btnGo').disabled = true;
     try {
-      say('正在加载 BIN 号段库…', 's-run');
-      await BinCard.load('/assets/data/bin.csv');
+      // 页面打开时已经在后台拉了，正常情况下这里立即返回
+      if (!BinCard.isLoaded()) say('正在加载 BIN 号段库…', 's-run');
+      await BinCard.load(BIN_URL);
 
       const doMask = $('#chkMask').checked;
       let ok = 0, fail = 0;

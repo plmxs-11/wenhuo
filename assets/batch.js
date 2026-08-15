@@ -50,6 +50,25 @@
   }
 
   /**
+   * SheetJS 有 861 KB，但只有「上传 Excel」和「导出 Excel」两个动作用得到。
+   * 原先写在 <head> 里同步加载，等于每个只是想查几条的用户都白等约 1 秒。
+   * 改成用到时再拉，同一个 Promise 复用，重复调用不会重复插脚本。
+   */
+  let xlsxPromise = null;
+  function ensureXlsx() {
+    if (typeof XLSX !== 'undefined') return Promise.resolve();
+    if (xlsxPromise) return xlsxPromise;
+    xlsxPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = '/assets/vendor/xlsx.full.min.js';
+      s.onload = () => resolve();
+      s.onerror = () => { xlsxPromise = null; reject(new Error('Excel 库加载失败，请检查网络后重试')); };
+      document.head.appendChild(s);
+    });
+    return xlsxPromise;
+  }
+
+  /**
    * 从 txt / csv / xlsx / 日志里抽出符合 matcher 的条目。
    * 返回 { items, skipped, scanned }——跳过多少、跳过了什么都要能说清楚，
    * 不能默默丢数据。
@@ -59,7 +78,7 @@
     const name = (file.name || '').toLowerCase();
 
     if (/\.(xlsx|xlsm|xls)$/.test(name)) {
-      if (typeof XLSX === 'undefined') throw new Error('Excel 解析库还没加载好，稍等一下再试');
+      await ensureXlsx();
       const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
       wb.SheetNames.forEach(sn => {
         const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, raw: false, defval: '' });
@@ -118,7 +137,8 @@
   const estimateXlsxSeconds = n => Math.max(1, Math.round(n / 14000));
 
   async function exportXlsx(headers, rows, filename, onStatus) {
-    if (typeof XLSX === 'undefined') throw new Error('Excel 库还没加载好，稍等一下再试');
+    if (typeof XLSX === 'undefined' && onStatus) onStatus('正在加载 Excel 库…');
+    await ensureXlsx();
     if (onStatus) {
       onStatus(`正在生成 Excel（${rows.length.toLocaleString()} 条，预计 ${estimateXlsxSeconds(rows.length)} 秒）…`);
       // 让出一帧，否则下面的同步编码会把这句提示也一起卡住，用户看不到
@@ -195,7 +215,7 @@
   }
 
   global.Batch = {
-    MATCH, readEntries, readPasted, renderTable,
+    MATCH, readEntries, readPasted, renderTable, ensureXlsx,
     exportXlsx, exportCsv, copyTsv, stamp, mapChunked, debounce,
     BIG_EXPORT, estimateXlsxSeconds
   };

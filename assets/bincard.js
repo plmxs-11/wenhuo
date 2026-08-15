@@ -175,9 +175,21 @@
     return { text: '其他机构，未知', level: 'unknown' };
   }
 
-  /** 载入并索引 bin.csv */
-  async function load(url) {
-    if (table) return;
+  /**
+   * 载入并索引 bin.csv。
+   *
+   * 页面打开时会先后台预取一次，用户点查询时又会调一次，两次可能撞在一起。
+   * 用 loading 兜住在途的那次，否则会重复下载同一个 211 KB 文件。
+   */
+  let loading = null;
+  function load(url) {
+    if (table) return Promise.resolve();
+    if (loading) return loading;
+    loading = doLoad(url).catch(e => { loading = null; throw e; });
+    return loading;
+  }
+
+  async function doLoad(url) {
     const resp = await fetch(url);
     if (!resp.ok) throw new Error('BIN 数据加载失败（HTTP ' + resp.status + '）');
     const text = (await resp.text()).replace(/^﻿/, '');
@@ -229,5 +241,7 @@
 
   const stats = () => ({ bins: table ? Object.keys(table).length : 0, binLens });
 
-  global.BinCard = { load, lookup, mask, luhnValid, guessPlace, stats, CARD_TYPE_CN };
+  const isLoaded = () => !!table;
+
+  global.BinCard = { load, lookup, mask, luhnValid, guessPlace, stats, isLoaded, CARD_TYPE_CN };
 })(window);
