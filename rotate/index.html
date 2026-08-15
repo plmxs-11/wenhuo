@@ -6,8 +6,8 @@
 <title>旋转 PDF · 纠正页面方向（文件不上传）| 文火工具箱</title>
 <meta name="description" content="旋转 PDF 页面方向，可整体旋转也可单页微调，所见即所得。全程在浏览器本地完成，文件不上传服务器。">
 <link rel="stylesheet" href="/assets/common.css">
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="/assets/vendor/pdf.min.js"></script>
+<script src="/assets/vendor/pdf-lib.min.js"></script>
 <style>
   .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
   .thumb .pv{height:160px;display:flex;align-items:center;justify-content:center;
@@ -79,7 +79,7 @@
 <script>
 (function(){
   const { $, $$, fmtSize, download, setupDrop, statusOf, baseName, initPdfJs, renderToCanvas } = W;
-  initPdfJs('3.11.174');
+  initPdfJs();
 
   const say = statusOf($('#status'));
   const info = statusOf($('#info'));

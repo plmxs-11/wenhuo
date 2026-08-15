@@ -6,8 +6,8 @@
 <title>PDF 转图片 · 转 JPG / PNG（文件不上传）| 文火工具箱</title>
 <meta name="description" content="把 PDF 每一页导出成 JPG 或 PNG，清晰度可调，多页自动打包 zip。全程在浏览器本地完成，文件不上传服务器。">
 <link rel="stylesheet" href="/assets/common.css">
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="/assets/vendor/pdf.min.js"></script>
+<script src="/assets/vendor/jszip.min.js"></script>
 </head>
 <body>
 <div class="topbar"><a href="/">← 返回文火工具箱</a></div>
@@ -82,7 +82,7 @@
 <script>
 (function(){
   const { $, fmtSize, download, setupDrop, statusOf, parsePages, baseName, initPdfJs, renderToCanvas } = W;
-  initPdfJs('3.11.174');
+  initPdfJs();
 
   const say = statusOf($('#status'));
   const info = statusOf($('#info'));

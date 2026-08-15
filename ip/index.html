@@ -6,7 +6,7 @@
 <title>IP 归属地批量查询 · 离线查询不外发（文件不上传）| 文火工具箱</title>
 <meta name="description" content="批量查询 IP 归属地：国家、省份、城市、运营商，可导出 Excel。数据库下载到本地后离线比对，IP 不会发给任何服务器。">
 <link rel="stylesheet" href="/assets/common.css">
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="/assets/vendor/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="topbar"><a href="/">← 返回文火工具箱</a></div>
@@ -24,7 +24,8 @@
   </header>
 
   <div class="hint">
-    <b>第一次使用需要下载约 11 MB 的 IP 数据库</b>，下载完会缓存在浏览器里，之后再用就是秒开、完全离线。
+    <b>查几个 IP 只读取数据库里用得上的那几十 KB</b>，秒出结果；一次查 25 条以上才会下载完整数据库
+    （约 11 MB，下载完缓存在浏览器里，之后完全离线、秒开）。
     这样做是为了不把你的 IP 列表发给任何第三方接口——那类接口不但限流严重，数据也等于交出去了。
   </div>
 
@@ -173,6 +174,7 @@
   function onProgress(got, total){
     prog.classList.add('on');
     if (got === -1) { bar.style.width = '100%'; progTxt.textContent = '正在读取本地缓存的数据库…'; return; }
+    if (got === -2) { bar.style.width = '100%'; progTxt.textContent = '正在按需读取数据库（只取这几个 IP 用得上的部分）…'; return; }
     if (!total) {
       // 服务器压缩传输，算不出百分比，就只报已下载量（库解压后约 10.6 MB）
       bar.style.width = Math.min(97, got / 11122152 * 100) + '%';
@@ -190,13 +192,6 @@
 
     $('#btnGo').disabled = true;
     try {
-      if (!XDB.isLoaded()) {
-        say('正在准备 IP 数据库…', 's-run');
-        await XDB.load(DB_URL, onProgress);
-        prog.classList.remove('on');
-      }
-      say('正在查询…', 's-run');
-
       // 去重时保留首次出现的顺序，并记下每个 IP 出现了几次
       const dedup = $('#chkDedup').checked;
       const order = [], times = new Map();
@@ -206,6 +201,13 @@
         times.set(k, times.get(k) + 1);
       });
       const list = dedup ? order : entries.map(e => String(e).trim());
+
+      // 先备数据再查。要查哪些 IP 得先算出来——按需模式只取这几个 IP 用得上的字节，
+      // 所以去重必须提到加载前面。
+      say('正在准备 IP 数据库…', 's-run');
+      await XDB.prepare(DB_URL, order, onProgress);
+      prog.classList.remove('on');
+      say('正在查询…', 's-run');
 
       let ok = 0, bad = 0, resv = 0, vague = 0;
       const tick = (done, total) => {

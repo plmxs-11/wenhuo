@@ -65,12 +65,16 @@
     return { pages: Array.from(set).sort((x, y) => x - y), invalid };
   }
 
-  /** pdf.js 的 worker 必须显式指定，否则渲染会卡住不报错 */
-  function initPdfJs(version) {
-    const v = version || '3.11.174';
+  /**
+   * pdf.js 的 worker 必须显式指定，否则渲染会卡住不报错。
+   *
+   * 路径必须同源。浏览器不允许用跨域 URL 构造 Worker，之前这里指向 jsDelivr，
+   * `new Worker(...)` 直接抛 SecurityError，pdf.js 捕获后静默降级成 fake worker，
+   * 于是整个解析和渲染都挤在主线程上，大文件必卡。改 CDN 前先确认这一点。
+   */
+  function initPdfJs() {
     if (global.pdfjsLib) {
-      global.pdfjsLib.GlobalWorkerOptions.workerSrc =
-        `https://cdn.jsdelivr.net/npm/pdfjs-dist@${v}/build/pdf.worker.min.js`;
+      global.pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/vendor/pdf.worker.min.js';
     }
   }
 
