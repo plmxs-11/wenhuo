@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>压缩扫描件 PDF · 免费在线工具（文件不上传）| 文火工具箱</title>
+<meta name="description" content="把扫描件、拍照件 PDF 压小，方便邮件发送和网站上传。会先检测你的 PDF 是不是扫描件，有文字层的会明确劝退。全程在浏览器本地完成，文件不上传服务器。">
+<link rel="canonical" href="https://wenhuo.top/compress/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="文火工具箱">
+<meta property="og:title" content="压缩扫描件 PDF · 文件不上传服务器">
+<meta property="og:description" content="专门压缩扫描件和拍照件 PDF，会先检测文件类型，有文字层的明确劝退不糊弄。全程在浏览器本地完成。">
+<meta property="og:url" content="https://wenhuo.top/compress/">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="/assets/common.css">
+<script src="/assets/vendor/pdf.min.js"></script>
+<script src="/assets/vendor/pdf-lib.min.js"></script>
+<style>
+  .verdict{border-radius:12px;padding:14px 16px;margin-top:14px;font-size:14px;line-height:1.8;display:none}
+  .verdict.on{display:block}
+  .verdict.good{border:1px solid #bfe3c9;background:#f2fbf5}
+  .verdict.bad{border:1px solid #f0d8a8;background:#fff8e1}
+  .verdict .hd{font-weight:600;margin-bottom:4px;color:var(--text)}
+  .verdict .bd{color:var(--muted)}
+  .verdict .bd b{color:var(--text)}
+  .cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px;
+    background:#f6f8fc;border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:14px}
+  .cmp .n{font-size:22px;font-weight:800;line-height:1.2}
+  .cmp .n.save{color:var(--ok)}
+  .cmp .n.grow{color:var(--err)}
+  .cmp .l{font-size:12px;color:var(--muted);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="wrap">
+
+  <header>
+    <h1>压缩扫描件 PDF</h1>
+    <p class="sub">把扫描件、拍照件压小，方便发邮件和网上提交。文件不上传，全部在本机完成。</p>
+    <div class="badges">
+      <span class="badge">🔒 文件不上传</span>
+      <span class="badge">🔍 先检测再压缩</span>
+      <span class="badge">📉 通常能小 60~90%</span>
+    </div>
+  </header>
+
+  <div class="hint">
+    <b>这个工具只适合扫描件和拍照件。</b>它的原理是把每一页重新编码成质量更低的图片，
+    所以<b>文字会变成图片，不能再复制和搜索</b>。扫描件本来就没有文字层，压了不亏；
+    但如果你的 PDF 是 Word 导出的那种，压完反而更差。放心，下面会先帮你检测。
+  </div>
+
+  <div class="card">
+    <div class="drop" id="drop">
+      <div class="ico">📉</div>
+      <div class="t">点击选择，或把 PDF 拖到这里</div>
+      <div class="h">一次处理一个文件</div>
+    </div>
+    <input type="file" id="file" accept=".pdf,application/pdf" hidden>
+
+    <div id="info" class="status"></div>
+
+    <div class="verdict" id="verdict">
+      <div class="hd" id="vHd"></div>
+      <div class="bd" id="vBd"></div>
+    </div>
+
+    <div class="opts">
+      <label>压缩强度
+        <select id="level">
+          <option value="150|0.75">轻度（150 dpi，画质优先）</option>
+          <option value="120|0.62" selected>推荐（120 dpi，够看够打印）</option>
+          <option value="96|0.5">极限（96 dpi，只求小）</option>
+        </select>
+      </label>
+      <label>
+        <input type="checkbox" id="chkGray"> 转成灰度（黑白文档能再小一截）
+      </label>
+    </div>
+
+    <div class="row">
+      <button id="btnGo" class="btn-p" disabled>📉 开始压缩</button>
+      <button id="btnClear" class="btn-s" disabled>清空</button>
+    </div>
+
+    <div class="prog" id="prog"><div class="bar"><i id="bar"></i></div><div class="txt" id="progTxt"></div></div>
+    <div class="status" id="status"></div>
+
+    <div class="cmp" id="cmp" style="display:none">
+      <div><div class="n" id="cOld">—</div><div class="l">原大小</div></div>
+      <div><div class="n" id="cNew">—</div><div class="l">压缩后</div></div>
+      <div><div class="n" id="cRate">—</div><div class="l">变化</div></div>
+    </div>
+  </div>
+
+  <div class="card tips">
+    <b>说明</b>
+    <ul>
+      <li><b>压完文字不能复制搜索</b>。扫描件本来就不能，所以没有损失；有文字层的 PDF 请不要用这个工具。</li>
+      <li>压缩后如果反而变大（原文件已经压得很好了），会明确告诉你，并且不建议你下载。</li>
+      <li>页面尺寸、页数、页面顺序都保持不变，只有清晰度下降。</li>
+      <li>上百页的大文件很占内存，建议先用<a href="/split/">拆分 PDF</a>分批处理。</li>
+      <li>加密（设了打开密码）的 PDF 无法处理，请先取消密码。</li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="/assets/common.js"></script>
+<script>
+(function(){
+  const { $, fmtSize, download, setupDrop, statusOf, baseName, initPdfJs, renderToCanvas } = W;
+  initPdfJs();
+
+  const say = statusOf($('#status'));
+  const prog = $('#prog'), bar = $('#bar'), progTxt = $('#progTxt');
+  let srcFile = null, srcBuf = null, pdf = null;
+
+  const setBusy = b => { $('#btnGo').disabled = b || !pdf; $('#btnClear').disabled = b || !srcFile; };
+
+  /**
+   * 判断这个 PDF 是不是扫描件。
+   *
+   * 判据是每页的文字层：扫描件是纯图片，getTextContent() 基本取不到东西；
+   * Word 导出的 PDF 每页都有大量文字项。抽样前几页就够，整本扫下来太慢。
+   *
+   * 这一步是这个工具存在的意义——市面上的压缩工具照单全收，把有文字层的
+   * PDF 也压成图片，用户事后才发现文字选不中了。宁可劝退也不糊弄。
+   */
+  async function detect(doc){
+    const sample = Math.min(doc.numPages, 5);
+    let withText = 0, chars = 0;
+    for (let i = 1; i <= sample; i++){
+      const page = await doc.getPage(i);
+      const tc = await page.getTextContent();
+      const t = tc.items.map(it => it.str).join('').trim();
+      if (t.length > 20) { withText++; chars += t.length; }
+    }
+    return { sample, withText, avgChars: withText ? Math.round(chars / withText) : 0 };
+  }
+
+  setupDrop($('#drop'), $('#file'), async files => {
+    const f = files[0];
+    if (!f) return;
+    srcFile = f; pdf = null;
+    $('#cmp').style.display = 'none';
+    $('#verdict').className = 'verdict';
+    say('正在读取…', 's-run');
+    try {
+      srcBuf = await f.arrayBuffer();
+      // pdf.js 会接管（detach）传进去的 buffer，必须给它一份拷贝，
+      // 否则后面再想读 srcBuf 会拿到一个长度为 0 的空壳。
+      pdf = await pdfjsLib.getDocument({ data: srcBuf.slice(0) }).promise;
+      $('#info').textContent = `${f.name} · 共 ${pdf.numPages} 页 · ${fmtSize(f.size)}`;
+
+      const d = await detect(pdf);
+      const v = $('#verdict'), hd = $('#vHd'), bd = $('#vBd');
+      if (d.withText === 0) {
+        v.className = 'verdict on good';
+        hd.textContent = '✅ 检测结果：这是扫描件，适合压缩';
+        bd.innerHTML = `抽查了前 ${d.sample} 页，都没有文字层，说明是扫描或拍照生成的。
+          压缩不会造成额外损失，放心压。`;
+      } else if (d.withText < d.sample) {
+        v.className = 'verdict on bad';
+        hd.textContent = '⚠️ 检测结果：混合型，请谨慎';
+        bd.innerHTML = `抽查的前 ${d.sample} 页里，有 <b>${d.withText} 页带文字层</b>。
+          压缩后这些页的文字会变成图片、无法复制搜索。如果你只是想发给别人看，可以压；
+          如果要留档或需要检索，建议别压。`;
+      } else {
+        v.className = 'verdict on bad';
+        hd.textContent = '🛑 检测结果：这不是扫描件，不建议用本工具';
+        bd.innerHTML = `抽查的前 ${d.sample} 页都有完整文字层（平均每页 ${d.avgChars} 个字符），
+          说明是 Word、WPS 之类导出的 PDF。<b>这类文件压完会把清晰的文字变成模糊的图片，
+          体积未必小多少，阅读体验却明显变差。</b>你仍然可以继续，但我建议你别。`;
+      }
+      say('');
+      setBusy(false);
+    } catch (e) {
+      pdf = null; setBusy(false);
+      say('读不了这个 PDF：' + e.message + '（如果设了打开密码，请先取消密码）', 's-err');
+    }
+  });
+
+  $('#btnClear').addEventListener('click', () => {
+    srcFile = null; srcBuf = null; pdf = null;
+    $('#file').value = ''; $('#info').textContent = '';
+    $('#verdict').className = 'verdict';
+    $('#cmp').style.display = 'none';
+    prog.classList.remove('on'); say('');
+    setBusy(false);
+  });
+
+  /** canvas -> JPEG Blob，走 toBlob 而不是 toDataURL，省掉 base64 那 33% 的内存 */
+  const toJpeg = (cv, q) => new Promise(res => cv.toBlob(res, 'image/jpeg', q));
+
+  /** 就地转灰度。黑白文档转灰度后 JPEG 的色度分量几乎为零，能再小一截 */
+  function toGray(cv){
+    const ctx = cv.getContext('2d');
+    const img = ctx.getImageData(0, 0, cv.width, cv.height);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4){
+      const g = (d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114) | 0;
+      d[i] = d[i+1] = d[i+2] = g;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  $('#btnGo').addEventListener('click', async () => {
+    if (!pdf) return;
+    setBusy(true);
+    const [dpi, quality] = $('#level').value.split('|');
+    const scale = (+dpi) / 72;
+    const gray = $('#chkGray').checked;
+
+    try {
+      const out = await PDFLib.PDFDocument.create();
+      prog.classList.add('on');
+
+      for (let i = 1; i <= pdf.numPages; i++){
+        bar.style.width = Math.round((i - 1) / pdf.numPages * 100) + '%';
+        progTxt.textContent = `正在处理第 ${i} / ${pdf.numPages} 页`;
+        // 让出一帧，否则进度条从头到尾都不动
+        await new Promise(r => setTimeout(r, 0));
+
+        const page = await pdf.getPage(i);
+        const cv = await renderToCanvas(page, scale);
+        if (gray) toGray(cv);
+        const blob = await toJpeg(cv, +quality);
+        const img = await out.embedJpg(await blob.arrayBuffer());
+
+        // 页面尺寸用 scale=1 的 viewport，它已经把 /Rotate 算进去了，
+        // 所以这里不用再单独处理旋转，直接铺满即可。
+        const vp = page.getViewport({ scale: 1 });
+        const p = out.addPage([vp.width, vp.height]);
+        p.drawImage(img, { x: 0, y: 0, width: vp.width, height: vp.height });
+
+        // 主动释放，否则上百页的画布会一直挂在内存里
+        cv.width = cv.height = 0;
+      }
+
+      bar.style.width = '100%';
+      progTxt.textContent = '正在生成文件…';
+      await new Promise(r => setTimeout(r, 0));
+
+      const bytes = await out.save();
+      prog.classList.remove('on');
+
+      const oldSize = srcFile.size, newSize = bytes.byteLength;
+      const delta = (1 - newSize / oldSize) * 100;
+      $('#cmp').style.display = '';
+      $('#cOld').textContent = fmtSize(oldSize);
+      $('#cNew').textContent = fmtSize(newSize);
+      const rate = $('#cRate');
+      rate.textContent = (delta >= 0 ? '−' : '+') + Math.abs(delta).toFixed(0) + '%';
+      rate.className = 'n ' + (delta >= 0 ? 'save' : 'grow');
+
+      if (newSize >= oldSize) {
+        // 原文件已经压得很好了，这时候还让用户下载一个更大的文件就是耍人
+        say(`⚠️ 压完反而大了（${fmtSize(oldSize)} → ${fmtSize(newSize)}）。`
+          + '说明你的原文件已经压得很好，或者它本来就不是扫描件。建议保留原文件，别下载这个。',
+          's-err');
+        const a = document.createElement('button');
+        a.className = 'btn-s'; a.textContent = '我知道了，还是下载';
+        a.style.marginTop = '10px';
+        a.onclick = () => { download(new Blob([bytes], {type:'application/pdf'}), baseName(srcFile.name) + '_压缩.pdf'); a.remove(); };
+        $('#status').after(a);
+      } else {
+        download(new Blob([bytes], { type: 'application/pdf' }), baseName(srcFile.name) + '_压缩.pdf');
+        say(`✅ 压缩完成，${fmtSize(oldSize)} → ${fmtSize(newSize)}，小了 ${delta.toFixed(0)}%，已开始下载`, 's-ok');
+      }
+    } catch (e) {
+      console.error(e);
+      prog.classList.remove('on');
+      say('压缩失败：' + e.message, 's-err');
+    }
+    setBusy(false);
+  });
+
+  W.mountFooter(document.querySelector('.wrap'));
+})();
+</script>
+</body>
+</html>

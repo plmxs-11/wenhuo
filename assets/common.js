@@ -102,8 +102,34 @@
   /** 文件名去掉扩展名 */
   const baseName = name => String(name || '').replace(/\.[^.]+$/, '');
 
+  /*
+   * 访问统计（默认关闭）。
+   *
+   * 这个站的立身之本是「不发请求」，/verify/ 那一页就是靠这一点立信的——
+   * 加任何第三方统计脚本，都会在每个页面多出一个外部请求，那页就变成半真半假。
+   *
+   * 首选方案是把域名接到 Cloudflare 代理，在服务端出统计，页面里一行脚本都不用加，
+   * 承诺不受任何影响。做法见 README 的「访问统计」一节。
+   *
+   * 实在要用客户端统计，把 CF_BEACON_TOKEN 填上就会启用。但一旦启用：
+   *   1. 必须去改 /verify/ 页面的说法，如实写明本站加载了哪个第三方脚本；
+   *   2. 首页「零第三方脚本」之类的表述也要一并改掉。
+   * 承诺和实现对不上，比没有统计糟糕得多。
+   */
+  const CF_BEACON_TOKEN = '';
+
+  function mountAnalytics() {
+    if (!CF_BEACON_TOKEN) return;
+    const s = document.createElement('script');
+    s.defer = true;
+    s.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+    s.setAttribute('data-cf-beacon', JSON.stringify({ token: CF_BEACON_TOKEN }));
+    document.head.appendChild(s);
+  }
+
   /** 页面底部的赞赏区和页脚，六个工具共用，避免每个文件抄一遍 */
   function mountFooter(wrapEl) {
+    mountAnalytics();
     const box = document.createElement('div');
     box.className = 'card tip-jar';
     box.innerHTML =

@@ -12,6 +12,8 @@ wenhuo-site/
 ├── word2pdf/index.html Word 转 PDF
 ├── merge/index.html    合并 PDF
 ├── split/index.html    拆分 PDF（提取页 / 删页 / 拆单页 / 按份拆）
+├── compress/index.html 压缩扫描件 PDF（先检测文字层，非扫描件明确劝退）
+├── verify/index.html   教用户用 F12 亲手验证「文件没上传」，内置实时请求计数器
 ├── pdf2jpg/index.html  PDF 转图片
 ├── jpg2pdf/index.html  图片转 PDF
 ├── rotate/index.html   旋转 PDF
@@ -27,6 +29,8 @@ wenhuo-site/
 │   │   ├── bin.csv         BIN 号段库，3000+ 条
 │   │   └── ip2region.xdb   IP 归属地库，55 万条网段，11.1 MB
 │   └── vendor/         第三方库，见下方「依赖」
+├── robots.txt          搜索引擎抓取规则
+├── sitemap.xml         站点地图，新增页面记得同步加进去
 ├── wechat-qr.png       微信收款码
 ├── alipay-qr.png       支付宝收款码
 ├── CNAME               自定义域名，GitHub Pages 用
@@ -56,8 +60,8 @@ python -m http.server 8123 -d wenhuo-site
 |---|---|---|
 | mammoth 1.9.0 | 解析 .docx | word2pdf |
 | html2pdf.js 0.10.2 | 截图版 PDF 导出 | word2pdf |
-| pdf-lib 1.17.1 | 改写 PDF（合并/拆分/旋转/嵌图） | merge, split, jpg2pdf, rotate |
-| pdfjs-dist 3.11.174 | 渲染 PDF、取页数 | pdf2jpg, rotate |
+| pdf-lib 1.17.1 | 改写 PDF（合并/拆分/旋转/嵌图） | merge, split, jpg2pdf, rotate, compress |
+| pdfjs-dist 3.11.174 | 渲染 PDF、取页数、判断有无文字层 | pdf2jpg, rotate, compress |
 | jszip 3.10.1 | 多文件打包下载 | split, pdf2jpg |
 | SheetJS (xlsx) 0.18.5 | 读写 Excel | bincard, ip |
 
@@ -105,6 +109,28 @@ IPv6 库有 37 MB，体积太大暂时没做。
 所以 `prepare()` 里要用 `ensureRun()` 边走边补，不能只取命中那一格。改这块之后务必拿同一批 IP
 对拍 lazy 和 full 两种模式的输出，必须逐字节一致。
 
+## 访问统计
+
+默认**完全没有**统计代码，站点不加载任何第三方脚本。这是刻意的：`/verify/` 那一页教用户
+用 F12 验证"零外部请求"，只要页面里塞了统计脚本，那页就站不住了。
+
+要看流量，两种做法，优先第一种：
+
+### 首选：Cloudflare 代理（服务端统计，页面零改动）
+
+1. 在 Cloudflare 添加站点 `wenhuo.top`（免费套餐即可），按提示把域名的 NS 改到 Cloudflare
+2. DNS 里加 `CNAME  @  plmxs-11.github.io`，代理状态设为 **已代理**（橙色云朵）
+3. SSL/TLS 加密模式选 **Full**，否则 GitHub Pages 会和 Cloudflare 互相跳转导致死循环
+4. 之后在 Cloudflare 后台就能看到访问量、来源、路径
+
+统计在 Cloudflare 侧完成，**页面里一行脚本都不用加**，"不发请求"的承诺分毫不受影响。
+
+### 备选：客户端 beacon（会破坏上面那个承诺）
+
+`common.js` 顶部有 `CF_BEACON_TOKEN`，填上 Cloudflare Web Analytics 的 token 就启用。
+但启用后**必须同步改掉** `/verify/` 页面和首页里关于"不加载第三方脚本"的说法——
+承诺和实现对不上，比没有统计糟糕得多。
+
 ## 变现方式
 
 免费 + 文末署名 + 自愿去除。目前只有 word2pdf 会在导出的 PDF 末尾加一行「本文档由 wenhuo.top 免费生成」，用户点「去除文末署名」可弹出赞赏码并永久去掉（存 localStorage，纯诚实系统，不做校验）。
@@ -125,4 +151,6 @@ IPv6 库有 37 MB，体积太大暂时没做。
 - **加密 PDF**：全部工具都无法处理设了打开密码的 PDF，需先取消密码。
 - **银行卡查询**：只能查发卡行和卡种，查不到归属地。号段库不可能覆盖全部新发卡产品，查不到不代表卡号无效。
 - **IP 查询**：移动、联通的 4G/5G 出口地址全国混编，归属地天然不可靠，标「粗略·存疑」的结果不能作为定位依据。
+- **压缩 PDF**：原理是把每页重新渲染成 JPEG，所以只适合扫描件。有文字层的 PDF 压完文字会变成图片，
+  `compress/index.html` 的 `detect()` 会抽查前 5 页并明确劝退。压完变大时不自动下载，如实告知并让用户自己决定。
 - 不做 PDF 转 Word / Excel / PPT——那需要把固定版面反推成可编辑排版，浏览器端做不出能用的结果。

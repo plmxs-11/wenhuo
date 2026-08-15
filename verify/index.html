@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>怎么确认文件真的没上传？自己动手验一遍 | 文火工具箱</title>
+<meta name="description" content="别信任何网站的口头承诺。这里教你用浏览器自带的开发者工具，亲手验证文件有没有被偷偷上传——三十秒就能验完，对任何在线工具都适用。">
+<link rel="canonical" href="https://wenhuo.top/verify/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="文火工具箱">
+<meta property="og:title" content="怎么确认文件真的没上传？自己动手验一遍">
+<meta property="og:description" content="别信任何网站的口头承诺，包括我们的。教你用浏览器自带工具亲手验证，三十秒验完，对任何在线工具都适用。">
+<meta property="og:url" content="https://wenhuo.top/verify/">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="/assets/common.css">
+<style>
+  .lead{font-size:15px;line-height:1.9}
+  .lead b{color:var(--text)}
+  .steps{counter-reset:s;list-style:none;padding:0;margin:14px 0 0}
+  .steps li{counter-increment:s;position:relative;padding:0 0 16px 40px;line-height:1.8;font-size:14px}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:1px;width:26px;height:26px;
+    border-radius:50%;background:var(--brand);color:#fff;font-size:13px;font-weight:700;
+    display:flex;align-items:center;justify-content:center}
+  .steps li b{color:var(--text)}
+  .steps kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;
+    padding:1px 6px;font-size:12px;font-family:ui-monospace,Consolas,monospace}
+  .live{background:#f6f8fc;border:1px solid var(--line);border-radius:12px;padding:16px}
+  .live .big{font-size:34px;font-weight:800;line-height:1.2}
+  .live .big.zero{color:var(--ok)}
+  .live .big.nonzero{color:var(--err)}
+  .live .lbl{font-size:12px;color:var(--muted);margin-top:2px}
+  .livegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+  .facts{font-size:13px;line-height:1.9;margin:12px 0 0;padding-left:20px}
+  .facts code{background:#f2f4f8;border-radius:4px;padding:1px 5px;font-size:12px;
+    font-family:ui-monospace,Consolas,monospace;word-break:break-all}
+  .caveat{font-size:13px;color:var(--muted);line-height:1.8}
+  .caveat b{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="wrap">
+
+  <header style="text-align:center;margin-bottom:18px">
+    <h1 style="font-size:26px;margin:0 0 10px">怎么确认文件真的没上传？</h1>
+    <p class="sub">每个在线工具都说自己安全。<b>别信，包括我们的。</b>自己验一遍，三十秒。</p>
+  </header>
+
+  <div class="card">
+    <p class="lead" style="margin:0">
+      "文件不上传"这句话，网站说了不算——它可以一边显示"本地处理中"，一边在后台把你的文件发走，
+      你从界面上看不出任何区别。<b>但浏览器看得见。</b>每一个网络请求都逃不过开发者工具，
+      而这个工具是你的浏览器自带的，不受网站控制。
+    </p>
+    <p class="lead" style="margin:12px 0 0">
+      下面的方法对<b>任何</b>在线工具都适用，不只是我们的。学会了，以后你自己就能判断。
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>方法一：三十秒，看着它不发请求</h2>
+    <ol class="steps">
+      <li>随便打开一个工具页面，比如 <a href="/word2pdf/">Word 转 PDF</a>。</li>
+      <li>按 <kbd>F12</kbd> 打开开发者工具（Mac 上是 <kbd>⌥</kbd>+<kbd>⌘</kbd>+<kbd>I</kbd>）。
+        手机上没有这个功能，需要用电脑。</li>
+      <li>点顶部的 <b>Network</b>（网络）标签，然后按 <kbd>Ctrl</kbd>+<kbd>R</kbd> 刷新一下页面，
+        让它开始记录。</li>
+      <li>等页面加载完，点一下 Network 面板里的 <b>🚫 清空</b> 按钮，把已有记录清掉。
+        <b>现在列表应该是空的。</b></li>
+      <li>选择你的文件，让工具处理，导出结果。</li>
+      <li><b>回头看 Network 面板——它应该还是空的。</b>没有任何新请求，
+        意味着你的文件从头到尾没有离开过这台电脑。</li>
+    </ol>
+    <p class="caveat" style="margin-top:14px">
+      如果换成一个会上传的网站，这一步你会看到一条 <code>POST</code> 请求，
+      体积和你的文件差不多大——那就是你的文件正在被发出去。
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>方法二：不想开 F12？这个页面帮你数</h2>
+    <p class="lead" style="margin:0 0 14px">
+      下面这个小工具会读取你选的文件、在本地算出它的 SHA-256 指纹，
+      <b>同时统计从你点下按钮那一刻起，本页发出的网络请求数量。</b>
+      计数用的是浏览器的 <code>PerformanceObserver</code>，它记录本页所有网络活动。
+    </p>
+
+    <div class="drop" id="drop">
+      <div class="ico">🔍</div>
+      <div class="t">选一个文件来验证</div>
+      <div class="h">任何文件都行。它只会被读取和计算指纹，不会被保存，也不会被发送</div>
+    </div>
+    <input type="file" id="file" hidden>
+
+    <div id="res" style="display:none;margin-top:16px">
+      <div class="live">
+        <div class="livegrid">
+          <div>
+            <div class="big zero" id="reqCount">0</div>
+            <div class="lbl">处理期间发出的网络请求</div>
+          </div>
+          <div>
+            <div class="big" id="bytesOut" style="font-size:26px">0 B</div>
+            <div class="lbl">上传出去的字节数</div>
+          </div>
+        </div>
+      </div>
+      <ul class="facts">
+        <li>文件名：<b id="fName"></b></li>
+        <li>大小：<b id="fSize"></b></li>
+        <li>SHA-256 指纹（本地算的）：<br><code id="fHash"></code></li>
+        <li>计算耗时：<b id="fTime"></b></li>
+      </ul>
+      <div class="status s-ok" id="status"></div>
+    </div>
+
+    <p class="caveat" style="margin-top:16px">
+      <b>这个计数器本身也不必信我。</b>它就写在本页的源码里，右键"查看网页源代码"能看到全部逻辑；
+      而且你完全可以一边用它、一边开着 F12 对照——两边数字应该一致。
+      真正的证据永远是浏览器给的，不是网页说的。
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>它保护不了什么</h2>
+    <p class="caveat" style="margin:0">
+      说实话比说漂亮话重要。"文件不上传"能挡住的是<b>网站服务器</b>拿到你的文件，挡不住这些：
+    </p>
+    <ul class="facts" style="color:var(--muted)">
+      <li><b>浏览器扩展</b>：有页面读取权限的扩展能看到你在页面里放的任何东西。这是浏览器层面的问题，任何网站都一样。</li>
+      <li><b>你自己的电脑</b>：如果电脑本身中了木马，那什么网站都救不了你。</li>
+      <li><b>公司或学校的网络审计</b>：装了根证书的网络能解密所有流量。不过既然本来就没有流量，这条影响也有限。</li>
+    </ul>
+    <p class="caveat" style="margin-top:10px">
+      另外坦白一点：本站的 <a href="/ip/">IP 归属地查询</a> 在查询少量 IP 时，
+      会按需向服务器请求 IP 数据库的对应片段——<b>文件和查询内容本身不会发出去，
+      但服务器日志能据此推断你查的 IP 大致落在哪个网段</b>。
+      介意的话，把整个网站下载到本地跑就完全没有这个问题。
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>最彻底的办法：把它下载下来离线用</h2>
+    <p class="lead" style="margin:0">
+      本站全部代码是开源的、纯静态的，没有后端。你可以整个下载下来，断网使用：
+    </p>
+    <ul class="facts">
+      <li>打开 <a href="https://github.com/plmxs-11/wenhuo" target="_blank" rel="noopener">github.com/plmxs-11/wenhuo</a>，点 <b>Code → Download ZIP</b></li>
+      <li>解压后，用任意一个静态服务器打开，比如装了 Python 的话：<br>
+        <code>python -m http.server 8123</code></li>
+      <li>浏览器访问 <code>http://localhost:8123/</code>，然后<b>把网线拔了</b>，一样能用。</li>
+    </ul>
+    <p class="caveat" style="margin-top:10px">
+      断网还能用，就是"不上传"最硬的证明——没有网络，它还能上传到哪儿去？
+    </p>
+  </div>
+
+</div>
+<script src="/assets/common.js"></script>
+<script>
+(function(){
+  const { $, setupDrop, statusOf, fmtSize } = W;
+  const say = statusOf($('#status'));
+
+  /*
+   * 用 PerformanceObserver 统计处理期间的网络活动。
+   *
+   * 它记录的是浏览器实际发出的请求，网页代码没法伪造也没法绕过——就算这里的
+   * JS 想偷偷上传，也会被自己的观察器记上一笔。所以这个计数器的可信度不来自
+   * 「我们保证」，而来自它数的是浏览器的账。
+   */
+  let counting = false, count = 0, bytes = 0;
+  const obs = new PerformanceObserver(list => {
+    if (!counting) return;
+    for (const e of list.getEntries()) {
+      count++;
+      // transferSize 是下行字节；上传量浏览器不直接给，但只要请求数为 0，
+      // 上传量必然为 0，这里如实标注，不编造数字。
+      bytes += e.transferSize || 0;
+    }
+    render();
+  });
+  try { obs.observe({ type: 'resource', buffered: false }); } catch (e) { /* 老浏览器没有就算了 */ }
+
+  function render(){
+    const el = $('#reqCount');
+    el.textContent = count;
+    el.className = 'big ' + (count === 0 ? 'zero' : 'nonzero');
+    $('#bytesOut').textContent = count === 0 ? '0 B' : ('见 F12 面板');
+  }
+
+  const hex = buf => Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+
+  setupDrop($('#drop'), $('#file'), async files => {
+    const f = files[0];
+    count = 0; bytes = 0; counting = true;
+    render();
+    $('#res').style.display = '';
+    $('#fName').textContent = f.name;
+    $('#fSize').textContent = fmtSize(f.size);
+    $('#fHash').textContent = '计算中…';
+    $('#fTime').textContent = '—';
+    say('正在本地读取并计算指纹…', 's-run');
+
+    const t0 = performance.now();
+    try {
+      const buf = await f.arrayBuffer();
+      const digest = await crypto.subtle.digest('SHA-256', buf);
+      const ms = Math.round(performance.now() - t0);
+      $('#fHash').textContent = hex(digest);
+      $('#fTime').textContent = ms + ' 毫秒';
+      // 给可能延迟上报的请求留一点观察窗口，再下结论
+      setTimeout(() => {
+        counting = false;
+        render();
+        say(count === 0
+          ? `✅ 整个过程本页发出了 ${count} 个网络请求。你的文件没有离开这台电脑。`
+          : `⚠️ 检测到 ${count} 个网络请求，请用 F12 的 Network 面板核对具体是什么。`,
+          count === 0 ? 's-ok' : 's-err');
+      }, 800);
+    } catch (e) {
+      counting = false;
+      say('读取失败：' + e.message, 's-err');
+    }
+  });
+
+  W.mountFooter(document.querySelector('.wrap'));
+})();
+</script>
+</body>
+</html>
