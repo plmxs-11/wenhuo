@@ -90,6 +90,7 @@
     <div class="stat" id="stat"></div>
     <div id="capWarn"></div>
     <div class="row" style="margin-top:0;margin-bottom:12px">
+      <button id="btnTag" class="btn-s">🏦 识别对手方机构</button>
       <button id="btnXlsx" class="btn-s">⬇ 导出 Excel</button>
       <button id="btnCsv" class="btn-s">⬇ 导出 CSV</button>
       <button id="btnCopy" class="btn-s">📋 复制表格</button>
@@ -111,6 +112,19 @@
           <code>TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t</code> 才算真 USDT，
           其余一律标红。默认只显示 USDT，可以取消勾选查看全部。</li>
     </ul>
+    <b style="display:block;margin-top:12px">关于「对方机构」这一列</b>
+    <ul>
+      <li>交易列表接口<b>不含</b>机构信息（实测标签字段永远是空的），
+          必须对每个对手方地址单独查账户接口才拿得到，所以做成手动触发的按钮。</li>
+      <li>能识别出来的是 TronScan 已收录的机构地址，比如
+          <code>Binance-Hot 1</code>、<code>Bitfinex</code> 这类。
+          <b>查到交易所是重要线索</b>——意味着可以依法向该平台调取实名信息。</li>
+      <li><b>显示「—」不等于安全。</b>它只说明 TronScan 没收录这个地址，
+          可能是私人钱包，也可能是没被标记的中间过账地址。
+          实测某涉赌归集地址的 129 个对手方<b>全部无标签</b>，
+          这恰恰说明资金在通过多层无标记地址转移，是在刻意切断链条。</li>
+    </ul>
+
     <b style="display:block;margin-top:12px">列的含义</b>
     <ul>
       <li><b>方向</b>：相对你查询的那个地址而言，转入还是转出。</li>
@@ -137,8 +151,9 @@
   const stat = $('#stat'), capWarn = $('#capWarn');
   const prog = $('#prog'), bar = $('#bar'), progTxt = $('#progTxt');
 
-  const HEADERS = ['序号','时间','方向','金额','代币','对方地址','状态','交易哈希'];
+  const HEADERS = ['序号','时间','方向','金额','代币','对方地址','对方机构','状态','交易哈希'];
   let rows = [], all = [], queried = '';
+  let tags = new Map();   // 对手方地址 -> 机构标签，点了「识别对手方机构」才有
 
   // ---------- API key（只存本地） ----------
   $('#apiKey').value = Tron.getKey();
@@ -172,6 +187,7 @@
         Tron.fmtAmount(t.amount),
         t.isKnownToken ? t.symbol : {v: (t.symbol || '?') + '（非 USDT，疑似垃圾币）', cls:'fail'},
         {v: other, cls:'mono'},
+        tags.size ? (tags.get(other) || {v:'—', cls:'dim'}) : '',
         t.success ? '成功' : {v:'失败', cls:'fail'},
         {v: t.txId, cls:'mono'}
       ];
@@ -190,6 +206,36 @@
     resCard.style.display = '';
   }
   $('#chkUsdt').addEventListener('change', () => { if (all.length) render(); });
+
+  // ---------- 识别对手方机构 ----------
+  $('#btnTag').addEventListener('click', async () => {
+    if (!all.length) return say('还没有查询结果。', 's-err');
+    const others = Array.from(new Set(all.map(t => t.direction === 'in' ? t.from : t.to).filter(Boolean)));
+    if (!confirm(
+        `共有 ${others.length} 个不同的对手方地址。\n\n` +
+        `机构标签只能从账户接口逐个查，需要向 TronScan 发起 ${others.length} 次额外请求，` +
+        `大约耗时 ${Math.ceil(others.length / 4 * 0.4)} 秒。\n\n继续吗？`)) return;
+
+    $('#btnTag').disabled = true;
+    try {
+      prog.classList.add('on');
+      tags = await Tron.tagAddresses(others, (done, total) => {
+        bar.style.width = Math.round(done / total * 100) + '%';
+        progTxt.textContent = `正在识别对手方机构 ${done} / ${total}`;
+      });
+      prog.classList.remove('on');
+      render();
+      const hit = Array.from(tags.values()).filter(Boolean).length;
+      say(hit
+        ? `✅ 识别完成，${others.length} 个对手方里有 ${hit} 个是已知机构`
+        : `识别完成：${others.length} 个对手方<b>全部没有机构标签</b>，说明资金没有直接进出交易所，而是流向了无标记的中间地址`,
+        hit ? 's-ok' : 's-run');
+    } catch (e) {
+      prog.classList.remove('on');
+      say('识别失败：' + e.message, 's-err');
+    }
+    $('#btnTag').disabled = false;
+  });
 
   // ---------- 查询 ----------
   $('#btnGo').addEventListener('click', async () => {

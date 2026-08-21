@@ -126,6 +126,58 @@
     };
   }
 
+  /*
+   * 对手方机构识别。
+   *
+   * 转账列表接口里的 from_address_tag / to_address_tag 实测永远是空的
+   * （200 条记录全是 {"..._tag_logo": ""}），标签只能从账户接口拿：
+   *   /api/account?address=X  ->  addressTag: "Binance-Hot 1"
+   * 所以识别机构必须对每个对手方地址各查一次，量大时很慢，做成手动触发。
+   */
+  const ACCOUNT_API = 'https://apilist.tronscanapi.com/api/account';
+  const tagCache = new Map();
+
+  async function fetchAddressTag(address) {
+    if (tagCache.has(address)) return tagCache.get(address);
+    const headers = {};
+    const k = getKey();
+    if (k) headers['TRON-PRO-API-KEY'] = k;
+    let tag = '';
+    try {
+      const resp = await fetch(`${ACCOUNT_API}?address=${encodeURIComponent(address)}`, { headers });
+      if (resp.ok) {
+        const d = await resp.json();
+        tag = d.addressTag || '';
+      }
+    } catch (e) { /* 单个地址查不到不影响整体，留空即可 */ }
+    tagCache.set(address, tag);
+    return tag;
+  }
+
+  /**
+   * 批量识别。并发压到 4，避免把 TronScan 惹毛导致整批被限流。
+   * 返回 Map<地址, 标签>，没有标签的也会记进去（空串），避免重复查。
+   */
+  async function tagAddresses(addresses, onProgress) {
+    const list = Array.from(new Set(addresses)).filter(Boolean);
+    const result = new Map();
+    let done = 0;
+    const CONC = 4;
+
+    async function worker(queue) {
+      for (;;) {
+        const a = queue.shift();
+        if (!a) return;
+        result.set(a, await fetchAddressTag(a));
+        done++;
+        if (onProgress) onProgress(done, list.length);
+      }
+    }
+    const queue = list.slice();
+    await Promise.all(Array.from({ length: Math.min(CONC, list.length) }, () => worker(queue)));
+    return result;
+  }
+
   const fmtTime = d => {
     if (!d) return '';
     const p = n => String(n).padStart(2, '0');
@@ -141,6 +193,7 @@
   global.Tron = {
     USDT, KNOWN, HARD_CAP, PAGE,
     isAddress, fetchTransfers, normalize,
+    fetchAddressTag, tagAddresses,
     fmtTime, fmtAmount, shortAddr, getKey, setKey
   };
 })(window);
