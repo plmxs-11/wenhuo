@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF 工具 · 合并 / 拆分 / 压缩 / 转换 / 旋转 | 文火工具箱</title>
+<meta name="description" content="一站式 PDF 工具：Word转PDF、合并、拆分、压缩扫描件、PDF转图片、图片转PDF、旋转。选一个操作直接开始，全部在浏览器本地完成。">
+<link rel="canonical" href="https://wenhuo.top/pdf/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="文火工具箱">
+<meta property="og:title" content="PDF 工具 · 选一个操作直接开始">
+<meta property="og:description" content="合并、拆分、压缩、转图片、旋转、Word 转 PDF。全部在浏览器本地完成，文件不上传。">
+<meta property="og:url" content="https://wenhuo.top/pdf/">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="/assets/common.css">
+<style>
+  .picker{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+    padding:var(--sp-5);margin-bottom:var(--sp-4)}
+  .picker label{display:block;font-size:var(--fs-sm);color:var(--muted);margin-bottom:var(--sp-2)}
+  .picker .go-row{display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:center}
+  .picker select{flex:1;min-width:230px;font-size:var(--fs-md);font-weight:600;
+    color:var(--text);padding:12px 14px;border:1px solid var(--line);
+    border-radius:var(--r-sm);background:var(--card);cursor:pointer}
+  .picker select:hover{border-color:var(--brand)}
+  .picker .desc{margin-top:var(--sp-3);font-size:var(--fs-sm);color:var(--muted);
+    line-height:1.75;min-height:3em}
+  .picker .desc b{color:var(--text)}
+
+  .ops{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+  .op{display:flex;gap:var(--sp-3);align-items:flex-start;text-decoration:none;color:inherit;
+    background:var(--card);padding:var(--sp-4);transition:background .15s var(--ease)}
+  .op:hover{background:var(--brand-soft)}
+  .op .ic{color:var(--brand);flex:none;padding-top:2px}
+  .op .ic .i{width:20px;height:20px;stroke-width:1.6}
+  .op .nm{font-size:var(--fs-base);font-weight:650;margin-bottom:3px}
+  .op .ds{font-size:var(--fs-sm);color:var(--muted);line-height:1.6}
+</style>
+</head>
+<body>
+<div class="topbar"><a href="/"><svg class="i"><use href="/assets/icons.svg#arrow-left"></use></svg> 返回文火工具箱</a></div>
+<div class="wrap">
+
+  <header>
+    <h1>PDF 工具</h1>
+    <p class="sub">七个操作合在一处。选一个直接开始，中途想换操作，每个页面顶部都有切换器。<b>文件不上传</b>，全部在本机完成。</p>
+    <div class="badges">
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#lock"></use></svg> 文件不上传</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#circle-check"></use></svg> 完全免费</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#infinity"></use></svg> 不限次数</span>
+    </div>
+  </header>
+
+  <div class="picker">
+    <label for="op">要对 PDF 做什么？</label>
+    <div class="go-row">
+      <select id="op"></select>
+      <button class="btn-p" id="goBtn">
+        开始
+        <svg class="i"><use href="/assets/icons.svg#chevron-right"></use></svg>
+      </button>
+    </div>
+    <div class="desc" id="desc"></div>
+  </div>
+
+  <div class="ops" id="ops"></div>
+
+  <div class="card tips" style="margin-top:var(--sp-4)">
+    <b>挑不准用哪个？</b>
+    <ul>
+      <li>文件太大发不出去，而且是<b>扫描或拍照</b>来的，用「压缩扫描件」。如果是 Word 导出的、文字能选中的，压缩帮不上忙。</li>
+      <li>要把好几份材料订成一本，用「合并」。要从一本里抽几页出来，用「拆分」。</li>
+      <li>对方只收图片，或者要发微信，用「PDF 转图片」。</li>
+      <li>手机拍了一沓照片要交一份文件，用「图片转 PDF」。</li>
+      <li>扫出来是躺着的，用「旋转」。</li>
+    </ul>
+  </div>
+
+</div>
+<script src="/assets/common.js"></script>
+<script>
+(function(){
+  const DESC = {
+    word2pdf: '把 .docx 转成 PDF。保留标题、表格、图片，文字仍可复制和搜索。<b>页眉页脚、分栏、艺术字会丢</b>。',
+    merge:    '多个 PDF 合成一个，可自由调整先后顺序。不改动内容，无质量损失。',
+    split:    '提取指定页、删除指定页、按份数拆开，或每页拆成一个文件。',
+    compress: '扫描件、拍照件能压小 60~90%。<b>有文字层的 PDF 压不动，本工具会明确劝退</b>。',
+    pdf2jpg:  '每页导出成 JPG 或 PNG，清晰度可调，多页自动打包成 zip。',
+    jpg2pdf:  '多张图片按顺序合成一个 PDF，可选 A4 或按原图尺寸。',
+    rotate:   '纠正方向错误的页面，可整体旋转，也可以单页微调。'
+  };
+  const sel = document.getElementById('op');
+  const desc = document.getElementById('desc');
+  const ops = document.getElementById('ops');
+  const ICON = { word2pdf:'file-type-docx', merge:'arrows-join', split:'scissors',
+                 compress:'file-zip', pdf2jpg:'photo', jpg2pdf:'files', rotate:'rotate-clockwise' };
+
+  W.PDF_TOOLS.forEach(t => {
+    const o = document.createElement('option');
+    o.value = '/' + t.slug + '/';
+    o.dataset.slug = t.slug;
+    o.textContent = t.name;
+    sel.appendChild(o);
+
+    const a = document.createElement('a');
+    a.className = 'op';
+    a.href = '/' + t.slug + '/';
+    a.innerHTML =
+      '<span class="ic"><svg class="i"><use href="/assets/icons.svg#' + ICON[t.slug] + '"></use></svg></span>' +
+      '<span><span class="nm">' + t.name + '</span>' +
+      '<span class="ds">' + DESC[t.slug].replace(/<\/?b>/g, '') + '</span></span>';
+    ops.appendChild(a);
+  });
+
+  const sync = () => {
+    const slug = sel.selectedOptions[0].dataset.slug;
+    desc.innerHTML = DESC[slug] || '';
+  };
+  sel.addEventListener('change', sync);
+  document.getElementById('goBtn').addEventListener('click', () => { location.href = sel.value; });
+  sync();
+
+  W.mountFooter(document.querySelector('.wrap'));
+})();
+</script>
+</body>
+</html>

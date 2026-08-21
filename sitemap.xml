@@ -6,6 +6,11 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://wenhuo.top/pdf/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://wenhuo.top/word2pdf/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>

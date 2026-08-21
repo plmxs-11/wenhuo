@@ -188,5 +188,44 @@
     els.forEach(el => io.observe(el));
   }
 
-  global.W = { $, $$, fmtSize, download, setupDrop, statusOf, parsePages, initPdfJs, renderToCanvas, baseName, mountFooter, initReveal };
+  /* PDF 工具清单。顺序即下拉框里的顺序，改这里全站同步。 */
+  const PDF_TOOLS = [
+    { slug: 'word2pdf', name: 'Word 转 PDF' },
+    { slug: 'merge',    name: '合并 PDF' },
+    { slug: 'split',    name: '拆分 PDF' },
+    { slug: 'compress', name: '压缩扫描件 PDF' },
+    { slug: 'pdf2jpg',  name: 'PDF 转图片' },
+    { slug: 'jpg2pdf',  name: '图片转 PDF' },
+    { slug: 'rotate',   name: '旋转 PDF' }
+  ];
+
+  /**
+   * 在页头挂一个 PDF 操作切换器。
+   * 七个工具原本是七个独立入口，用户想换个操作得先退回首页。
+   * 用原生 select 而不是自绘下拉：手机上会调起系统选择器，
+   * 键盘和读屏也都直接可用，自绘的那种反而更难用。
+   */
+  function mountPdfSwitch(currentSlug) {
+    const host = document.querySelector('.topbar');
+    if (!host) return;
+    const box = document.createElement('div');
+    box.className = 'pdfsw';
+    const label = document.createElement('span');
+    label.textContent = 'PDF 操作';
+    const sel = document.createElement('select');
+    PDF_TOOLS.forEach(t => {
+      const o = document.createElement('option');
+      o.value = '/' + t.slug + '/';
+      o.textContent = t.name;
+      if (t.slug === currentSlug) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.addEventListener('change', () => { location.href = sel.value; });
+    box.appendChild(label);
+    box.appendChild(sel);
+    host.appendChild(box);
+  }
+
+  global.W = { $, $$, fmtSize, download, setupDrop, statusOf, parsePages, initPdfJs,
+               renderToCanvas, baseName, mountFooter, initReveal, mountPdfSwitch, PDF_TOOLS };
 })(window);

@@ -85,10 +85,19 @@ a{color:var(--brand);text-underline-offset:2px}
 .i-lg{width:1.35em;height:1.35em}
 
 /* ===== 顶部返回条 ===== */
-.topbar{max-width:960px;margin:0 auto;padding:var(--sp-4) var(--sp-4) 0;font-size:var(--fs-sm)}
+.topbar{max-width:1080px;margin:0 auto;padding:var(--sp-4) var(--sp-4) 0;font-size:var(--fs-sm);
+  display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);flex-wrap:wrap}
 .topbar a{color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:5px;
   transition:color .15s var(--ease)}
 .topbar a:hover{color:var(--brand)}
+
+/* PDF 操作切换器 */
+.pdfsw{display:inline-flex;align-items:center;gap:8px;
+  font-size:var(--fs-xs);color:var(--muted)}
+.pdfsw select{font-size:var(--fs-sm);font-weight:600;color:var(--text);
+  padding:7px 12px;border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--card);cursor:pointer;min-width:170px}
+.pdfsw select:hover{border-color:var(--brand)}
 
 /* ===== 页头 =====
    工具页顶部做一条浅色渐层带，和首页的深色主视觉呼应，

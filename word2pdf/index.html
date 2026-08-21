@@ -326,7 +326,8 @@
 
     const d = ifr.contentDocument;
     d.open();
-    d.write(`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>${baseName}</title><style>${css}</style></head><body>${paper.innerHTML}</body></html>`);
+    d.write(`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>${baseName}</title><style>${css}</style></head><body>${paper.innerHTML}<script>W.mountPdfSwitch('word2pdf');</script>
+</body></html>`);
     d.close();
 
     say('已打开打印窗口，目标请选择「另存为 PDF」', 's-run');
@@ -413,5 +414,6 @@
   refreshSign();
 })();
 </script>
+<script>W.mountPdfSwitch('word2pdf');</script>
 </body>
 </html>
