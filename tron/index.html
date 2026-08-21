@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>USDT 交易记录查询 · TRON 链上转账明细 | 文火工具箱</title>
+<meta name="description" content="输入 TRON 地址，查询 TRC20（USDT 等）转入转出明细，自动识别垃圾代币、统计进出金额，可导出 Excel。数据来自 TronScan 公开接口。">
+<link rel="canonical" href="https://wenhuo.top/tron/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="文火工具箱">
+<meta property="og:title" content="USDT 交易记录查询 · TRON 链上转账明细">
+<meta property="og:description" content="查 TRON 地址的 USDT 转入转出明细，自动识别垃圾代币并统计进出金额，可导出 Excel。">
+<meta property="og:url" content="https://wenhuo.top/tron/">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="/assets/common.css">
+<style>
+  .addr{font-family:ui-monospace,Consolas,monospace;font-size:13px}
+  .dir-in{color:var(--ok);font-weight:600}
+  .dir-out{color:var(--err);font-weight:600}
+  .spam{color:var(--err)}
+  .keybox{margin-top:12px;font-size:13px;color:var(--muted)}
+  .keybox input{font-family:ui-monospace,Consolas,monospace;font-size:12px;min-width:300px}
+  .stat{display:flex;gap:20px;flex-wrap:wrap;padding:14px;background:#f6f8fc;
+    border:1px solid #e2e8f5;border-radius:10px;margin-bottom:12px}
+  .stat div{font-size:13px;color:var(--muted)}
+  .stat b{display:block;font-size:19px;margin-top:3px;color:var(--text)}
+  .stat .in b{color:var(--ok)} .stat .out b{color:var(--err)}
+</style>
+</head>
+<body>
+<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="wrap">
+
+  <header>
+    <h1>USDT 交易记录查询</h1>
+    <p class="sub">输入 TRON 地址，查看 TRC20 转入转出明细，自动识别垃圾代币并统计进出金额。</p>
+    <div class="badges">
+      <span class="badge">🔗 链上公开数据</span>
+      <span class="badge">🧹 自动识别垃圾币</span>
+      <span class="badge">📊 可导出 Excel</span>
+    </div>
+  </header>
+
+  <div class="netwarn">
+    <b>⚠️ 这个工具需要联网，和本站其他工具不一样。</b><br>
+    查询链上数据必须把你输入的地址发送给 <b>TronScan 的服务器</b>，这一步绕不开。
+    本站其余工具全部在你本地完成、不发送任何数据，
+    <a href="/verify/">那个承诺不适用于本页</a>。地址本身是公开的链上信息，但你查了哪个地址，TronScan 会知道。
+  </div>
+
+  <div class="card">
+    <label style="display:block;font-size:14px;margin-bottom:8px">TRON 地址（T 开头，34 位）</label>
+    <div class="row" style="margin-top:0">
+      <input type="text" id="addr" placeholder="TBYoPKBz2mJQZPMG9A3hCwY9xx4QdcBnCK"
+             style="flex:1;min-width:280px;font-family:ui-monospace,Consolas,monospace">
+      <button id="btnGo" class="btn-p">🔍 查询</button>
+      <button id="btnClear" class="btn-s">清空</button>
+    </div>
+
+    <div class="opts">
+      <label><input type="checkbox" id="chkUsdt" checked> 只看 USDT（去掉垃圾币和其他代币）</label>
+    </div>
+
+    <div class="prog" id="prog">
+      <div class="bar"><i id="bar"></i></div>
+      <div class="txt" id="progTxt"></div>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <div class="keybox">
+      <details>
+        <summary style="cursor:pointer">查得频繁被限流？可以填自己的 TronScan API Key（可选）</summary>
+        <div style="margin-top:8px">
+          <div class="row" style="margin-top:0">
+            <input type="password" id="apiKey" placeholder="留空即可，不填也能用">
+            <button id="btnSaveKey" class="btn-s">保存</button>
+            <button id="btnDelKey" class="btn-s">删除</button>
+          </div>
+          <div style="margin-top:6px;font-size:12px">
+            不填也能正常查——实测带不带 key 返回的数据完全一样，key 只是放宽调用频率。
+            填了只存在<b>你自己浏览器的 localStorage</b> 里，不会发给除 TronScan 之外的任何地方。
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <div class="card" id="resCard" style="display:none">
+    <div class="stat" id="stat"></div>
+    <div id="capWarn"></div>
+    <div class="row" style="margin-top:0;margin-bottom:12px">
+      <button id="btnXlsx" class="btn-s">⬇ 导出 Excel</button>
+      <button id="btnCsv" class="btn-s">⬇ 导出 CSV</button>
+      <button id="btnCopy" class="btn-s">📋 复制表格</button>
+    </div>
+    <div class="tblwrap" id="tbl"></div>
+  </div>
+
+  <div class="card tips">
+    <b>两个必须知道的限制</b>
+    <ul>
+      <li><b>拿不全。</b>TronScan 的接口在约 200 条就截断了，再往后翻一律返回空。
+          实测同一个地址：不加过滤时接口自称有 200 条，只查 USDT 时自称有 10000 条，
+          账户摘要又说有 454 笔——三个数字互相矛盾，而实际最多只能取到 199 条。
+          <b>凡是提示「已达接口上限」的，就说明还有交易没取到</b>，
+          需要完整流水请去 TronScan 官网导出，或依法向交易所调证。</li>
+      <li><b>垃圾币很多。</b>TRON 上大量骗子给活跃地址空投仿冒代币做广告
+          （比如代币名写成「buy gas TG:xxx」），混在真实流水里。
+          本工具按合约地址识别，只有官方 USDT 合约
+          <code>TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t</code> 才算真 USDT，
+          其余一律标红。默认只显示 USDT，可以取消勾选查看全部。</li>
+    </ul>
+    <b style="display:block;margin-top:12px">列的含义</b>
+    <ul>
+      <li><b>方向</b>：相对你查询的那个地址而言，转入还是转出。</li>
+      <li><b>状态</b>：链上执行结果。失败的交易不产生实际转账，但会留在链上。</li>
+      <li><b>交易哈希</b>：链上唯一凭证，可在 TronScan 上核验原始记录。</li>
+    </ul>
+    <b style="display:block;margin-top:12px">数据来源</b>
+    <ul>
+      <li>来自 TronScan 公开接口。链上数据本身是公开的，但<b>本工具不对数据的完整性和准确性负责</b>，
+          作为证据使用前请在 TronScan 官网逐笔核对。</li>
+    </ul>
+  </div>
+
+</div>
+
+<script src="/assets/common.js"></script>
+<script src="/assets/batch.js"></script>
+<script src="/assets/tron.js"></script>
+<script>
+(function(){
+  const { $, statusOf } = W;
+  const say = statusOf($('#status'));
+  const addr = $('#addr'), resCard = $('#resCard'), tbl = $('#tbl');
+  const stat = $('#stat'), capWarn = $('#capWarn');
+  const prog = $('#prog'), bar = $('#bar'), progTxt = $('#progTxt');
+
+  const HEADERS = ['序号','时间','方向','金额','代币','对方地址','状态','交易哈希'];
+  let rows = [], all = [], queried = '';
+
+  // ---------- API key（只存本地） ----------
+  $('#apiKey').value = Tron.getKey();
+  $('#btnSaveKey').addEventListener('click', () => {
+    Tron.setKey($('#apiKey').value.trim());
+    say('✅ 已保存到你自己的浏览器，不会发给第三方', 's-ok');
+  });
+  $('#btnDelKey').addEventListener('click', () => {
+    Tron.setKey(''); $('#apiKey').value = '';
+    say('已删除本地保存的 key', 's-ok');
+  });
+
+  // ---------- 渲染 ----------
+  function render() {
+    const onlyUsdt = $('#chkUsdt').checked;
+    const list = onlyUsdt ? all.filter(t => t.isUsdt) : all;
+
+    let inSum = 0, outSum = 0, spam = 0;
+    rows = list.map((t, i) => {
+      if (t.isUsdt && t.success) {
+        if (t.direction === 'in') inSum += t.amount;
+        else if (t.direction === 'out') outSum += t.amount;
+      }
+      if (!t.isKnownToken) spam++;
+      const other = t.direction === 'in' ? t.from : t.to;
+      return [
+        i + 1,
+        Tron.fmtTime(t.time),
+        t.direction === 'in'  ? {v:'转入', cls:'dir-in'}
+      : t.direction === 'out' ? {v:'转出', cls:'dir-out'} : '—',
+        Tron.fmtAmount(t.amount),
+        t.isKnownToken ? t.symbol : {v: (t.symbol || '?') + '（非 USDT，疑似垃圾币）', cls:'fail'},
+        {v: other, cls:'mono'},
+        t.success ? '成功' : {v:'失败', cls:'fail'},
+        {v: t.txId, cls:'mono'}
+      ];
+    });
+
+    const usdtCount = all.filter(t => t.isUsdt).length;
+    stat.innerHTML =
+      `<div>显示条数<b>${rows.length}</b></div>` +
+      `<div class="in">USDT 转入<b>+${Tron.fmtAmount(inSum)}</b></div>` +
+      `<div class="out">USDT 转出<b>−${Tron.fmtAmount(outSum)}</b></div>` +
+      `<div>净额<b>${Tron.fmtAmount(inSum - outSum)}</b></div>` +
+      `<div>真 USDT 笔数<b>${usdtCount} / ${all.length}</b></div>` +
+      (spam ? `<div>非 USDT 代币<b style="color:var(--err)">${spam}</b></div>` : '');
+
+    Batch.renderTable(tbl, HEADERS, rows);
+    resCard.style.display = '';
+  }
+  $('#chkUsdt').addEventListener('change', () => { if (all.length) render(); });
+
+  // ---------- 查询 ----------
+  $('#btnGo').addEventListener('click', async () => {
+    const a = addr.value.trim();
+    if (!a) return say('请先输入 TRON 地址。', 's-err');
+    if (!Tron.isAddress(a)) {
+      return say('这不是有效的 TRON 地址。地址应以 T 开头、共 34 位。', 's-err');
+    }
+
+    $('#btnGo').disabled = true;
+    capWarn.innerHTML = '';
+    try {
+      say('正在向 TronScan 查询…', 's-run');
+      prog.classList.add('on');
+      bar.style.width = '10%';
+      progTxt.textContent = '正在请求 TronScan…';
+
+      const r = await Tron.fetchTransfers(a, {
+        onProgress: n => {
+          bar.style.width = Math.min(95, n / Tron.HARD_CAP * 100) + '%';
+          progTxt.textContent = `已取回 ${n} 条…`;
+        }
+      });
+      prog.classList.remove('on');
+
+      queried = a;
+      all = r.list.map(t => Tron.normalize(t, a));
+
+      if (!all.length) {
+        resCard.style.display = 'none';
+        return say('这个地址没有查到 TRC20 转账记录。', 's-err');
+      }
+
+      render();
+
+      // 撞到接口天花板就必须说清楚，不能让用户以为拿到了全部
+      if (r.reachedCap) {
+        capWarn.innerHTML =
+          `<div class="netwarn" style="margin-top:0;margin-bottom:12px">
+             <b>⚠️ 已达 TronScan 接口上限（${all.length} 条），这不是全部交易。</b><br>
+             接口在约 200 条处截断，更早的记录取不到（接口自称有 ${r.claimedTotal} 条，但这个数字并不可信）。
+             需要完整流水请到 TronScan 官网导出，或依法调证。
+           </div>`;
+      }
+      say(`✅ 查询完成，取回 ${all.length} 条` + (r.reachedCap ? '（已达接口上限，数据不完整）' : ''),
+          r.reachedCap ? 's-err' : 's-ok');
+      resCard.scrollIntoView({ block:'start', behavior:'smooth' });
+
+    } catch (e) {
+      console.error(e);
+      prog.classList.remove('on');
+      const msg = /Failed to fetch|NetworkError/i.test(e.message)
+        ? '连不上 TronScan。可能是网络问题，或浏览器插件拦截了请求。'
+        : e.message;
+      say('查询失败：' + msg, 's-err');
+    }
+    $('#btnGo').disabled = false;
+  });
+
+  addr.addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnGo').click(); });
+
+  $('#btnClear').addEventListener('click', () => {
+    addr.value = ''; all = []; rows = [];
+    resCard.style.display = 'none'; capWarn.innerHTML = ''; say('');
+  });
+
+  // ---------- 导出 ----------
+  const guard = fn => async () => {
+    if (!rows.length) return say('还没有结果可以导出。', 's-err');
+    try { await fn(); } catch (e) { say('导出失败：' + e.message, 's-err'); }
+  };
+  const fname = ext => `USDT交易_${Tron.shortAddr(queried).replace(/…/g,'_')}_${Batch.stamp()}.${ext}`;
+  $('#btnXlsx').addEventListener('click', guard(async () => {
+    await Batch.exportXlsx(HEADERS, rows, fname('xlsx'), m => say(m, 's-run'));
+    say('✅ Excel 已导出', 's-ok');
+  }));
+  $('#btnCsv').addEventListener('click', guard(() => {
+    Batch.exportCsv(HEADERS, rows, fname('csv'));
+    say('✅ CSV 已导出', 's-ok');
+  }));
+  $('#btnCopy').addEventListener('click', guard(async () => {
+    try { await Batch.copyTsv(HEADERS, rows); say('✅ 已复制，可直接粘进 Excel', 's-ok'); }
+    catch (e) { say('复制失败，浏览器可能不允许访问剪贴板，请改用导出。', 's-err'); }
+  }));
+
+  W.mountFooter(document.querySelector('.wrap'));
+})();
+</script>
+</body>
+</html>

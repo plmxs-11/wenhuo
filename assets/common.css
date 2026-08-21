@@ -58,6 +58,16 @@ input[type=text]{min-width:220px}
   border:1px solid #f3e0a8;border-radius:8px;padding:8px 12px}
 .hint b{color:#6b5310}
 
+/* 需要联网的工具专用警示。刻意比 .hint 更刺眼——
+   全站其余工具都承诺「数据不上传」，这类工具是例外，必须让用户一眼看见。 */
+.netwarn{margin-top:10px;font-size:13px;color:#8a2b2b;background:#fdeaea;
+  border:1px solid #f2b8b8;border-left:4px solid var(--err);border-radius:8px;padding:10px 14px}
+.netwarn b{color:#6d1f1f}
+.netwarn a{color:#8a2b2b;text-decoration:underline}
+/* 首页上给需要联网的工具卡片加角标 */
+.tool .net{display:inline-block;margin-left:6px;font-size:11px;font-weight:600;
+  color:#8a2b2b;background:#fdeaea;border:1px solid #f2b8b8;border-radius:4px;padding:1px 6px;vertical-align:middle}
+
 .status{margin-top:12px;font-size:14px;min-height:22px}
 .s-ok{color:var(--ok)} .s-err{color:var(--err)} .s-run{color:var(--brand)}
 
