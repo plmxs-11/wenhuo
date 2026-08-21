@@ -15,6 +15,18 @@
 <meta property="og:url" content="https://wenhuo.top/">
 <meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="/assets/common.css">
+<script>
+/* 揭示动画的开关。放在 head 里内联执行，确保在首屏绘制前生效，不会闪一下。
+   同时挂一个兜底：2 秒后如果一个元素都没揭示出来（common.js 没加载成功、
+   被拦截、或还是旧缓存），就把开关摘掉让内容直接显示，绝不留白屏。 */
+(function(){
+  var d = document.documentElement;
+  d.classList.add('js-rv');
+  setTimeout(function(){
+    if (!document.querySelector('.rv.in')) d.classList.remove('js-rv');
+  }, 2000);
+})();
+</script>
 <style>
   /* ============================================================
      首页专用。深色主视觉 + 浅色内容区，整页只做这一次明暗切换，

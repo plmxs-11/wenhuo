@@ -299,14 +299,19 @@ footer{text-align:center;color:var(--muted);font-size:var(--fs-xs);
 
 /* ===== 滚动揭示 =====
    用 IntersectionObserver 加 .in（见 common.js），不监听 scroll 事件。
-   动效只为建立阅读顺序，所以位移很小、只做一次。 */
-.rv{opacity:0;transform:translateY(14px);
+   动效只为建立阅读顺序，所以位移很小、只做一次。
+
+   关键：隐藏态挂在 html.js-rv 下，而不是直接写 .rv。
+   隐藏由 JS 开启、显示由 JS 完成——如果 JS 没跑（被拦截、加载失败、
+   或 CSS 已更新但 JS 还是旧缓存），元素压根不会被隐藏，页面照常可读。
+   直接写 .rv{opacity:0} 会让整页的可见性依赖 JS，一旦失败就是白屏。 */
+.js-rv .rv{opacity:0;transform:translateY(14px);
   transition:opacity .7s var(--ease),transform .7s var(--ease)}
-.rv.in{opacity:1;transform:none}
-.rv-d1{transition-delay:.06s} .rv-d2{transition-delay:.12s}
-.rv-d3{transition-delay:.18s} .rv-d4{transition-delay:.24s}
+.js-rv .rv.in{opacity:1;transform:none}
+.js-rv .rv-d1{transition-delay:.06s} .js-rv .rv-d2{transition-delay:.12s}
+.js-rv .rv-d3{transition-delay:.18s} .js-rv .rv-d4{transition-delay:.24s}
 
 @media (prefers-reduced-motion: reduce){
   *{transition:none !important;animation:none !important}
-  .rv{opacity:1;transform:none}
+  .js-rv .rv{opacity:1;transform:none}
 }
