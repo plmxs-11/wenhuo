@@ -90,9 +90,19 @@ a{color:var(--brand);text-underline-offset:2px}
   transition:color .15s var(--ease)}
 .topbar a:hover{color:var(--brand)}
 
-/* ===== 页头 ===== */
-header{margin-bottom:var(--sp-5);padding-bottom:var(--sp-4);border-bottom:1px solid var(--line)}
-h1{font-size:var(--fs-xl);line-height:1.3;letter-spacing:-.01em;margin:0 0 var(--sp-2);font-weight:650}
+/* ===== 页头 =====
+   工具页顶部做一条浅色渐层带，和首页的深色主视觉呼应，
+   让内页不至于一上来就是白底文字。 */
+header{position:relative;margin-bottom:var(--sp-5);padding:var(--sp-5) var(--sp-4) var(--sp-4);
+  border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;
+  background:
+    radial-gradient(120% 140% at 0% 0%, var(--brand-soft), transparent 58%),
+    linear-gradient(180deg, var(--card), var(--card-2));
+}
+header::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;
+  background:linear-gradient(90deg,var(--brand),transparent 72%)}
+h1{font-size:var(--fs-xl);line-height:1.28;letter-spacing:-.018em;
+  margin:0 0 var(--sp-2);font-weight:680}
 .sub{color:var(--muted);font-size:var(--fs-base);margin:0;max-width:62ch}
 .sub b{color:var(--text-2);font-weight:600}
 
@@ -100,7 +110,7 @@ h1{font-size:var(--fs-xl);line-height:1.3;letter-spacing:-.01em;margin:0 0 var(-
 .badge{background:var(--card);border:1px solid var(--line);border-radius:999px;
   padding:4px 12px;font-size:var(--fs-xs);color:var(--muted);
   display:inline-flex;align-items:center;gap:5px}
-.badge .i{opacity:.75}
+.badge .i{opacity:.75;color:var(--brand)}
 
 /* ===== 卡片 ===== */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
@@ -287,6 +297,16 @@ footer{text-align:center;color:var(--muted);font-size:var(--fs-xs);
   .qr{gap:var(--sp-4)}
 }
 
+/* ===== 滚动揭示 =====
+   用 IntersectionObserver 加 .in（见 common.js），不监听 scroll 事件。
+   动效只为建立阅读顺序，所以位移很小、只做一次。 */
+.rv{opacity:0;transform:translateY(14px);
+  transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.rv.in{opacity:1;transform:none}
+.rv-d1{transition-delay:.06s} .rv-d2{transition-delay:.12s}
+.rv-d3{transition-delay:.18s} .rv-d4{transition-delay:.24s}
+
 @media (prefers-reduced-motion: reduce){
   *{transition:none !important;animation:none !important}
+  .rv{opacity:1;transform:none}
 }

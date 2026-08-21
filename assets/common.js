@@ -167,5 +167,26 @@
     wrapEl.appendChild(ft);
   }
 
-  global.W = { $, $$, fmtSize, download, setupDrop, statusOf, parsePages, initPdfJs, renderToCanvas, baseName, mountFooter };
+  /**
+   * 滚动揭示。给 .rv 元素在进入视口时加 .in。
+   * 用 IntersectionObserver 而不是监听 scroll——后者每帧都触发，
+   * 在低端机上直接掉帧。只触发一次，看过就不再管。
+   */
+  function initReveal(root) {
+    const els = (root || document).querySelectorAll('.rv');
+    if (!els.length) return;
+    if (!('IntersectionObserver' in window) ||
+        matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      els.forEach(el => el.classList.add('in'));
+      return;
+    }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: .08 });
+    els.forEach(el => io.observe(el));
+  }
+
+  global.W = { $, $$, fmtSize, download, setupDrop, statusOf, parsePages, initPdfJs, renderToCanvas, baseName, mountFooter, initReveal };
 })(window);
