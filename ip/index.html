@@ -164,16 +164,40 @@
     say('已填入示例，点「开始查询」看效果', 's-ok');
   });
 
+  // ---------- 上传回执 ----------
+  const showUploaded = (file, r) => {
+    $('#upName').textContent = file.name;
+    const bits = [`大小 <b>${fmtSize(file.size)}</b>`, `识别出 <b>${r.items.length}</b> 个 IP`];
+    if (r.skipped.length) {
+      const eg = r.skipped.slice(0, 3).map(s => s.length > 12 ? s.slice(0, 12) + '…' : s).join('、');
+      bits.push(`已忽略 <b>${r.skipped.length}</b> 项不是 IP 的内容（如 ${eg}）`);
+    }
+    $('#upMeta').innerHTML = bits.join('　·　') +
+      (r.items.length ? '' : '<div class="warn" style="margin-top:6px">没有识别到任何 IP，请确认文件里有 IPv4 地址。</div>');
+    $('#drop').style.display = 'none';
+    $('#uploaded').classList.add('on');
+  };
+  const resetUpload = () => {
+    $('#file').value = ''; entries = [];
+    $('#uploaded').classList.remove('on');
+    $('#drop').style.display = '';
+    say('');
+  };
+  $('#btnReupload').addEventListener('click', resetUpload);
+
   setupDrop($('#drop'), $('#file'), async files => {
     try {
       say('正在读取文件…', 's-run');
-      entries = await Batch.readEntries(files[0]);
-      say(`已从 ${files[0].name} 读到 ${entries.length} 个条目`, 's-ok');
+      const r = await Batch.readEntries(files[0], Batch.MATCH.ipv4);
+      entries = r.items;
+      showUploaded(files[0], r);
+      say(r.items.length ? `✅ 文件已上传，识别出 ${r.items.length} 个 IP` : '⚠️ 文件已上传，但没识别到 IP',
+          r.items.length ? 's-ok' : 's-err');
     } catch (e) { say('读取失败：' + e.message, 's-err'); }
   });
 
   $('#btnClear').addEventListener('click', () => {
-    ta.value = ''; $('#file').value = ''; entries = []; rows = [];
+    ta.value = ''; rows = []; resetUpload();
     countPasted(); resCard.style.display = 'none'; prog.classList.remove('on'); say('');
   });
 
