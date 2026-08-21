@@ -74,19 +74,32 @@
   }
   @media(max-width:460px){ .hub .r{grid-template-columns:1fr} }
 
-  /* 查询类：并列入口 */
-  .tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;
-    background:var(--line);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
-  .tool{display:block;text-decoration:none;color:inherit;background:var(--card);
-    padding:var(--sp-4);transition:background .15s var(--ease)}
-  .tool:hover{background:var(--brand-soft)}
-  .tool .ic{color:var(--brand);line-height:1;margin-bottom:var(--sp-2)}
-  .tool .ic .i{width:22px;height:22px;stroke-width:1.5}
-  .tool .nm{font-size:var(--fs-base);font-weight:650;margin-bottom:4px;
-    display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-  .tool .ds{font-size:var(--fs-sm);color:var(--muted);line-height:1.65}
-  .tool .net{font-size:11px;font-weight:600;color:var(--err);background:var(--err-soft);
-    border:1px solid var(--err-line);border-radius:4px;padding:1px 6px}
+  /* 查询类：每个工具一个独立模块，横向铺开。
+     它们数据源、是否联网都不一样，并排成卡片会让人以为是同一类东西。 */
+  .mod{display:flex;align-items:center;gap:var(--sp-4);text-decoration:none;color:inherit;
+    background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+    padding:var(--sp-4) var(--sp-5);
+    transition:border-color .16s var(--ease),background .16s var(--ease)}
+  .mod:hover{border-color:var(--brand);background:var(--brand-soft)}
+  .mod .ic{color:var(--brand);flex:none}
+  .mod .ic .i{width:26px;height:26px;stroke-width:1.5}
+  .mod .body{flex:1;min-width:0}
+  .mod .ds{font-size:var(--fs-base);color:var(--text);line-height:1.6}
+  .mod .meta{margin-top:7px;display:flex;gap:var(--sp-3);flex-wrap:wrap;
+    font-size:var(--fs-xs);color:var(--muted)}
+  .mod .meta span{display:inline-flex;align-items:center}
+  .mod .meta span+span::before{content:"";width:3px;height:3px;border-radius:50%;
+    background:var(--line);margin-right:var(--sp-3)}
+  .mod .go{flex:none;display:inline-flex;align-items:center;gap:5px;
+    font-size:var(--fs-sm);font-weight:600;color:var(--brand)}
+  .mod.alert .ic{color:var(--err)}
+  .mod.alert:hover{border-color:var(--err);background:var(--err-soft)}
+  .mod.alert .go{color:var(--err)}
+  @media(max-width:660px){
+    .mod{flex-wrap:wrap;gap:var(--sp-3);padding:var(--sp-4)}
+    .mod .body{flex-basis:100%;order:2}
+    .mod .go{order:3;margin-left:auto}
+  }
 
   /* ---------- 底部说明 ---------- */
   .why{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0}
@@ -154,28 +167,65 @@
 
   <section class="sec">
     <div class="sec-hd">
-      <h2>批量查询</h2>
+      <h2>银行卡信息查询</h2>
       <span class="note">
-        <svg class="i"><use href="/assets/icons.svg#lock"></use></svg>数据库下到本地比对，不联网
+        <svg class="i"><use href="/assets/icons.svg#lock"></use></svg>本地比对，不联网
       </span>
     </div>
-    <div class="tools">
-      <a class="tool" href="/bincard/">
-        <div class="ic"><svg class="i"><use href="/assets/icons.svg#credit-card"></use></svg></div>
-        <div class="nm">银行卡信息查询</div>
-        <div class="ds">批量查发卡行、卡种、BIN 号段并做 Luhn 校验，可导出 Excel</div>
-      </a>
-      <a class="tool" href="/ip/">
-        <div class="ic"><svg class="i"><use href="/assets/icons.svg#world-www"></use></svg></div>
-        <div class="nm">IP 归属地查询</div>
-        <div class="ds">批量查国家、省市和运营商，并标注每条结果的定位精度</div>
-      </a>
-      <a class="tool" href="/tron/">
-        <div class="ic"><svg class="i"><use href="/assets/icons.svg#link"></use></svg></div>
-        <div class="nm">USDT 交易记录<span class="net">需联网</span></div>
-        <div class="ds">查 TRON 地址的转入转出明细，自动识别垃圾代币并统计金额</div>
-      </a>
+    <a class="mod" href="/bincard/">
+      <div class="ic"><svg class="i"><use href="/assets/icons.svg#credit-card"></use></svg></div>
+      <div class="body">
+        <div class="ds">批量查发卡行、卡种和 BIN 号段，并做 Luhn 校验。</div>
+        <div class="meta">
+          <span>3156 条号段库</span>
+          <span>默认脱敏</span>
+          <span>可导出 Excel</span>
+        </div>
+      </div>
+      <span class="go">开始查询<svg class="i"><use href="/assets/icons.svg#chevron-right"></use></svg></span>
+    </a>
+  </section>
+
+  <section class="sec">
+    <div class="sec-hd">
+      <h2>IP 归属地查询</h2>
+      <span class="note">
+        <svg class="i"><use href="/assets/icons.svg#lock"></use></svg>本地比对，不联网
+      </span>
     </div>
+    <a class="mod" href="/ip/">
+      <div class="ic"><svg class="i"><use href="/assets/icons.svg#world-www"></use></svg></div>
+      <div class="body">
+        <div class="ds">批量查国家、省市和运营商，并标注每条结果的定位精度。</div>
+        <div class="meta">
+          <span>55 万条网段库</span>
+          <span>标注定位精度</span>
+          <span>可导出 Excel</span>
+        </div>
+      </div>
+      <span class="go">开始查询<svg class="i"><use href="/assets/icons.svg#chevron-right"></use></svg></span>
+    </a>
+  </section>
+
+  <section class="sec">
+    <div class="sec-hd">
+      <h2>USDT 交易记录查询</h2>
+      <span class="note alert">
+        <svg class="i"><use href="/assets/icons.svg#alert-triangle"></use></svg>需要联网，会把地址发给第三方
+      </span>
+    </div>
+    <a class="mod alert" href="/tron/">
+      <div class="ic"><svg class="i"><use href="/assets/icons.svg#link"></use></svg></div>
+      <div class="body">
+        <div class="ds">查 TRON 地址的转入转出明细，自动识别垃圾代币并统计进出金额。</div>
+        <div class="meta">
+          <span>全量拉取</span>
+          <span>识别垃圾币</span>
+          <span>可识别交易所</span>
+        </div>
+      </div>
+      <span class="go">开始查询<svg class="i"><use href="/assets/icons.svg#chevron-right"></use></svg></span>
+    </a>
   </section>
 
   <section class="sec">
