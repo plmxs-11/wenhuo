@@ -99,16 +99,23 @@
   </div>
 
   <div class="card tips">
-    <b>两个必须知道的限制</b>
+    <b>能拿到全量吗？能。</b>
     <ul>
-      <li><b>拿不全。</b>TronScan 的接口在约 200 条就截断了，再往后翻一律返回空。
-          实测同一个地址：不加过滤时接口自称有 200 条，只查 USDT 时自称有 10000 条，
-          账户摘要又说有 454 笔——三个数字互相矛盾，而实际最多只能取到 199 条。
-          <b>凡是提示「已达接口上限」的，就说明还有交易没取到</b>，
-          需要完整流水请去 TronScan 官网导出，或依法向交易所调证。</li>
-      <li><b>垃圾币很多。</b>TRON 上大量骗子给活跃地址空投仿冒代币做广告
-          （比如代币名写成「buy gas TG:xxx」），混在真实流水里。
-          本工具按合约地址识别，只有官方 USDT 合约
+      <li>本工具走 TRON 官方节点接口 <b>TronGrid</b>，每页 200 条、用游标一直翻到底，
+          <b>没有条数上限</b>。实测拿币安热钱包连翻 8 页取回 1600 条仍有下一页。</li>
+      <li>查询完成后会告诉你翻了几页、是不是已经翻到底。
+          只有极端活跃的地址（超过 1 万条）才会触发兜底停止，那种情况会红框明确标出来，
+          不会让你误以为数据是全的。</li>
+      <li>顺带说明：TronScan 那套接口（就是网页版用的）在 200 条处硬截断，
+          <code>start=200</code> 起一律返回空，而且 total 字段不可信——同一地址
+          不加过滤报 200、只查 USDT 报 10000、账户摘要报 454，三个数互相矛盾。
+          所以本工具只用它查机构标签，明细一律走 TronGrid。</li>
+    </ul>
+    <b style="display:block;margin-top:12px">垃圾币很多，必须识别</b>
+    <ul>
+      <li>TRON 上大量骗子给活跃地址空投仿冒代币做广告（比如代币名写成「buy gas TG:xxx」），
+          混在真实流水里，而且往往排在最新一条。</li>
+      <li>本工具按合约地址硬判断，只有官方 USDT 合约
           <code>TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t</code> 才算真 USDT，
           其余一律标红。默认只显示 USDT，可以取消勾选查看全部。</li>
     </ul>
@@ -128,7 +135,8 @@
     <b style="display:block;margin-top:12px">列的含义</b>
     <ul>
       <li><b>方向</b>：相对你查询的那个地址而言，转入还是转出。</li>
-      <li><b>状态</b>：链上执行结果。失败的交易不产生实际转账，但会留在链上。</li>
+      <li>列表里<b>只有执行成功的转账</b>。TRC20 转账事件只在成功时才会写进链上日志，
+          失败的交易不产生转账事件，所以不会出现在这里，也不必担心把失败的算进金额。</li>
       <li><b>交易哈希</b>：链上唯一凭证，可在 TronScan 上核验原始记录。</li>
     </ul>
     <b style="display:block;margin-top:12px">数据来源</b>
@@ -151,7 +159,7 @@
   const stat = $('#stat'), capWarn = $('#capWarn');
   const prog = $('#prog'), bar = $('#bar'), progTxt = $('#progTxt');
 
-  const HEADERS = ['序号','时间','方向','金额','代币','对方地址','对方机构','状态','交易哈希'];
+  const HEADERS = ['序号','时间','方向','金额','代币','对方地址','对方机构','交易哈希'];
   let rows = [], all = [], queried = '';
   let tags = new Map();   // 对手方地址 -> 机构标签，点了「识别对手方机构」才有
 
@@ -173,7 +181,7 @@
 
     let inSum = 0, outSum = 0, spam = 0;
     rows = list.map((t, i) => {
-      if (t.isUsdt && t.success) {
+      if (t.isUsdt) {
         if (t.direction === 'in') inSum += t.amount;
         else if (t.direction === 'out') outSum += t.amount;
       }
@@ -188,7 +196,6 @@
         t.isKnownToken ? t.symbol : {v: (t.symbol || '?') + '（非 USDT，疑似垃圾币）', cls:'fail'},
         {v: other, cls:'mono'},
         tags.size ? (tags.get(other) || {v:'—', cls:'dim'}) : '',
-        t.success ? '成功' : {v:'失败', cls:'fail'},
         {v: t.txId, cls:'mono'}
       ];
     });
@@ -254,9 +261,10 @@
       progTxt.textContent = '正在请求 TronScan…';
 
       const r = await Tron.fetchTransfers(a, {
-        onProgress: n => {
-          bar.style.width = Math.min(95, n / Tron.HARD_CAP * 100) + '%';
-          progTxt.textContent = `已取回 ${n} 条…`;
+        onProgress: (n, page) => {
+          // 总数事先不知道，用页数做个不断推进的观感，别假装知道百分比
+          bar.style.width = Math.min(95, page * 12) + '%';
+          progTxt.textContent = `已取回 ${n.toLocaleString()} 条（第 ${page} 页）…`;
         }
       });
       prog.classList.remove('on');
@@ -271,17 +279,17 @@
 
       render();
 
-      // 撞到接口天花板就必须说清楚，不能让用户以为拿到了全部
-      if (r.reachedCap) {
+      // 只有撞到兜底页数上限才是真的没拿全，正常翻到底就是全量
+      if (r.truncated) {
         capWarn.innerHTML =
           `<div class="netwarn" style="margin-top:0;margin-bottom:12px">
-             <b>⚠️ 已达 TronScan 接口上限（${all.length} 条），这不是全部交易。</b><br>
-             接口在约 200 条处截断，更早的记录取不到（接口自称有 ${r.claimedTotal} 条，但这个数字并不可信）。
-             需要完整流水请到 TronScan 官网导出，或依法调证。
+             <b>⚠️ 这个地址交易太多，已取回 ${all.length.toLocaleString()} 条后停止，这不是全部。</b><br>
+             为避免把浏览器拖死，最多翻 ${Tron.MAX_PAGES} 页。需要完整流水请到 TronScan 官网导出，或依法调证。
            </div>`;
       }
-      say(`✅ 查询完成，取回 ${all.length} 条` + (r.reachedCap ? '（已达接口上限，数据不完整）' : ''),
-          r.reachedCap ? 's-err' : 's-ok');
+      say(`✅ 查询完成，取回 ${all.length.toLocaleString()} 条` +
+          (r.truncated ? '（已达页数上限，数据不完整）' : `（共 ${r.pages} 页，已翻到底，是全量）`),
+          r.truncated ? 's-err' : 's-ok');
       resCard.scrollIntoView({ block:'start', behavior:'smooth' });
 
     } catch (e) {

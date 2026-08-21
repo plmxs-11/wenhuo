@@ -4,27 +4,31 @@
  * ⚠️ 这是全站唯一需要联网的模块：查询地址会发给 TronScan 的服务器。
  *    其余工具都在本地完成，改动这里前先想清楚这个区别。
  *
- * 实测记下来的接口怪癖（2026-08 测于真实地址）：
+ * 用两套接口，各取所长（2026-08 实测）：
  *
- * 1. 不需要 API key。带 key 和不带 key 返回完全一致，key 只放宽调用频率。
- *    所以本模块默认不带 key；用户想用自己的 key 就存在 localStorage，
- *    绝不写进代码——静态站里任何 key 都是明文。
+ * ● 转账明细走 TronGrid（api.trongrid.io，官方节点接口）
+ *   每页 200 条，用 meta.links.next 游标翻页，没有上限。
+ *   实测币安热钱包连翻 8 页拿到 1600 条仍有下一页。
  *
- * 2. total 字段不可信。同一个地址：不加过滤报 200，加 USDT 合约过滤报 10000，
- *    账户摘要接口报 454。三个数互相矛盾。
+ * ● 机构标签走 TronScan（apilist.tronscanapi.com）
+ *   只有它有 addressTag（"Binance-Hot 1" 这类），TronGrid 不提供。
  *
- * 3. 分页硬性截断在 200 条左右。start=200 起一律返回空，无论 total 报多少，
- *    也无论加不加合约过滤。end_timestamp 参数虽被识别但返回 0 条，绕不过去。
- *    => 高活跃地址拿不全，必须如实告诉用户，不能假装数据是完整的。
+ * 为什么不用 TronScan 拉明细——它的坑很深：
+ *   - 分页硬截断在 200 条，start=200 起一律返回空，加不加合约过滤都一样，
+ *     end_timestamp 参数虽被识别但返回 0 条，绕不过去。
+ *   - total 字段不可信：同一地址不加过滤报 200、加 USDT 过滤报 10000、
+ *     账户摘要报 454，三个数互相矛盾。
+ *   - 每页上限 50，limit=100 会静默返回空数组（不报错）。
  *
- * 4. 每页上限 50。limit=100 或 200 会返回空数组（不是报错，是静默返回空）。
+ * API key：两套接口不带 key 都能用，key 只放宽调用频率。绝不写进代码
+ * ——静态站里任何 key 都是明文。用户想用自己的就存 localStorage。
  */
 (function (global) {
   'use strict';
 
-  const API = 'https://apilist.tronscanapi.com/api/token_trc20/transfers';
-  const PAGE = 50;          // 接口每页上限，超过会静默返回空
-  const HARD_CAP = 200;     // 实测的分页天花板
+  const GRID = 'https://api.trongrid.io/v1/accounts';
+  const PAGE = 200;          // TronGrid 每页上限
+  const MAX_PAGES = 50;      // 兜底：最多翻 50 页（1 万条），防止极端地址把浏览器拖死
   const KEY_LS = 'tron_api_key';
 
   /** 官方 USDT-TRC20 合约。用来把真 USDT 和仿冒/垃圾币区分开 */
@@ -44,85 +48,90 @@
   /** TRON 主网地址：T 开头，Base58，共 34 位 */
   const isAddress = s => /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(String(s || '').trim());
 
-  async function fetchPage(address, start, contract) {
-    let url = `${API}?limit=${PAGE}&start=${start}&relatedAddress=${encodeURIComponent(address)}`;
-    if (contract) url += `&contract_address=${encodeURIComponent(contract)}`;
-    const headers = {};
+  function authHeaders() {
+    const h = {};
     const k = getKey();
-    if (k) headers['TRON-PRO-API-KEY'] = k;
+    if (k) h['TRON-PRO-API-KEY'] = k;
+    return h;
+  }
 
-    const resp = await fetch(url, { headers });
+  async function grab(url) {
+    const resp = await fetch(url, { headers: authHeaders() });
     if (!resp.ok) {
-      if (resp.status === 429) throw new Error('请求太频繁被 TronScan 限流了，等一会儿再试（或在下面填自己的 API key 提高上限）');
-      throw new Error(`TronScan 返回 HTTP ${resp.status}`);
+      if (resp.status === 429) throw new Error('请求太频繁被限流了，等一会儿再试（或在下面填自己的 API key 提高上限）');
+      throw new Error(`TronGrid 返回 HTTP ${resp.status}`);
     }
     return resp.json();
   }
 
   /**
-   * 拉取某地址的 TRC20 转账。
-   * onProgress(已取条数) 用于显示进度。
-   * 返回 { list, reachedCap, claimedTotal }——reachedCap 为真表示撞到接口天花板，
-   * 数据很可能不完整，界面必须如实标出来。
+   * 拉取某地址的全部 TRC20 转账，沿 meta.links.next 游标一直翻到底。
+   * onProgress(已取条数, 页数) 用于显示进度。
+   * 返回 { list, truncated }——truncated 只在撞到 MAX_PAGES 兜底上限时为真，
+   * 正常情况下拿到的就是全量。
    */
   async function fetchTransfers(address, opts) {
     const o = opts || {};
     const out = [];
     const seen = new Set();
-    let claimedTotal = null;
+    let url = `${GRID}/${encodeURIComponent(address)}/transactions/trc20?limit=${PAGE}`;
+    if (o.contract) url += `&contract_address=${encodeURIComponent(o.contract)}`;
+    let pages = 0;
 
-    for (let start = 0; start < HARD_CAP; start += PAGE) {
-      const d = await fetchPage(address, start, o.contract);
-      if (claimedTotal === null) claimedTotal = d.total;
-      const arr = d.token_transfers || [];
-      if (!arr.length) break;
+    while (url && pages < MAX_PAGES) {
+      const d = await grab(url);
+      pages++;
+      const arr = d.data || [];
       for (const t of arr) {
         const id = t.transaction_id;
-        if (id && seen.has(id)) continue;   // 接口偶尔重复给同一条
-        if (id) seen.add(id);
+        // 同一笔交易可能含多个 Transfer 事件，用 交易号+序号 去重而不是只看交易号
+        const key = id + '|' + t.block_timestamp + '|' + t.from + '|' + t.to + '|' + t.value;
+        if (seen.has(key)) continue;
+        seen.add(key);
         out.push(t);
       }
-      if (o.onProgress) o.onProgress(out.length);
-      if (arr.length < PAGE) break;         // 最后一页
+      if (o.onProgress) o.onProgress(out.length, pages);
+      url = ((d.meta || {}).links || {}).next || null;
     }
-    return { list: out, reachedCap: out.length >= HARD_CAP - 1, claimedTotal };
+    return { list: out, truncated: !!url, pages };
   }
 
-  /** 把接口返回的原始记录整理成好用的形状 */
+  /**
+   * 把 TronGrid 的原始记录整理成好用的形状。
+   * TronGrid 只返回成功执行的 Transfer 事件（失败的交易不产生事件），
+   * 所以不需要再判断成功与否。
+   */
   function normalize(t, self) {
-    const ti = t.tokenInfo || {};
-    const dec = parseInt(ti.tokenDecimal, 10);
-    const raw = t.quant;
-    let amount = null;
-    // quant 是字符串大整数，位数可能超过 Number 精度，用 BigInt 稳妥
+    const ti = t.token_info || {};
+    const dec = parseInt(ti.decimals, 10);
+    const d = isNaN(dec) ? 6 : dec;
+    let amount;
+    // value 是大整数字符串，实测有 21 位、decimals=18 的记录，直接转 Number 会丢精度
     try {
-      const d = isNaN(dec) ? 6 : dec;
-      const bi = BigInt(raw);
+      const bi = BigInt(t.value);
       const base = BigInt(10) ** BigInt(d);
       amount = Number(bi / base) + Number(bi % base) / Number(base);
     } catch (e) {
-      amount = Number(raw) / Math.pow(10, isNaN(dec) ? 6 : dec);
+      amount = Number(t.value) / Math.pow(10, d);
     }
 
-    const contract = t.contract_address || '';
+    const contract = ti.address || '';
     const known = KNOWN[contract];
-    const from = t.from_address || '';
-    const to = t.to_address || '';
+    const from = t.from || '';
+    const to = t.to || '';
     const me = String(self || '').trim();
 
     return {
       txId: t.transaction_id || '',
-      time: t.block_ts ? new Date(t.block_ts) : null,
+      time: t.block_timestamp ? new Date(t.block_timestamp) : null,
       from, to,
       direction: to === me ? 'in' : (from === me ? 'out' : 'other'),
       amount,
-      symbol: known || ti.tokenAbbr || '?',
-      tokenName: ti.tokenName || '',
+      symbol: known || ti.symbol || '?',
+      tokenName: ti.name || '',
       contract,
       isKnownToken: !!known,
-      isUsdt: contract === USDT,
-      success: (t.finalResult || t.contractRet) === 'SUCCESS',
-      risky: !!t.riskTransaction
+      isUsdt: contract === USDT
     };
   }
 
@@ -191,7 +200,7 @@
   const shortAddr = a => (!a || a.length < 14) ? (a || '') : a.slice(0, 6) + '…' + a.slice(-6);
 
   global.Tron = {
-    USDT, KNOWN, HARD_CAP, PAGE,
+    USDT, KNOWN, PAGE, MAX_PAGES,
     isAddress, fetchTransfers, normalize,
     fetchAddressTag, tagAddresses,
     fmtTime, fmtAmount, shortAddr, getKey, setKey
