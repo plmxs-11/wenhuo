@@ -14,63 +14,36 @@
 <meta name="twitter:card" content="summary">
 <script src="/assets/vendor/mammoth.browser.min.js"></script>
 <script src="/assets/vendor/html2pdf.bundle.min.js"></script>
+<link rel="stylesheet" href="/assets/common.css">
 <style>
-  :root{
-    --bg:#f4f5f7; --card:#fff; --line:#e3e5e9; --text:#1f2328;
-    --muted:#6b7280; --brand:#2f6bff; --brand-d:#1f4fd0; --ok:#16a34a; --err:#dc2626;
-    --paper-w:794px;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);
-    font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;}
-  .wrap{max-width:900px;margin:0 auto;padding:24px 16px 64px}
-  .topbar{max-width:900px;margin:0 auto;padding:16px 16px 0;font-size:13px}
-  .topbar a{color:var(--muted);text-decoration:none}
-  .topbar a:hover{color:var(--brand)}
-  header{text-align:center;margin-bottom:24px}
-  h1{font-size:26px;margin:0 0 8px}
-  .sub{color:var(--muted);font-size:14px;margin:0}
-  .badges{margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-  .badge{background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--muted)}
+  /* 本页独有：A4 纸张预览。其余外壳样式一律走 common.css，
+     早期这个页面自带了一份完整拷贝，已删除以免和全站不一致。 */
+  :root{ --paper-w:794px; }
 
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
+  #drop{border:1.5px dashed var(--line);border-radius:var(--r-md);padding:44px var(--sp-4);
+    text-align:center;cursor:pointer;background:var(--card-2);
+    transition:border-color .18s var(--ease),background .18s var(--ease)}
+  #drop:hover,#drop.over{border-color:var(--brand);background:var(--brand-soft)}
+  #drop .ico{color:var(--muted);line-height:1}
+  #drop .ico .i{width:34px;height:34px;stroke-width:1.4}
+  #drop:hover .ico,#drop.over .ico{color:var(--brand)}
+  #drop .t{font-size:var(--fs-md);font-weight:600;margin:var(--sp-2) 0 4px}
+  #drop .h{font-size:var(--fs-sm);color:var(--muted)}
 
-  #drop{border:2px dashed #c9cdd4;border-radius:12px;padding:44px 20px;text-align:center;
-    cursor:pointer;transition:.15s;background:#fbfcfd}
-  #drop:hover,#drop.over{border-color:var(--brand);background:#f2f6ff}
-  #drop .ico{font-size:40px;line-height:1}
-  #drop .t{font-size:16px;font-weight:600;margin:10px 0 4px}
-  #drop .h{font-size:13px;color:var(--muted)}
-  input[type=file]{display:none}
+  #status{margin-top:var(--sp-3);font-size:var(--fs-sm);min-height:22px;
+    display:flex;align-items:center;gap:6px}
 
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
-  button{font:inherit;border-radius:9px;padding:10px 18px;cursor:pointer;border:1px solid transparent;transition:.15s}
-  button:disabled{opacity:.45;cursor:not-allowed}
-  .btn-p{background:var(--brand);color:#fff}
-  .btn-p:hover:not(:disabled){background:var(--brand-d)}
-  .btn-s{background:#fff;border-color:var(--line);color:var(--text)}
-  .btn-s:hover:not(:disabled){border-color:#b6bcc6}
-
-  .opts{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:12px;align-items:center}
-  .opts label{display:flex;gap:6px;align-items:center;cursor:pointer}
-  select{font:inherit;font-size:13px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:#fff}
-
-  .hint{margin-top:10px;font-size:13px;color:#8a6d1f;background:#fff8e1;
-    border:1px solid #f3e0a8;border-radius:8px;padding:8px 12px}
-  .hint b{color:#6b5310}
-
-  #status{margin-top:12px;font-size:14px;min-height:22px}
-  .s-ok{color:var(--ok)} .s-err{color:var(--err)} .s-run{color:var(--brand)}
-
-  .prev-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-  .prev-head h2{font-size:15px;margin:0}
-  .prev-head span{font-size:12px;color:var(--muted)}
-  #preview{background:#e9ebef;border-radius:10px;padding:20px;overflow:auto;max-height:70vh}
+  .prev-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-3)}
+  .prev-head h2{font-size:var(--fs-md);font-weight:650;margin:0}
+  .prev-head span{font-size:var(--fs-xs);color:var(--muted)}
+  #preview{background:var(--bg);border:1px solid var(--line);border-radius:var(--r-md);
+    padding:var(--sp-4);overflow:auto;max-height:70vh}
   #paperWrap{width:var(--paper-w);margin:0 auto;transform-origin:top center}
 
-  /* ===== 纸张（A4 @96dpi = 794×1123px），padding 76px ≈ 20mm 页边距 ===== */
+  /* 纸张：A4 @96dpi = 794x1123px，padding 76px 约等于 20mm 页边距。
+     这里刻意锁死浅色，因为它模拟的是打印出来的纸，不跟随深色模式。 */
   #paper{width:var(--paper-w);min-height:1123px;background:#fff;padding:76px;
-    box-shadow:0 2px 12px rgba(0,0,0,.12);
+    box-shadow:0 2px 14px rgba(0,0,0,.14);
     font-family:"SimSun","宋体",Georgia,serif;font-size:16px;line-height:1.8;color:#000}
   #paper h1{font-size:26px;font-family:"SimHei","黑体",sans-serif;text-align:center;margin:.6em 0 .8em}
   #paper h2{font-size:20px;font-family:"SimHei","黑体",sans-serif;margin:1.2em 0 .5em}
@@ -82,62 +55,36 @@
   #paper th{background:#f2f2f2}
   #paper ul,#paper ol{padding-left:2em;margin:0 0 .8em}
   #paper blockquote{margin:1em 0;padding-left:1em;border-left:3px solid #ccc;color:#444}
-  /* 分页控制 */
   #paper h1,#paper h2,#paper h3{page-break-after:avoid;break-after:avoid}
   #paper table,#paper img,#paper tr,#paper li{page-break-inside:avoid;break-inside:avoid}
   #paper .sign{margin-top:30px;padding-top:8px;border-top:1px solid #e8e8e8;
     text-align:right;font-family:sans-serif;font-size:11px;color:#b2b2b2;letter-spacing:.3px}
-  .empty{color:#9aa0a8;text-align:center;padding:80px 0;font-family:sans-serif}
-
-  .tips{font-size:13px;color:var(--muted)}
-  .tips b{color:var(--text)}
-  .tips ul{padding-left:20px;margin:8px 0 0}
-  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px;line-height:2}
-
-  /* 赞赏区（收款码放这里） */
-  .tip-jar{text-align:center}
-  .tip-jar h3{font-size:15px;margin:0 0 6px}
-  .tip-jar p{font-size:13px;color:var(--muted);margin:0 0 14px}
-  .qr{display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
-  .qr figure{margin:0}
-  .qr img{width:150px;height:150px;object-fit:cover;border:1px solid var(--line);border-radius:8px;background:#fafafa}
-  .qr figcaption{font-size:12px;color:var(--muted);margin-top:6px}
-
-  /* 首次导出提示弹窗 */
-  .mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;
-    align-items:center;justify-content:center;padding:16px;z-index:99}
-  .mask.on{display:flex}
-  .modal{background:#fff;border-radius:14px;padding:24px;max-width:440px;width:100%}
-  .modal h3{margin:0 0 10px;font-size:17px}
-  .modal p{margin:0 0 10px;font-size:14px;color:#4b5563}
-  .modal ol{margin:0 0 12px;padding-left:22px;font-size:14px;line-height:2}
-  .modal .note{font-size:13px;color:var(--muted);background:#f6f7f9;border-radius:8px;padding:8px 12px;margin-bottom:16px}
+  .empty{color:var(--muted);text-align:center;padding:80px 0;font-family:sans-serif}
 
   @media(max-width:860px){
-    #preview{padding:10px}
+    #preview{padding:var(--sp-2);max-height:52vh}
     #paperWrap{transform:scale(.42);width:var(--paper-w)}
-    #preview{max-height:52vh}
   }
 </style>
 </head>
 <body>
-<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="topbar"><a href="/"><svg class="i"><use href="/assets/icons.svg#arrow-left"></use></svg> 返回文火工具箱</a></div>
 <div class="wrap">
 
   <header>
     <h1>Word 转 PDF</h1>
     <p class="sub">上传 .docx，一键转成 PDF。全程在你的浏览器本地完成，文件不会上传到任何服务器。</p>
     <div class="badges">
-      <span class="badge">🔒 文件不上传</span>
-      <span class="badge">⚡ 秒级转换</span>
-      <span class="badge">🆓 完全免费</span>
-      <span class="badge">📄 支持中文</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#lock"></use></svg> 文件不上传</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#refresh"></use></svg> 秒级转换</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#circle-check"></use></svg> 完全免费</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#file-type-docx"></use></svg> 支持中文</span>
     </div>
   </header>
 
   <div class="card">
     <div id="drop">
-      <div class="ico">📄</div>
+      <div class="ico"><svg class="i"><use href="/assets/icons.svg#file-type-docx"></use></svg></div>
       <div class="t">点击选择，或把 .docx 文件拖到这里</div>
       <div class="h">仅支持 .docx（Word 2007 及以后）；旧版 .doc 请先用 Word 另存为 .docx</div>
     </div>
@@ -162,13 +109,13 @@
     </div>
 
     <div class="row">
-      <button id="btnPrint" class="btn-p" disabled>🖨 导出 PDF（推荐 · 文字可选中）</button>
-      <button id="btnDl" class="btn-s" disabled>⬇ 直接下载 PDF（图片版）</button>
-      <button id="btnSign" class="btn-s">✨ 去除文末署名</button>
+      <button id="btnPrint" class="btn-p" disabled>导出 PDF（推荐 · 文字可选中）</button>
+      <button id="btnDl" class="btn-s" disabled><svg class="i"><use href="/assets/icons.svg#download"></use></svg> 直接下载 PDF（图片版）</button>
+      <button id="btnSign" class="btn-s">去除文末署名</button>
       <button id="btnClear" class="btn-s" disabled>清空</button>
     </div>
 
-    <div class="hint">💡 打印窗口里展开「更多设置」，<b>取消勾选「页眉和页脚」</b>，PDF 就不会带日期和网址</div>
+    <div class="hint">打印窗口里展开「更多设置」，<b>取消勾选「页眉和页脚」</b>，PDF 就不会带日期和网址</div>
 
     <div id="status"></div>
   </div>
@@ -199,7 +146,7 @@
 
   <!-- 收款码：把下面两个 img 的 src 换成你自己的收款码图片即可 -->
   <div class="card tip-jar">
-    <h3>☕ 觉得好用，请作者喝杯奶茶</h3>
+    <h3>觉得好用，请作者喝杯奶茶</h3>
     <p>工具永久免费，赞赏全凭自愿，1 块也是心意</p>
     <div class="qr">
       <figure><img src="/wechat-qr.png" alt="微信赞赏码" onerror="this.style.opacity=.25"><figcaption>微信</figcaption></figure>
@@ -232,7 +179,7 @@
 
 <div class="mask" id="tipMask">
   <div class="modal">
-    <h3>☕ 去除文末署名</h3>
+    <h3>去除文末署名</h3>
     <p>这个工具永久免费，转换也永远不限次数。文末那行小字是它唯一的"广告位"，靠它被更多人看到。</p>
     <p>如果它帮到了你，请作者喝杯奶茶（1 块也是心意）。赞赏后点下面的按钮，署名就永久去掉了——全凭自愿，不赞赏也能直接点。</p>
     <div class="qr" style="margin:16px 0">
@@ -273,7 +220,7 @@
       d.textContent = SIGN_TEXT;
       paper.appendChild(d);
     }
-    btnSign.textContent = isSignOff() ? '署名已去除 ✓（点击恢复）' : '✨ 去除文末署名';
+    btnSign.textContent = isSignOff() ? '署名已去除 （点击恢复）' : '去除文末署名';
   }
 
   // ---------- 选择文件 ----------
@@ -333,7 +280,7 @@
         paper.innerHTML = html;
         hasDoc = true; setBusy(false); refreshSign();
         const warn = (res.messages || []).filter(m => m.type === 'warning').length;
-        say('✅ 解析完成，可以导出了' + (warn ? `（有 ${warn} 处样式未能完全还原）` : ''), 's-ok');
+        say('解析完成，可以导出了' + (warn ? `（有 ${warn} 处样式未能完全还原）` : ''), 's-ok');
       })).catch(finish(err => {
         console.error(err);
         say('解析失败：文件可能损坏、被加密，或不是标准 .docx。', 's-err');
@@ -432,7 +379,7 @@
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak: { mode: ['css', 'legacy'] }
     }).from(clone).save()
-      .then(() => { say('✅ PDF 已生成，请查看浏览器下载', 's-ok'); setBusy(false); })
+      .then(() => { say('PDF 已生成，请查看浏览器下载', 's-ok'); setBusy(false); })
       .catch(err => { console.error(err); say('生成失败，建议改用「导出 PDF（推荐）」。', 's-err'); setBusy(false); });
   });
 
@@ -450,14 +397,14 @@
     if (isSignOff()) {
       try { localStorage.removeItem(SIGN_OFF); } catch(e){}
       refreshSign();
-      return say('已恢复文末署名，谢谢你帮我留着这行小字 🙏', 's-ok');
+      return say('已恢复文末署名，谢谢你帮我留着这行小字 ', 's-ok');
     }
     tipMask.classList.add('on');
   });
   $('#tipOk').addEventListener('click', () => {
     try { localStorage.setItem(SIGN_OFF, '1'); } catch(e){}
     closeTip(); refreshSign();
-    say('✅ 署名已去除，以后导出都不会再带。感谢支持！', 's-ok');
+    say('署名已去除，以后导出都不会再带。感谢支持！', 's-ok');
   });
   $('#tipNo').addEventListener('click', closeTip);
   tipMask.addEventListener('click', e => { if (e.target === tipMask) closeTip(); });

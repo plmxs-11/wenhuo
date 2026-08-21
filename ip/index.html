@@ -15,17 +15,17 @@
 <link rel="stylesheet" href="/assets/common.css">
 </head>
 <body>
-<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="topbar"><a href="/"><svg class="i"><use href="/assets/icons.svg#arrow-left"></use></svg> 返回文火工具箱</a></div>
 <div class="wrap">
 
   <header>
     <h1>IP 归属地批量查询</h1>
     <p class="sub">一次查几千条 IP 的国家、省份、城市和运营商。数据库下载到本地后<b>离线比对，IP 不外发</b>。</p>
     <div class="badges">
-      <span class="badge">🔒 IP 不外发</span>
-      <span class="badge">📡 55 万条网段</span>
-      <span class="badge">♾️ 不限条数</span>
-      <span class="badge">📊 可导出 Excel</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#lock"></use></svg> IP 不外发</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#world-www"></use></svg> 55 万条网段</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#infinity"></use></svg> 不限条数</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#table-export"></use></svg> 可导出 Excel</span>
     </div>
   </header>
 
@@ -51,14 +51,14 @@
 
     <div id="paneF" style="display:none;margin-top:14px">
       <div class="drop" id="drop">
-        <div class="ico">📡</div>
+        <div class="ico"><svg class="i"><use href="/assets/icons.svg#world-www"></use></svg></div>
         <div class="t">点击选择，或把文件拖到这里</div>
         <div class="h">支持 .txt / .csv / .xlsx / 日志文件，只挑出其中的 IP，表头和其他列会自动忽略</div>
       </div>
       <div class="uploaded" id="uploaded">
-        <div class="hd"><span class="tick">✓</span><span class="fn" id="upName"></span></div>
+        <div class="hd"><span class="tick"><svg class="i"><use href="/assets/icons.svg#check"></use></svg></span><span class="fn" id="upName"></span></div>
         <div class="meta" id="upMeta"></div>
-        <div class="acts"><button id="btnReupload" class="btn-s">↻ 重新上传</button></div>
+        <div class="acts"><button id="btnReupload" class="btn-s"><svg class="i"><use href="/assets/icons.svg#refresh"></use></svg> 重新上传</button></div>
       </div>
       <input type="file" id="file" accept=".txt,.csv,.log,.xlsx,.xlsm,.xls">
     </div>
@@ -68,7 +68,7 @@
     </div>
 
     <div class="row">
-      <button id="btnGo" class="btn-p">🔍 开始查询</button>
+      <button id="btnGo" class="btn-p"><svg class="i"><use href="/assets/icons.svg#search"></use></svg> 开始查询</button>
       <button id="btnClear" class="btn-s">清空</button>
     </div>
 
@@ -83,9 +83,9 @@
   <div class="card" id="resCard" style="display:none">
     <div class="summary" id="sum"></div>
     <div class="row" style="margin-top:0;margin-bottom:12px">
-      <button id="btnXlsx" class="btn-s">⬇ 导出 Excel</button>
-      <button id="btnCsv" class="btn-s">⬇ 导出 CSV</button>
-      <button id="btnCopy" class="btn-s">📋 复制表格</button>
+      <button id="btnXlsx" class="btn-s"><svg class="i"><use href="/assets/icons.svg#download"></use></svg> 导出 Excel</button>
+      <button id="btnCsv" class="btn-s"><svg class="i"><use href="/assets/icons.svg#download"></use></svg> 导出 CSV</button>
+      <button id="btnCopy" class="btn-s"><svg class="i"><use href="/assets/icons.svg#clipboard-text"></use></svg> 复制表格</button>
     </div>
     <div class="tblwrap" id="tbl"></div>
   </div>
@@ -191,7 +191,7 @@
       const r = await Batch.readEntries(files[0], Batch.MATCH.ipv4);
       entries = r.items;
       showUploaded(files[0], r);
-      say(r.items.length ? `✅ 文件已上传，识别出 ${r.items.length} 个 IP` : '⚠️ 文件已上传，但没识别到 IP',
+      say(r.items.length ? `文件已上传，识别出 ${r.items.length} 个 IP` : '文件已上传，但没识别到 IP',
           r.items.length ? 's-ok' : 's-err');
     } catch (e) { say('读取失败：' + e.message, 's-err'); }
   });
@@ -279,7 +279,7 @@
         (dedup && entries.length !== rows.length ? `<span>已去重（原 <b>${entries.length}</b> 条）</span>` : '');
       Batch.renderTable(tbl, HEADERS, rows);
       resCard.style.display = '';
-      say(`✅ 查询完成，查到 ${ok} 条`, 's-ok');
+      say(`查询完成，查到 ${ok} 条`, 's-ok');
       resCard.scrollIntoView({ block:'start', behavior:'smooth' });
     } catch (e) {
       console.error(e);
@@ -302,14 +302,14 @@
       return say('已取消，建议改用「导出 CSV」', 's-run');
     }
     await Batch.exportXlsx(HEADERS, rows, `IP归属地_${Batch.stamp()}.xlsx`, m => say(m, 's-run'));
-    say('✅ Excel 已导出', 's-ok');
+    say('Excel 已导出', 's-ok');
   }));
   $('#btnCsv').addEventListener('click', guard(() => {
     Batch.exportCsv(HEADERS, rows, `IP归属地_${Batch.stamp()}.csv`);
-    say('✅ CSV 已导出', 's-ok');
+    say('CSV 已导出', 's-ok');
   }));
   $('#btnCopy').addEventListener('click', guard(async () => {
-    try { await Batch.copyTsv(HEADERS, rows); say('✅ 已复制，可直接粘进 Excel', 's-ok'); }
+    try { await Batch.copyTsv(HEADERS, rows); say('已复制，可直接粘进 Excel', 's-ok'); }
     catch (e) { say('复制失败，浏览器可能不允许访问剪贴板，请改用导出。', 's-err'); }
   }));
 

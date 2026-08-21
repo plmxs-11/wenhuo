@@ -38,7 +38,7 @@
 </style>
 </head>
 <body>
-<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="topbar"><a href="/"><svg class="i"><use href="/assets/icons.svg#arrow-left"></use></svg> 返回文火工具箱</a></div>
 <div class="wrap">
 
   <header style="text-align:center;margin-bottom:18px">
@@ -65,7 +65,7 @@
         手机上没有这个功能，需要用电脑。</li>
       <li>点顶部的 <b>Network</b>（网络）标签，然后按 <kbd>Ctrl</kbd>+<kbd>R</kbd> 刷新一下页面，
         让它开始记录。</li>
-      <li>等页面加载完，点一下 Network 面板里的 <b>🚫 清空</b> 按钮，把已有记录清掉。
+      <li>等页面加载完，点一下 Network 面板里的 <b><svg class="i"><use href="/assets/icons.svg#ban"></use></svg> 清空</b> 按钮，把已有记录清掉。
         <b>现在列表应该是空的。</b></li>
       <li>选择你的文件，让工具处理，导出结果。</li>
       <li><b>回头看 Network 面板——它应该还是空的。</b>没有任何新请求，
@@ -86,7 +86,7 @@
     </p>
 
     <div class="drop" id="drop">
-      <div class="ico">🔍</div>
+      <div class="ico"><svg class="i"><use href="/assets/icons.svg#search"></use></svg></div>
       <div class="t">选一个文件来验证</div>
       <div class="h">任何文件都行。它只会被读取和计算指纹，不会被保存，也不会被发送</div>
     </div>
@@ -233,8 +233,8 @@
         counting = false;
         render();
         say(count === 0
-          ? `✅ 整个过程本页发出了 ${count} 个网络请求。你的文件没有离开这台电脑。`
-          : `⚠️ 检测到 ${count} 个网络请求，请用 F12 的 Network 面板核对具体是什么。`,
+          ? `<svg class="i"><use href="/assets/icons.svg#circle-check"></use></svg> 整个过程本页发出了 ${count} 个网络请求。你的文件没有离开这台电脑。`
+          : `<svg class="i"><use href="/assets/icons.svg#alert-triangle"></use></svg> 检测到 ${count} 个网络请求，请用 F12 的 Network 面板核对具体是什么。`,
           count === 0 ? 's-ok' : 's-err');
       }, 800);
     } catch (e) {

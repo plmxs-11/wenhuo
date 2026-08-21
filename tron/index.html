@@ -28,21 +28,21 @@
 </style>
 </head>
 <body>
-<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="topbar"><a href="/"><svg class="i"><use href="/assets/icons.svg#arrow-left"></use></svg> 返回文火工具箱</a></div>
 <div class="wrap">
 
   <header>
     <h1>USDT 交易记录查询</h1>
     <p class="sub">输入 TRON 地址，查看 TRC20 转入转出明细，自动识别垃圾代币并统计进出金额。</p>
     <div class="badges">
-      <span class="badge">🔗 链上公开数据</span>
-      <span class="badge">🧹 自动识别垃圾币</span>
-      <span class="badge">📊 可导出 Excel</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#arrows-join"></use></svg> 链上公开数据</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#shield-check"></use></svg> 自动识别垃圾币</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#table-export"></use></svg> 可导出 Excel</span>
     </div>
   </header>
 
   <div class="netwarn">
-    <b>⚠️ 这个工具需要联网，和本站其他工具不一样。</b><br>
+    <b><svg class="i"><use href="/assets/icons.svg#alert-triangle"></use></svg> 这个工具需要联网，和本站其他工具不一样。</b><br>
     查询链上数据必须把你输入的地址发送给 <b>TronScan 的服务器</b>，这一步绕不开。
     本站其余工具全部在你本地完成、不发送任何数据，
     <a href="/verify/">那个承诺不适用于本页</a>。地址本身是公开的链上信息，但你查了哪个地址，TronScan 会知道。
@@ -53,7 +53,7 @@
     <div class="row" style="margin-top:0">
       <input type="text" id="addr" placeholder="TBYoPKBz2mJQZPMG9A3hCwY9xx4QdcBnCK"
              style="flex:1;min-width:280px;font-family:ui-monospace,Consolas,monospace">
-      <button id="btnGo" class="btn-p">🔍 查询</button>
+      <button id="btnGo" class="btn-p"><svg class="i"><use href="/assets/icons.svg#search"></use></svg> 查询</button>
       <button id="btnClear" class="btn-s">清空</button>
     </div>
 
@@ -90,10 +90,10 @@
     <div class="stat" id="stat"></div>
     <div id="capWarn"></div>
     <div class="row" style="margin-top:0;margin-bottom:12px">
-      <button id="btnTag" class="btn-s">🏦 识别对手方机构</button>
-      <button id="btnXlsx" class="btn-s">⬇ 导出 Excel</button>
-      <button id="btnCsv" class="btn-s">⬇ 导出 CSV</button>
-      <button id="btnCopy" class="btn-s">📋 复制表格</button>
+      <button id="btnTag" class="btn-s"><svg class="i"><use href="/assets/icons.svg#credit-card"></use></svg> 识别对手方机构</button>
+      <button id="btnXlsx" class="btn-s"><svg class="i"><use href="/assets/icons.svg#download"></use></svg> 导出 Excel</button>
+      <button id="btnCsv" class="btn-s"><svg class="i"><use href="/assets/icons.svg#download"></use></svg> 导出 CSV</button>
+      <button id="btnCopy" class="btn-s"><svg class="i"><use href="/assets/icons.svg#clipboard-text"></use></svg> 复制表格</button>
     </div>
     <div class="tblwrap" id="tbl"></div>
   </div>
@@ -167,7 +167,7 @@
   $('#apiKey').value = Tron.getKey();
   $('#btnSaveKey').addEventListener('click', () => {
     Tron.setKey($('#apiKey').value.trim());
-    say('✅ 已保存到你自己的浏览器，不会发给第三方', 's-ok');
+    say('已保存到你自己的浏览器，不会发给第三方', 's-ok');
   });
   $('#btnDelKey').addEventListener('click', () => {
     Tron.setKey(''); $('#apiKey').value = '';
@@ -234,7 +234,7 @@
       render();
       const hit = Array.from(tags.values()).filter(Boolean).length;
       say(hit
-        ? `✅ 识别完成，${others.length} 个对手方里有 ${hit} 个是已知机构`
+        ? `<svg class="i"><use href="/assets/icons.svg#circle-check"></use></svg> 识别完成，${others.length} 个对手方里有 ${hit} 个是已知机构`
         : `识别完成：${others.length} 个对手方<b>全部没有机构标签</b>，说明资金没有直接进出交易所，而是流向了无标记的中间地址`,
         hit ? 's-ok' : 's-run');
     } catch (e) {
@@ -283,11 +283,11 @@
       if (r.truncated) {
         capWarn.innerHTML =
           `<div class="netwarn" style="margin-top:0;margin-bottom:12px">
-             <b>⚠️ 这个地址交易太多，已取回 ${all.length.toLocaleString()} 条后停止，这不是全部。</b><br>
+             <b><svg class="i"><use href="/assets/icons.svg#alert-triangle"></use></svg> 这个地址交易太多，已取回 ${all.length.toLocaleString()} 条后停止，这不是全部。</b><br>
              为避免把浏览器拖死，最多翻 ${Tron.MAX_PAGES} 页。需要完整流水请到 TronScan 官网导出，或依法调证。
            </div>`;
       }
-      say(`✅ 查询完成，取回 ${all.length.toLocaleString()} 条` +
+      say(`查询完成，取回 ${all.length.toLocaleString()} 条` +
           (r.truncated ? '（已达页数上限，数据不完整）' : `（共 ${r.pages} 页，已翻到底，是全量）`),
           r.truncated ? 's-err' : 's-ok');
       resCard.scrollIntoView({ block:'start', behavior:'smooth' });
@@ -318,14 +318,14 @@
   const fname = ext => `USDT交易_${Tron.shortAddr(queried).replace(/…/g,'_')}_${Batch.stamp()}.${ext}`;
   $('#btnXlsx').addEventListener('click', guard(async () => {
     await Batch.exportXlsx(HEADERS, rows, fname('xlsx'), m => say(m, 's-run'));
-    say('✅ Excel 已导出', 's-ok');
+    say('Excel 已导出', 's-ok');
   }));
   $('#btnCsv').addEventListener('click', guard(() => {
     Batch.exportCsv(HEADERS, rows, fname('csv'));
-    say('✅ CSV 已导出', 's-ok');
+    say('CSV 已导出', 's-ok');
   }));
   $('#btnCopy').addEventListener('click', guard(async () => {
-    try { await Batch.copyTsv(HEADERS, rows); say('✅ 已复制，可直接粘进 Excel', 's-ok'); }
+    try { await Batch.copyTsv(HEADERS, rows); say('已复制，可直接粘进 Excel', 's-ok'); }
     catch (e) { say('复制失败，浏览器可能不允许访问剪贴板，请改用导出。', 's-err'); }
   }));
 

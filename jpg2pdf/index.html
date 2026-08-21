@@ -21,22 +21,22 @@
 </style>
 </head>
 <body>
-<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="topbar"><a href="/"><svg class="i"><use href="/assets/icons.svg#arrow-left"></use></svg> 返回文火工具箱</a></div>
 <div class="wrap">
 
   <header>
     <h1>图片转 PDF</h1>
     <p class="sub">把多张图片按顺序合成一个 PDF。文件不上传，全部在本机完成。</p>
     <div class="badges">
-      <span class="badge">🔒 文件不上传</span>
-      <span class="badge">📐 A4 或原图尺寸</span>
-      <span class="badge">↕️ 可排序</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#lock"></use></svg> 文件不上传</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#files"></use></svg> A4 或原图尺寸</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#files"></use></svg> 可排序</span>
     </div>
   </header>
 
   <div class="card">
     <div class="drop" id="drop">
-      <div class="ico">📎</div>
+      <div class="ico"><svg class="i"><use href="/assets/icons.svg#files"></use></svg></div>
       <div class="t">点击选择，或把图片拖到这里</div>
       <div class="h">支持 JPG、PNG、WebP、BMP；可以分几次添加</div>
     </div>
@@ -63,7 +63,7 @@
     </div>
 
     <div class="row">
-      <button id="btnGo" class="btn-p" disabled>📎 合成 PDF</button>
+      <button id="btnGo" class="btn-p" disabled><svg class="i"><use href="/assets/icons.svg#files"></use></svg> 合成 PDF</button>
       <button id="btnSortName" class="btn-s" disabled>按文件名排序</button>
       <button id="btnClear" class="btn-s" disabled>清空</button>
     </div>
@@ -113,7 +113,7 @@
         `<span class="no">${i + 1}</span>` +
         `<button class="btn-mini" data-act="up" ${i === 0 ? 'disabled' : ''}>↑</button>` +
         `<button class="btn-mini" data-act="down" ${i === items.length - 1 ? 'disabled' : ''}>↓</button>` +
-        `<button class="btn-mini" data-act="del">✕</button>` +
+        `<button class="btn-mini" data-act="del"></button>` +
         `</div>`;
       box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
         const act = b.dataset.act;
@@ -228,7 +228,7 @@
       const out = await doc.save();
       const name = (items.length === 1 ? baseName(items[0].file.name) : baseName(items[0].file.name) + '_等' + items.length + '张') + '.pdf';
       download(new Blob([out], { type: 'application/pdf' }), name);
-      say(`✅ 完成，共 ${items.length} 页，已开始下载`, 's-ok');
+      say(`完成，共 ${items.length} 页，已开始下载`, 's-ok');
     } catch (e) {
       console.error(e);
       say('合成失败：' + (e && e.message ? e.message : '未知错误'), 's-err');

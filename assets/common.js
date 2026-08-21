@@ -41,8 +41,29 @@
   }
 
   /** 状态行输出器：say('文字','s-ok') */
+  /**
+   * 状态行。图标由状态类推导，不写在消息里——
+   * 消息常常拼接了用户的文件名，用 innerHTML 会有注入风险，
+   * 所以文字一律走 textContent，图标单独 append。
+   */
   function statusOf(el) {
-    return (msg, cls) => { el.className = 'status ' + (cls || ''); el.textContent = msg || ''; };
+    const ICON = { 's-ok': 'circle-check', 's-err': 'alert-triangle', 's-run': 'refresh' };
+    return (msg, cls) => {
+      el.className = 'status ' + (cls || '');
+      el.textContent = '';
+      if (!msg) return;
+      const name = ICON[cls];
+      if (name) {
+        const NS = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(NS, 'svg');
+        svg.setAttribute('class', 'i');
+        const use = document.createElementNS(NS, 'use');
+        use.setAttribute('href', '/assets/icons.svg#' + name);
+        svg.appendChild(use);
+        el.appendChild(svg);
+      }
+      el.appendChild(document.createTextNode(msg));
+    };
   }
 
   /**

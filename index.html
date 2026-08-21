@@ -16,140 +16,205 @@
 <meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="/assets/common.css">
 <style>
-  .hero{text-align:center;padding:8px 0 4px}
-  .hero .logo{font-size:40px;line-height:1}
-  .hero h1{font-size:30px;margin:10px 0 10px}
-  .hero .sub{font-size:15px;max-width:560px;margin:0 auto}
-  .hero .sub b{color:var(--text)}
+  /* ---- 首页专用 ---- */
+  .hero{padding:var(--sp-5) 0 var(--sp-6);border-bottom:1px solid var(--line);margin-bottom:var(--sp-5)}
+  .hero h1{font-size:var(--fs-2xl);line-height:1.25;letter-spacing:-.02em;
+    margin:0 0 var(--sp-3);max-width:19ch;font-weight:680}
+  .hero .lede{font-size:var(--fs-md);line-height:1.75;color:var(--muted);
+    margin:0;max-width:54ch}
+  .hero .lede b{color:var(--text);font-weight:600}
+  .hero .badges{margin-top:var(--sp-4)}
 
-  .secttl{font-size:14px;color:var(--muted);margin:26px 0 10px;padding-left:2px;font-weight:600}
-  .secttl:first-of-type{margin-top:6px}
-  .tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+  /* 分区标题：左侧标题 + 右侧状态说明，靠基线对齐而不是浮动 */
+  .sec{margin-top:var(--sp-6)}
+  .sec:first-of-type{margin-top:0}
+  .sec-hd{display:flex;align-items:baseline;justify-content:space-between;
+    gap:var(--sp-3);flex-wrap:wrap;
+    padding-bottom:var(--sp-2);border-bottom:1px solid var(--line);margin-bottom:var(--sp-3)}
+  .sec-hd h2{font-size:var(--fs-lg);font-weight:650;margin:0;letter-spacing:-.01em}
+  .sec-hd .note{font-size:var(--fs-xs);color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+  .sec-hd .note.alert{color:var(--err)}
+
+  /* 工具列表：分隔线分组，不是一堆浮起来的卡片。
+     卡片本该表达"可提起的层级"，这里是并列的入口，用线更准确也更正式。 */
+  .tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(264px,1fr));
+    gap:1px;background:var(--line);border:1px solid var(--line);
+    border-radius:var(--r-lg);overflow:hidden}
   .tool{display:block;text-decoration:none;color:inherit;background:var(--card);
-    border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;transition:.15s}
-  .tool:hover{border-color:var(--brand);transform:translateY(-2px);
-    box-shadow:0 6px 18px rgba(47,107,255,.10)}
-  .tool .ic{font-size:26px;line-height:1}
-  .tool .nm{font-size:16px;font-weight:600;margin:9px 0 5px}
-  .tool .ds{font-size:13px;color:var(--muted);line-height:1.6}
+    padding:var(--sp-4);transition:background .15s var(--ease)}
+  .tool:hover{background:var(--brand-soft)}
+  .tool .ic{color:var(--muted);line-height:1;margin-bottom:var(--sp-2)}
+  .tool .ic .i{width:22px;height:22px;stroke-width:1.5}
+  .tool:hover .ic{color:var(--brand)}
+  .tool .nm{font-size:var(--fs-base);font-weight:650;margin-bottom:4px;
+    display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .tool .ds{font-size:var(--fs-sm);color:var(--muted);line-height:1.65}
+  .tool .net{font-size:11px;font-weight:600;color:var(--err);
+    background:var(--err-soft);border:1px solid var(--err-line);
+    border-radius:4px;padding:1px 6px;letter-spacing:.02em}
 
-  .why{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
-  .why div h4{margin:0 0 6px;font-size:14px}
-  .why div p{margin:0;font-size:13px;color:var(--muted);line-height:1.7}
+  /* 三条理由：竖排分隔，避免"三张等宽卡片"的套路 */
+  .why{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0}
+  .why > div{padding:0 var(--sp-4);border-left:1px solid var(--line)}
+  .why > div:first-child{padding-left:0;border-left:0}
+  .why h4{margin:0 0 6px;font-size:var(--fs-base);font-weight:650;
+    display:flex;align-items:center;gap:7px}
+  .why h4 .i{color:var(--muted)}
+  .why p{margin:0;font-size:var(--fs-sm);color:var(--muted);line-height:1.75}
+  @media(max-width:700px){
+    .why > div{padding:var(--sp-3) 0;border-left:0;border-top:1px solid var(--line)}
+    .why > div:first-child{padding-top:0;border-top:0}
+  }
+
+  /* 验证入口：整站信任主张的落点，值得一块独立版面 */
+  .verify-cta{display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;
+    background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+    padding:var(--sp-4) var(--sp-5);margin-top:var(--sp-6)}
+  .verify-cta .txt{flex:1;min-width:260px}
+  .verify-cta h3{margin:0 0 5px;font-size:var(--fs-md);font-weight:650}
+  .verify-cta p{margin:0;font-size:var(--fs-sm);color:var(--muted);line-height:1.7}
+  .verify-cta a.go{display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+    font-size:var(--fs-sm);font-weight:600;color:#fff;background:var(--brand);
+    border-radius:var(--r-sm);padding:9px 16px;transition:background .15s var(--ease)}
+  .verify-cta a.go:hover{background:var(--brand-d)}
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <header class="hero">
-    <div class="logo">🔥</div>
-    <h1>文火工具箱</h1>
-    <p class="sub">一组不用上传的在线工具。所有处理都在<b>你自己的浏览器里</b>完成，文件和数据从头到尾没有离开过你的电脑。</p>
+    <h1>不用上传文件的在线工具箱</h1>
+    <p class="lede">
+      PDF 处理和批量查询，全部在<b>你自己的浏览器里</b>完成。
+      文件和数据从头到尾没有离开过你的电脑。
+    </p>
     <div class="badges">
-      <span class="badge">🔒 文件不上传</span>
-      <span class="badge">🆓 完全免费</span>
-      <span class="badge">🚫 无需注册</span>
-      <span class="badge">♾️ 不限次数</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#lock"></use></svg>文件不上传</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#circle-check"></use></svg>完全免费</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#ban"></use></svg>无需注册</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#infinity"></use></svg>不限次数</span>
     </div>
   </header>
 
-  <h2 class="secttl">PDF 工具</h2>
-  <div class="tools">
-    <a class="tool" href="/word2pdf/">
-      <div class="ic">📄</div>
-      <div class="nm">Word 转 PDF</div>
-      <div class="ds">.docx 转成 PDF，保留标题、表格、图片，文字可复制可搜索</div>
-    </a>
-    <a class="tool" href="/merge/">
-      <div class="ic">🔗</div>
-      <div class="nm">合并 PDF</div>
-      <div class="ds">多个 PDF 合成一个，可自由调整先后顺序</div>
-    </a>
-    <a class="tool" href="/split/">
-      <div class="ic">✂️</div>
-      <div class="nm">拆分 PDF</div>
-      <div class="ds">提取指定页、删除指定页、按份数拆开或拆成单页</div>
-    </a>
-    <a class="tool" href="/compress/">
-      <div class="ic">📉</div>
-      <div class="nm">压缩扫描件 PDF</div>
-      <div class="ds">扫描件、拍照件压小 60~90%，会先检测类型，有文字层的明确劝退</div>
-    </a>
-    <a class="tool" href="/pdf2jpg/">
-      <div class="ic">🖼️</div>
-      <div class="nm">PDF 转图片</div>
-      <div class="ds">每页导出成 JPG 或 PNG，清晰度可调，多页自动打包</div>
-    </a>
-    <a class="tool" href="/jpg2pdf/">
-      <div class="ic">📎</div>
-      <div class="nm">图片转 PDF</div>
-      <div class="ds">多张图片合成一个 PDF，可选 A4 或按原图尺寸</div>
-    </a>
-    <a class="tool" href="/rotate/">
-      <div class="ic">🔄</div>
-      <div class="nm">旋转 PDF</div>
-      <div class="ds">纠正方向错误的页面，可整体旋转也可单页微调</div>
+  <section class="sec">
+    <div class="sec-hd">
+      <h2>PDF 工具</h2>
+      <span class="note"><svg class="i"><use href="/assets/icons.svg#lock"></use></svg>本地处理，不联网</span>
+    </div>
+    <div class="tools">
+      <a class="tool" href="/word2pdf/">
+        <div class="ic"><svg class="i"><use href="/assets/icons.svg#file-type-docx"></use></svg></div>
+        <div class="nm">Word 转 PDF</div>
+        <div class="ds">.docx 转成 PDF，保留标题、表格、图片，文字可复制可搜索</div>
+      </a>
+      <a class="tool" href="/merge/">
+        <div class="ic"><svg class="i"><use href="/assets/icons.svg#arrows-join"></use></svg></div>
+        <div class="nm">合并 PDF</div>
+        <div class="ds">多个 PDF 合成一个，可自由调整先后顺序</div>
+      </a>
+      <a class="tool" href="/split/">
+        <div class="ic"><svg class="i"><use href="/assets/icons.svg#scissors"></use></svg></div>
+        <div class="nm">拆分 PDF</div>
+        <div class="ds">提取指定页、删除指定页、按份数拆开或拆成单页</div>
+      </a>
+      <a class="tool" href="/compress/">
+        <div class="ic"><svg class="i"><use href="/assets/icons.svg#file-zip"></use></svg></div>
+        <div class="nm">压缩扫描件 PDF</div>
+        <div class="ds">扫描件、拍照件压小 60~90%，有文字层的会明确劝退</div>
+      </a>
+      <a class="tool" href="/pdf2jpg/">
+        <div class="ic"><svg class="i"><use href="/assets/icons.svg#photo"></use></svg></div>
+        <div class="nm">PDF 转图片</div>
+        <div class="ds">每页导出成 JPG 或 PNG，清晰度可调，多页自动打包</div>
+      </a>
+      <a class="tool" href="/jpg2pdf/">
+        <div class="ic"><svg class="i"><use href="/assets/icons.svg#files"></use></svg></div>
+        <div class="nm">图片转 PDF</div>
+        <div class="ds">多张图片合成一个 PDF，可选 A4 或按原图尺寸</div>
+      </a>
+      <a class="tool" href="/rotate/">
+        <div class="ic"><svg class="i"><use href="/assets/icons.svg#rotate-clockwise"></use></svg></div>
+        <div class="nm">旋转 PDF</div>
+        <div class="ds">纠正方向错误的页面，可整体旋转也可单页微调</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-hd">
+      <h2>批量查询工具</h2>
+      <span class="note"><svg class="i"><use href="/assets/icons.svg#lock"></use></svg>数据库下到本地比对，不联网</span>
+    </div>
+    <div class="tools">
+      <a class="tool" href="/bincard/">
+        <div class="ic"><svg class="i"><use href="/assets/icons.svg#credit-card"></use></svg></div>
+        <div class="nm">银行卡信息查询</div>
+        <div class="ds">批量查发卡行、卡种、BIN 号段并做 Luhn 校验，可导出 Excel</div>
+      </a>
+      <a class="tool" href="/ip/">
+        <div class="ic"><svg class="i"><use href="/assets/icons.svg#world-www"></use></svg></div>
+        <div class="nm">IP 归属地查询</div>
+        <div class="ds">批量查国家、省份、城市、运营商，并标注每条结果的定位精度</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-hd">
+      <h2>链上查询</h2>
+      <span class="note alert"><svg class="i"><use href="/assets/icons.svg#alert-triangle"></use></svg>需要联网，会把地址发给第三方</span>
+    </div>
+    <div class="tools">
+      <a class="tool" href="/tron/">
+        <div class="ic"><svg class="i"><use href="/assets/icons.svg#link"></use></svg></div>
+        <div class="nm">USDT 交易记录查询<span class="net">需联网</span></div>
+        <div class="ds">查 TRON 地址的转入转出明细，自动识别垃圾代币并统计进出金额</div>
+      </a>
+    </div>
+  </section>
+
+  <div class="verify-cta">
+    <div class="txt">
+      <h3>别信我，自己验一遍</h3>
+      <p>每个在线工具都说自己安全，这话网站说了不算，但你的浏览器看得见。
+         三十秒教你亲手验证文件有没有被偷偷上传，方法对任何在线工具都适用。</p>
+    </div>
+    <a class="go" href="/verify/">
+      动手验证
+      <svg class="i"><use href="/assets/icons.svg#chevron-right"></use></svg>
     </a>
   </div>
 
-  <h2 class="secttl">数据查询工具（本地比对，不联网）</h2>
-  <div class="tools">
-    <a class="tool" href="/bincard/">
-      <div class="ic">📇</div>
-      <div class="nm">银行卡信息查询</div>
-      <div class="ds">批量查发卡行、卡种、BIN 号段并做 Luhn 校验，可导出 Excel</div>
-    </a>
-    <a class="tool" href="/ip/">
-      <div class="ic">📡</div>
-      <div class="nm">IP 归属地查询</div>
-      <div class="ds">批量查国家、省份、城市、运营商，数据库下到本地离线比对</div>
-    </a>
-  </div>
-
-  <h2 class="secttl">链上查询（需要联网，会把地址发给第三方）</h2>
-  <div class="tools">
-    <a class="tool" href="/tron/">
-      <div class="ic">⛓️</div>
-      <div class="nm">USDT 交易记录查询<span class="net">需联网</span></div>
-      <div class="ds">查 TRON 地址的转入转出明细，自动识别垃圾代币并统计进出金额</div>
-    </a>
-  </div>
-
-  <div class="card" style="margin-top:22px">
-    <h2>别信我，自己验一遍</h2>
-    <p style="margin:0;font-size:14px;line-height:1.9;color:var(--muted)">
-      每个在线工具都说自己安全。这句话网站说了不算——但你的浏览器看得见。
-      <a href="/verify/"><b>三十秒教你亲手验证文件有没有被偷偷上传</b></a>，
-      方法对任何在线工具都适用，不只是我们的。
-    </p>
-  </div>
-
-  <div class="card">
-    <h2>为什么不用上传？</h2>
+  <section class="sec">
+    <div class="sec-hd"><h2>为什么不用上传</h2></div>
     <div class="why">
       <div>
-        <h4>🔒 敏感文件不外流</h4>
-        <p>合同、简历、身份证扫描件、财务报表——这些本来就不该传给陌生服务器。这里的文件全程留在本机。</p>
+        <h4><svg class="i"><use href="/assets/icons.svg#lock"></use></svg>敏感文件不外流</h4>
+        <p>合同、简历、身份证扫描件、财务报表，这些本来就不该传给陌生服务器。这里的文件全程留在本机。</p>
       </div>
       <div>
-        <h4>⚡ 不用等排队</h4>
-        <p>没有上传、排队、下载三段等待，选完文件立刻开始处理，大文件优势更明显。</p>
+        <h4><svg class="i"><use href="/assets/icons.svg#refresh"></use></svg>不用等排队</h4>
+        <p>没有上传、排队、下载三段等待，选完文件立刻开始处理，文件越大优势越明显。</p>
       </div>
       <div>
-        <h4>♾️ 没有次数限制</h4>
-        <p>不占用任何人的服务器资源，所以不需要限制你每天能转几次，也不需要你注册账号。</p>
+        <h4><svg class="i"><use href="/assets/icons.svg#infinity"></use></svg>没有次数限制</h4>
+        <p>不占用任何人的服务器资源，所以不需要限制你每天能用几次，也不需要你注册账号。</p>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="card tips">
-    <b>能做什么，不能做什么</b>
-    <ul>
-      <li><b>做得好的</b>：PDF 的页面级操作（合并、拆分、旋转、转图片）——这类操作不改动内容本身，浏览器做出来的结果和服务器完全一样，没有质量损失。</li>
-      <li><b>做得一般的</b>：Word 转 PDF 能还原正文、标题、表格、图片，但页眉页脚、分栏、艺术字这类会丢。</li>
-      <li><b>不做的</b>：PDF 转 Word / Excel / PPT。那需要把固定版面反推成可编辑排版，浏览器端做不出能用的结果，与其做个糊弄人的不如不做。</li>
-    </ul>
-  </div>
+  <section class="sec">
+    <div class="sec-hd"><h2>能做什么，不能做什么</h2></div>
+    <div class="card tips" style="margin-bottom:0">
+      <ul style="margin:0">
+        <li><b>做得好的</b>：PDF 的页面级操作，包括合并、拆分、旋转、转图片。
+            这类操作不改动内容本身，浏览器做出来的结果和服务器完全一样，没有质量损失。</li>
+        <li><b>做得一般的</b>：Word 转 PDF 能还原正文、标题、表格、图片，但页眉页脚、分栏、艺术字这类会丢。</li>
+        <li><b>不做的</b>：PDF 转 Word、Excel、PPT。那需要把固定版面反推成可编辑排版，
+            浏览器端做不出能用的结果，与其做个糊弄人的不如不做。</li>
+      </ul>
+    </div>
+  </section>
 
 </div>
 <script src="/assets/common.js"></script>

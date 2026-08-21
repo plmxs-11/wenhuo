@@ -1,170 +1,292 @@
-/* 文火工具箱 · 共用外壳样式 */
+/* ==========================================================================
+   文火工具箱 · 共用外壳样式
+
+   设计取向：工具站，克制优先。用排版层级和留白建立秩序，
+   不靠特效。所有类名保持不变，12 个页面依赖它们。
+
+   三条硬约束：
+   1. 字号只用下面 7 个档位，不再随手写 13px / 12px
+   2. 圆角只用 3 个档位（--r-sm / --r-md / --r-lg），胶囊只给徽章
+   3. 图标一律用 /assets/icons.svg 里的 Tabler 图标，不用 emoji
+   ========================================================================== */
+
 :root{
-  --bg:#f4f5f7; --card:#fff; --line:#e3e5e9; --text:#1f2328;
-  --muted:#6b7280; --brand:#2f6bff; --brand-d:#1f4fd0;
-  --ok:#16a34a; --err:#dc2626; --warn:#8a6d1f;
+  /* 中性色。偏冷灰，比纯灰更沉稳 */
+  --bg:#f5f6f8;
+  --card:#fff;
+  --card-2:#fafbfc;
+  --line:#e2e5ea;
+  --line-2:#eef0f3;
+  --text:#161a1f;
+  --text-2:#3f4750;
+  --muted:#6b7480;
+
+  /* 品牌蓝。比原来压深一档，正式感来自沉稳而非明亮 */
+  --brand:#1f56d6;
+  --brand-d:#173fa3;
+  --brand-soft:#eef3ff;
+  --brand-line:#d3e0fb;
+
+  --ok:#15803d;   --ok-soft:#f0faf3;  --ok-line:#c3e6ce;
+  --err:#c2261d;  --err-soft:#fdf1f0; --err-line:#f0c4c0;
+  --warn:#8a6320; --warn-soft:#fdf8ec; --warn-line:#eddfba;
+
+  /* 字号：7 档，够用且有层级 */
+  --fs-xs:12px;    /* 元信息、脚注 */
+  --fs-sm:13.5px;  /* 次要正文、表格 */
+  --fs-base:15px;  /* 正文 */
+  --fs-md:17px;    /* 小标题 */
+  --fs-lg:20px;    /* 区块标题 */
+  --fs-xl:27px;    /* 页面标题 */
+  --fs-2xl:34px;   /* 首页主标题 */
+
+  --r-sm:6px; --r-md:10px; --r-lg:14px;
+
+  --sp-1:6px; --sp-2:10px; --sp-3:14px; --sp-4:20px; --sp-5:28px; --sp-6:40px;
+
+  --shadow:0 1px 2px rgba(22,26,31,.04), 0 4px 12px rgba(22,26,31,.05);
+  --ease:cubic-bezier(.16,1,.3,1);
 }
+
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1216; --card:#161a20; --card-2:#1b2028;
+    --line:#2a313a; --line-2:#232a32;
+    --text:#e8eaed; --text-2:#c2c8d0; --muted:#8b95a1;
+    --brand:#6b95ff; --brand-d:#8aabff;
+    --brand-soft:#18203040; --brand-line:#2f3f60;
+    --ok:#5fc27e;  --ok-soft:#14231a;  --ok-line:#2c4a35;
+    --err:#f08279; --err-soft:#251716; --err-line:#54302c;
+    --warn:#d9b264;--warn-soft:#231d12;--warn-line:#4a3d23;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.28);
+  }
+}
+
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);
-  font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
-a{color:var(--brand)}
 
-.wrap{max-width:900px;margin:0 auto;padding:24px 16px 64px}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:var(--fs-base)/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+a{color:var(--brand);text-underline-offset:2px}
 
-/* 顶部返回条 */
-.topbar{max-width:900px;margin:0 auto;padding:16px 16px 0;font-size:13px}
-.topbar a{color:var(--muted);text-decoration:none}
+.wrap{max-width:960px;margin:0 auto;padding:var(--sp-5) var(--sp-4) 72px}
+
+/* ===== 图标 =====
+   用法：<svg class="i"><use href="/assets/icons.svg#lock"></use></svg>
+   继承当前文字颜色和大小，所以放进任何文本里都自动协调。 */
+.i{width:1em;height:1em;flex:none;vertical-align:-.14em;
+   stroke:currentColor;fill:none;stroke-width:1.75;
+   stroke-linecap:round;stroke-linejoin:round}
+.i-lg{width:1.35em;height:1.35em}
+
+/* ===== 顶部返回条 ===== */
+.topbar{max-width:960px;margin:0 auto;padding:var(--sp-4) var(--sp-4) 0;font-size:var(--fs-sm)}
+.topbar a{color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:5px;
+  transition:color .15s var(--ease)}
 .topbar a:hover{color:var(--brand)}
 
-header{text-align:center;margin-bottom:24px}
-h1{font-size:26px;margin:0 0 8px}
-.sub{color:var(--muted);font-size:14px;margin:0}
-.badges{margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.badge{background:#fff;border:1px solid var(--line);border-radius:999px;
-  padding:4px 12px;font-size:12px;color:var(--muted)}
+/* ===== 页头 ===== */
+header{margin-bottom:var(--sp-5);padding-bottom:var(--sp-4);border-bottom:1px solid var(--line)}
+h1{font-size:var(--fs-xl);line-height:1.3;letter-spacing:-.01em;margin:0 0 var(--sp-2);font-weight:650}
+.sub{color:var(--muted);font-size:var(--fs-base);margin:0;max-width:62ch}
+.sub b{color:var(--text-2);font-weight:600}
 
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
-.card h2{font-size:15px;margin:0 0 12px}
+.badges{margin-top:var(--sp-3);display:flex;gap:var(--sp-1);flex-wrap:wrap}
+.badge{background:var(--card);border:1px solid var(--line);border-radius:999px;
+  padding:4px 12px;font-size:var(--fs-xs);color:var(--muted);
+  display:inline-flex;align-items:center;gap:5px}
+.badge .i{opacity:.75}
 
-/* 拖放区 */
-.drop{border:2px dashed #c9cdd4;border-radius:12px;padding:44px 20px;text-align:center;
-  cursor:pointer;transition:.15s;background:#fbfcfd}
-.drop:hover,.drop.over{border-color:var(--brand);background:#f2f6ff}
-.drop .ico{font-size:40px;line-height:1}
-.drop .t{font-size:16px;font-weight:600;margin:10px 0 4px}
-.drop .h{font-size:13px;color:var(--muted)}
+/* ===== 卡片 ===== */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:var(--sp-4);margin-bottom:var(--sp-3)}
+.card h2{font-size:var(--fs-md);font-weight:650;margin:0 0 var(--sp-3);letter-spacing:-.005em}
+
+/* ===== 拖放区 ===== */
+.drop{border:1.5px dashed var(--line);border-radius:var(--r-md);padding:44px var(--sp-4);
+  text-align:center;cursor:pointer;background:var(--card-2);
+  transition:border-color .18s var(--ease),background .18s var(--ease)}
+.drop:hover,.drop.over{border-color:var(--brand);background:var(--brand-soft)}
+.drop .ico{color:var(--muted);line-height:1}
+.drop .ico .i{width:34px;height:34px;stroke-width:1.4}
+.drop:hover .ico,.drop.over .ico{color:var(--brand)}
+.drop .t{font-size:var(--fs-md);font-weight:600;margin:var(--sp-2) 0 4px}
+.drop .h{font-size:var(--fs-sm);color:var(--muted)}
 input[type=file]{display:none}
 
-/* 控件 */
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
-button{font:inherit;border-radius:9px;padding:10px 18px;cursor:pointer;
-  border:1px solid transparent;transition:.15s}
+/* ===== 控件 ===== */
+.row{display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:center;margin-top:var(--sp-3)}
+button{font:inherit;font-size:var(--fs-sm);font-weight:550;border-radius:var(--r-sm);
+  padding:9px 16px;cursor:pointer;border:1px solid transparent;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:background .15s var(--ease),border-color .15s var(--ease),transform .1s var(--ease)}
+button:active:not(:disabled){transform:translateY(1px)}
 button:disabled{opacity:.45;cursor:not-allowed}
 .btn-p{background:var(--brand);color:#fff}
 .btn-p:hover:not(:disabled){background:var(--brand-d)}
-.btn-s{background:#fff;border-color:var(--line);color:var(--text)}
-.btn-s:hover:not(:disabled){border-color:#b6bcc6}
-.btn-mini{padding:3px 9px;font-size:12px;border-radius:6px;background:#fff;border:1px solid var(--line)}
-.btn-mini:hover:not(:disabled){border-color:#b6bcc6}
+.btn-s{background:var(--card);border-color:var(--line);color:var(--text-2)}
+.btn-s:hover:not(:disabled){border-color:var(--muted);color:var(--text)}
+.btn-mini{padding:3px 9px;font-size:var(--fs-xs);border-radius:var(--r-sm);
+  background:var(--card);border:1px solid var(--line);color:var(--muted)}
+.btn-mini:hover:not(:disabled){border-color:var(--muted);color:var(--text)}
 
-.opts{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);
-  margin-top:12px;align-items:center}
+.opts{display:flex;gap:var(--sp-4);flex-wrap:wrap;font-size:var(--fs-sm);color:var(--muted);
+  margin-top:var(--sp-3);align-items:center}
 .opts label{display:flex;gap:6px;align-items:center;cursor:pointer}
-select,input[type=text],input[type=number]{font:inherit;font-size:13px;padding:5px 9px;
-  border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--text)}
-input[type=text]{min-width:220px}
+select,input[type=text],input[type=number],input[type=password]{
+  font:inherit;font-size:var(--fs-sm);padding:7px 10px;
+  border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--card);color:var(--text);transition:border-color .15s var(--ease)}
+select:focus,input:focus{outline:none;border-color:var(--brand)}
+input[type=text],input[type=password]{min-width:220px}
+::placeholder{color:var(--muted);opacity:.75}
 
-.hint{margin-top:10px;font-size:13px;color:var(--warn);background:#fff8e1;
-  border:1px solid #f3e0a8;border-radius:8px;padding:8px 12px}
-.hint b{color:#6b5310}
+/* ===== 提示条 ===== */
+.hint,.netwarn{margin-top:var(--sp-2);font-size:var(--fs-sm);border-radius:var(--r-md);
+  padding:11px 15px;line-height:1.7}
+.hint{color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line)}
+.hint b{color:var(--warn);font-weight:650}
 
-/* 需要联网的工具专用警示。刻意比 .hint 更刺眼——
-   全站其余工具都承诺「数据不上传」，这类工具是例外，必须让用户一眼看见。 */
-.netwarn{margin-top:10px;font-size:13px;color:#8a2b2b;background:#fdeaea;
-  border:1px solid #f2b8b8;border-left:4px solid var(--err);border-radius:8px;padding:10px 14px}
-.netwarn b{color:#6d1f1f}
-.netwarn a{color:#8a2b2b;text-decoration:underline}
-/* 首页上给需要联网的工具卡片加角标 */
-.tool .net{display:inline-block;margin-left:6px;font-size:11px;font-weight:600;
-  color:#8a2b2b;background:#fdeaea;border:1px solid #f2b8b8;border-radius:4px;padding:1px 6px;vertical-align:middle}
+/* 需要联网的工具专用警示。刻意比 .hint 更重——
+   全站其余工具都承诺数据不上传，这类是例外，必须一眼看见。 */
+.netwarn{color:var(--err);background:var(--err-soft);
+  border:1px solid var(--err-line);border-left:3px solid var(--err)}
+.netwarn b{color:var(--err);font-weight:650}
+.netwarn a{color:var(--err)}
 
-.status{margin-top:12px;font-size:14px;min-height:22px}
+.status{margin-top:var(--sp-3);font-size:var(--fs-sm);min-height:22px;
+  display:flex;align-items:center;gap:6px}
 .s-ok{color:var(--ok)} .s-err{color:var(--err)} .s-run{color:var(--brand)}
 
-/* 文件列表 */
-.flist{list-style:none;margin:14px 0 0;padding:0}
-.flist li{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);
-  border-radius:9px;margin-bottom:8px;background:#fff;font-size:14px}
-.flist .idx{color:var(--muted);font-size:12px;min-width:22px}
+/* ===== 文件列表 ===== */
+.flist{list-style:none;margin:var(--sp-3) 0 0;padding:0}
+.flist li{display:flex;align-items:center;gap:var(--sp-2);padding:9px 12px;
+  border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:6px;
+  background:var(--card);font-size:var(--fs-sm)}
+.flist .idx{color:var(--muted);font-size:var(--fs-xs);min-width:22px;
+  font-variant-numeric:tabular-nums}
 .flist .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.flist .meta{color:var(--muted);font-size:12px;white-space:nowrap}
+.flist .meta{color:var(--muted);font-size:var(--fs-xs);white-space:nowrap;
+  font-variant-numeric:tabular-nums}
 
-/* 缩略图网格 */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-top:14px}
-.thumb{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff;text-align:center}
+/* ===== 缩略图网格 ===== */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));
+  gap:var(--sp-2);margin-top:var(--sp-3)}
+.thumb{border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;
+  background:var(--card);text-align:center}
 .thumb canvas,.thumb img{display:block;width:100%;height:auto;background:#fff}
-.thumb .cap{font-size:12px;color:var(--muted);padding:5px 4px;border-top:1px solid var(--line)}
+.thumb .cap{font-size:var(--fs-xs);color:var(--muted);padding:5px 4px;
+  border-top:1px solid var(--line)}
 
-/* ===== 批量查询类工具：粘贴框 + 结果表格 ===== */
-textarea.ta{width:100%;min-height:150px;resize:vertical;font:13px/1.7 ui-monospace,Consolas,"Courier New",monospace;
-  padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text)}
+/* ===== 批量查询：粘贴框 + 结果表格 ===== */
+textarea.ta{width:100%;min-height:150px;resize:vertical;
+  font:var(--fs-sm)/1.75 ui-monospace,Consolas,"Courier New",monospace;
+  padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-md);
+  background:var(--card);color:var(--text);transition:border-color .15s var(--ease)}
 textarea.ta:focus{outline:none;border-color:var(--brand)}
-.counter{font-size:12px;color:var(--muted);margin-top:6px;text-align:right}
+.counter{font-size:var(--fs-xs);color:var(--muted);margin-top:6px;text-align:right;
+  font-variant-numeric:tabular-nums}
 
-/* 输入方式切换 */
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}
-.seg button{border:0;border-radius:0;padding:8px 16px;font-size:13px;background:#fff;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-sm);
+  overflow:hidden;background:var(--card)}
+.seg button{border:0;border-radius:0;padding:8px 16px;background:transparent;color:var(--muted)}
 .seg button.on{background:var(--brand);color:#fff}
 .seg button+button{border-left:1px solid var(--line)}
 
-/* 结果摘要 */
-.summary{display:flex;gap:18px;flex-wrap:wrap;padding:12px 14px;background:#f6f8fc;
-  border:1px solid #e2e8f5;border-radius:10px;margin-bottom:12px;font-size:13px}
-.summary b{font-size:17px;font-weight:700;margin-right:4px}
+.summary{display:flex;gap:var(--sp-5);flex-wrap:wrap;padding:var(--sp-3) var(--sp-4);
+  background:var(--card-2);border:1px solid var(--line);border-radius:var(--r-md);
+  margin-bottom:var(--sp-3);font-size:var(--fs-xs);color:var(--muted)}
+.summary b{display:block;font-size:var(--fs-lg);font-weight:650;color:var(--text);
+  margin-top:2px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .summary .ok b{color:var(--ok)} .summary .bad b{color:var(--err)} .summary .all b{color:var(--brand)}
 
-/* 结果表格 */
-.tblwrap{max-height:60vh;overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fff}
-table.res{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;white-space:nowrap}
-table.res th,table.res td{padding:8px 12px;border-bottom:1px solid #eef0f3;text-align:left}
-table.res thead th{position:sticky;top:0;z-index:1;background:#f6f7f9;font-weight:600;
+.tblwrap{max-height:60vh;overflow:auto;border:1px solid var(--line);
+  border-radius:var(--r-md);background:var(--card)}
+table.res{border-collapse:separate;border-spacing:0;width:100%;
+  font-size:var(--fs-sm);white-space:nowrap}
+table.res th,table.res td{padding:9px 14px;border-bottom:1px solid var(--line-2);text-align:left}
+table.res thead th{position:sticky;top:0;z-index:1;background:var(--card-2);
+  font-weight:600;font-size:var(--fs-xs);letter-spacing:.02em;
   border-bottom:1px solid var(--line);color:var(--muted)}
-table.res tbody tr:hover td{background:#f8fafd}
+table.res tbody tr:hover td{background:var(--card-2)}
 table.res tbody tr:last-child td{border-bottom:0}
-table.res td.mono{font-family:ui-monospace,Consolas,monospace}
+table.res td.mono{font-family:ui-monospace,Consolas,monospace;font-size:var(--fs-xs)}
 table.res td.fail{color:var(--err)}
 table.res td.dim{color:var(--muted)}
-.trunc{font-size:12px;color:var(--muted);padding:10px 14px;text-align:center;background:#fbfcfd}
+.trunc{font-size:var(--fs-xs);color:var(--muted);padding:11px 14px;
+  text-align:center;background:var(--card-2);border-top:1px solid var(--line)}
 
-/* 文件已上传的回执，替换掉拖放区显示 */
-.uploaded{display:none;border:1px solid #bfe3c9;background:#f2fbf5;border-radius:12px;padding:14px 16px}
+/* ===== 上传回执，替换掉拖放区 ===== */
+.uploaded{display:none;border:1px solid var(--ok-line);background:var(--ok-soft);
+  border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4)}
 .uploaded.on{display:block}
 .uploaded .hd{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .uploaded .tick{width:20px;height:20px;border-radius:50%;background:var(--ok);color:#fff;
-  font-size:13px;line-height:20px;text-align:center;flex:none}
+  display:inline-flex;align-items:center;justify-content:center;flex:none}
+.uploaded .tick .i{width:13px;height:13px;stroke-width:2.5}
 .uploaded .fn{font-weight:600;word-break:break-all}
-.uploaded .meta{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.7}
-.uploaded .meta b{color:var(--text)}
+.uploaded .meta{font-size:var(--fs-sm);color:var(--muted);margin-top:8px;line-height:1.75}
+.uploaded .meta b{color:var(--text);font-variant-numeric:tabular-nums}
 .uploaded .warn{color:var(--err)}
-.uploaded .acts{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.uploaded .acts{margin-top:var(--sp-3);display:flex;gap:8px;flex-wrap:wrap}
 
-/* 大文件加载进度 */
-.prog{margin-top:10px;display:none}
+/* ===== 加载进度 ===== */
+.prog{margin-top:var(--sp-2);display:none}
 .prog.on{display:block}
-.prog .bar{height:6px;background:#e8ebf0;border-radius:99px;overflow:hidden}
-.prog .bar i{display:block;height:100%;width:0;background:var(--brand);transition:width .2s}
-.prog .txt{font-size:12px;color:var(--muted);margin-top:6px}
+.prog .bar{height:4px;background:var(--line);border-radius:99px;overflow:hidden}
+.prog .bar i{display:block;height:100%;width:0;background:var(--brand);transition:width .25s var(--ease)}
+.prog .txt{font-size:var(--fs-xs);color:var(--muted);margin-top:7px;font-variant-numeric:tabular-nums}
 
-.tips{font-size:13px;color:var(--muted)}
-.tips b{color:var(--text)}
-.tips ul{padding-left:20px;margin:8px 0 0}
+/* ===== 说明区 ===== */
+.tips{font-size:var(--fs-sm);color:var(--muted);line-height:1.8}
+.tips b{color:var(--text);font-weight:650}
+.tips ul{padding-left:18px;margin:8px 0 0}
+.tips li{margin-bottom:5px}
+.tips li:last-child{margin-bottom:0}
+.tips code{font-family:ui-monospace,Consolas,monospace;font-size:.92em;
+  background:var(--card-2);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
 
-/* 赞赏区 */
+/* ===== 赞赏区 ===== */
 .tip-jar{text-align:center}
-.tip-jar h3{font-size:15px;margin:0 0 6px}
-.tip-jar p{font-size:13px;color:var(--muted);margin:0 0 14px}
-.qr{display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+.tip-jar h3{font-size:var(--fs-md);font-weight:650;margin:0 0 6px}
+.tip-jar p{font-size:var(--fs-sm);color:var(--muted);margin:0 0 var(--sp-3)}
+.qr{display:flex;gap:var(--sp-5);justify-content:center;flex-wrap:wrap}
 .qr figure{margin:0}
-.qr img{width:150px;height:150px;object-fit:cover;border:1px solid var(--line);
-  border-radius:8px;background:#fafafa}
-.qr figcaption{font-size:12px;color:var(--muted);margin-top:6px}
+.qr img{width:148px;height:148px;object-fit:cover;border:1px solid var(--line);
+  border-radius:var(--r-sm);background:var(--card-2)}
+.qr figcaption{font-size:var(--fs-xs);color:var(--muted);margin-top:7px}
 
-footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px;line-height:2}
+footer{text-align:center;color:var(--muted);font-size:var(--fs-xs);
+  margin-top:var(--sp-5);padding-top:var(--sp-4);border-top:1px solid var(--line);line-height:2}
 
-/* 弹窗 */
-.mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;
-  align-items:center;justify-content:center;padding:16px;z-index:99}
+/* ===== 弹窗 ===== */
+.mask{position:fixed;inset:0;background:rgba(10,13,17,.5);display:none;
+  align-items:center;justify-content:center;padding:var(--sp-4);z-index:99;
+  backdrop-filter:blur(2px)}
 .mask.on{display:flex}
-.modal{background:#fff;border-radius:14px;padding:24px;max-width:440px;width:100%}
-.modal h3{margin:0 0 10px;font-size:17px}
-.modal p{margin:0 0 10px;font-size:14px;color:#4b5563}
-.modal ol{margin:0 0 12px;padding-left:22px;font-size:14px;line-height:2}
-.modal .note{font-size:13px;color:var(--muted);background:#f6f7f9;border-radius:8px;
-  padding:8px 12px;margin-bottom:16px}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:var(--sp-5);max-width:460px;width:100%;box-shadow:var(--shadow)}
+.modal h3{margin:0 0 var(--sp-2);font-size:var(--fs-md);font-weight:650}
+.modal p{margin:0 0 var(--sp-2);font-size:var(--fs-sm);color:var(--text-2)}
+.modal ol{margin:0 0 var(--sp-3);padding-left:20px;font-size:var(--fs-sm);line-height:2}
+.modal .note{font-size:var(--fs-sm);color:var(--muted);background:var(--card-2);
+  border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 12px;margin-bottom:var(--sp-4)}
 
 @media(max-width:700px){
-  .wrap{padding:16px 12px 48px}
-  h1{font-size:22px}
-  .drop{padding:32px 14px}
-  input[type=text]{min-width:150px}
+  :root{--fs-xl:23px; --fs-2xl:27px}
+  .wrap{padding:var(--sp-4) var(--sp-3) 56px}
+  .topbar{padding:var(--sp-3) var(--sp-3) 0}
+  .drop{padding:32px var(--sp-3)}
+  input[type=text],input[type=password]{min-width:150px}
+  .summary{gap:var(--sp-4)}
+  .qr{gap:var(--sp-4)}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important;animation:none !important}
 }

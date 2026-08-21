@@ -15,17 +15,17 @@
 <link rel="stylesheet" href="/assets/common.css">
 </head>
 <body>
-<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="topbar"><a href="/"><svg class="i"><use href="/assets/icons.svg#arrow-left"></use></svg> 返回文火工具箱</a></div>
 <div class="wrap">
 
   <header>
     <h1>银行卡信息查询</h1>
     <p class="sub">批量查询发卡行、卡种和 BIN 号段，并做 Luhn 校验。<b>卡号不上传</b>，全部在你自己的浏览器里比对。</p>
     <div class="badges">
-      <span class="badge">🔒 卡号不上传</span>
-      <span class="badge">📇 3000+ BIN 号段</span>
-      <span class="badge">📊 可导出 Excel</span>
-      <span class="badge">👁️ 默认脱敏</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#lock"></use></svg> 卡号不上传</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#credit-card"></use></svg> 3000+ BIN 号段</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#table-export"></use></svg> 可导出 Excel</span>
+      <span class="badge">默认脱敏</span>
     </div>
   </header>
 
@@ -52,14 +52,14 @@
 
     <div id="paneF" style="display:none;margin-top:14px">
       <div class="drop" id="drop">
-        <div class="ico">📇</div>
+        <div class="ico"><svg class="i"><use href="/assets/icons.svg#credit-card"></use></svg></div>
         <div class="t">点击选择，或把文件拖到这里</div>
         <div class="h">支持 .txt / .csv / .xlsx，只挑出其中的卡号，表头和其他列会自动忽略</div>
       </div>
       <div class="uploaded" id="uploaded">
-        <div class="hd"><span class="tick">✓</span><span class="fn" id="upName"></span></div>
+        <div class="hd"><span class="tick"><svg class="i"><use href="/assets/icons.svg#check"></use></svg></span><span class="fn" id="upName"></span></div>
         <div class="meta" id="upMeta"></div>
-        <div class="acts"><button id="btnReupload" class="btn-s">↻ 重新上传</button></div>
+        <div class="acts"><button id="btnReupload" class="btn-s"><svg class="i"><use href="/assets/icons.svg#refresh"></use></svg> 重新上传</button></div>
       </div>
       <input type="file" id="file" accept=".txt,.csv,.xlsx,.xlsm,.xls">
     </div>
@@ -69,7 +69,7 @@
     </div>
 
     <div class="row">
-      <button id="btnGo" class="btn-p">🔍 开始识别</button>
+      <button id="btnGo" class="btn-p"><svg class="i"><use href="/assets/icons.svg#search"></use></svg> 开始识别</button>
       <button id="btnClear" class="btn-s">清空</button>
     </div>
 
@@ -84,9 +84,9 @@
   <div class="card" id="resCard" style="display:none">
     <div class="summary" id="sum"></div>
     <div class="row" style="margin-top:0;margin-bottom:12px">
-      <button id="btnXlsx" class="btn-s">⬇ 导出 Excel</button>
-      <button id="btnCsv" class="btn-s">⬇ 导出 CSV</button>
-      <button id="btnCopy" class="btn-s">📋 复制表格</button>
+      <button id="btnXlsx" class="btn-s"><svg class="i"><use href="/assets/icons.svg#download"></use></svg> 导出 Excel</button>
+      <button id="btnCsv" class="btn-s"><svg class="i"><use href="/assets/icons.svg#download"></use></svg> 导出 CSV</button>
+      <button id="btnCopy" class="btn-s"><svg class="i"><use href="/assets/icons.svg#clipboard-text"></use></svg> 复制表格</button>
     </div>
     <div class="tblwrap" id="tbl"></div>
   </div>
@@ -186,7 +186,7 @@
       const r = await Batch.readEntries(files[0], Batch.MATCH.card);
       entries = r.items;
       showUploaded(files[0], r);
-      say(r.items.length ? `✅ 文件已上传，识别出 ${r.items.length} 个卡号` : '⚠️ 文件已上传，但没识别到卡号',
+      say(r.items.length ? `文件已上传，识别出 ${r.items.length} 个卡号` : '文件已上传，但没识别到卡号',
           r.items.length ? 's-ok' : 's-err');
     } catch (e) { say('读取失败：' + e.message, 's-err'); }
   });
@@ -251,7 +251,7 @@
         `<span>号段库 <b>${BinCard.stats().bins}</b> 条</span>`;
       Batch.renderTable(tbl, HEADERS, rows);
       resCard.style.display = '';
-      say(`✅ 识别完成，成功 ${ok} 条`, 's-ok');
+      say(`识别完成，成功 ${ok} 条`, 's-ok');
       resCard.scrollIntoView({ block: 'start', behavior: 'smooth' });
     } catch (e) {
       console.error(e);
@@ -274,14 +274,14 @@
       return say('已取消，建议改用「导出 CSV」', 's-run');
     }
     await Batch.exportXlsx(HEADERS, rows, `银行卡信息_${Batch.stamp()}.xlsx`, m => say(m, 's-run'));
-    say('✅ Excel 已导出', 's-ok');
+    say('Excel 已导出', 's-ok');
   }));
   $('#btnCsv').addEventListener('click', guard(() => {
     Batch.exportCsv(HEADERS, rows, `银行卡识别_${Batch.stamp()}.csv`);
-    say('✅ CSV 已导出', 's-ok');
+    say('CSV 已导出', 's-ok');
   }));
   $('#btnCopy').addEventListener('click', guard(async () => {
-    try { await Batch.copyTsv(HEADERS, rows); say('✅ 已复制，可直接粘进 Excel', 's-ok'); }
+    try { await Batch.copyTsv(HEADERS, rows); say('已复制，可直接粘进 Excel', 's-ok'); }
     catch (e) { say('复制失败，浏览器可能不允许访问剪贴板，请改用导出。', 's-err'); }
   }));
 

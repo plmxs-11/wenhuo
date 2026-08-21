@@ -16,22 +16,22 @@
 <script src="/assets/vendor/pdf-lib.min.js"></script>
 </head>
 <body>
-<div class="topbar"><a href="/">← 返回文火工具箱</a></div>
+<div class="topbar"><a href="/"><svg class="i"><use href="/assets/icons.svg#arrow-left"></use></svg> 返回文火工具箱</a></div>
 <div class="wrap">
 
   <header>
     <h1>合并 PDF</h1>
     <p class="sub">把多个 PDF 按你指定的顺序合成一个。文件不上传，全部在本机完成。</p>
     <div class="badges">
-      <span class="badge">🔒 文件不上传</span>
-      <span class="badge">🎯 零质量损失</span>
-      <span class="badge">♾️ 不限数量</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#lock"></use></svg> 文件不上传</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#check"></use></svg> 零质量损失</span>
+      <span class="badge"><svg class="i"><use href="/assets/icons.svg#infinity"></use></svg> 不限数量</span>
     </div>
   </header>
 
   <div class="card">
     <div class="drop" id="drop">
-      <div class="ico">🔗</div>
+      <div class="ico"><svg class="i"><use href="/assets/icons.svg#arrows-join"></use></svg></div>
       <div class="t">点击选择，或把多个 PDF 拖到这里</div>
       <div class="h">可以分几次添加，加完再排序；至少需要 2 个文件</div>
     </div>
@@ -40,7 +40,7 @@
     <ul class="flist" id="list"></ul>
 
     <div class="row">
-      <button id="btnGo" class="btn-p" disabled>🔗 合并并下载</button>
+      <button id="btnGo" class="btn-p" disabled><svg class="i"><use href="/assets/icons.svg#arrows-join"></use></svg> 合并并下载</button>
       <button id="btnSortName" class="btn-s" disabled>按文件名排序</button>
       <button id="btnClear" class="btn-s" disabled>清空</button>
     </div>
@@ -88,7 +88,7 @@
         meta +
         `<button class="btn-mini" data-act="up" ${i === 0 ? 'disabled' : ''}>↑</button>` +
         `<button class="btn-mini" data-act="down" ${i === items.length - 1 ? 'disabled' : ''}>↓</button>` +
-        `<button class="btn-mini" data-act="del">✕</button>`;
+        `<button class="btn-mini" data-act="del"></button>`;
       li.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
         const act = b.dataset.act;
         if (act === 'del') items.splice(i, 1);
@@ -154,7 +154,7 @@
       const bytes = await out.save();
       const name = baseName(usable[0].file.name) + '_等' + usable.length + '个文件_合并.pdf';
       download(new Blob([bytes], { type: 'application/pdf' }), name);
-      say(`✅ 合并完成，共 ${total} 页，已开始下载`, 's-ok');
+      say(`合并完成，共 ${total} 页，已开始下载`, 's-ok');
     } catch (e) {
       console.error(e);
       say('合并失败：' + (e && e.message ? e.message : '未知错误'), 's-err');
