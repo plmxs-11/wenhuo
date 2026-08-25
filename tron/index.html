@@ -263,6 +263,12 @@
           `<div class="netwarn" style="margin-top:0;margin-bottom:12px">
              <b>已手动停止，这只是前 ${all.length.toLocaleString()} 条，不是全部。</b>
            </div>`;
+      } else if (r.rateLimited) {
+        capWarn.innerHTML =
+          `<div class="netwarn" style="margin-top:0;margin-bottom:12px">
+             <b>被 TronGrid 限流了，取到 ${all.length.toLocaleString()} 条就停了，这不是全部。</b><br>
+             这个地址交易太多，免费额度扛不住。等一会儿重查，或在上面填自己的 API Key 提高上限。
+           </div>`;
       } else if (r.truncated) {
         capWarn.innerHTML =
           `<div class="netwarn" style="margin-top:0;margin-bottom:12px">
@@ -272,9 +278,10 @@
       }
       say(`取回 ${all.length.toLocaleString()} 条` +
           (r.stopped ? '（已手动停止，不完整）'
+           : r.rateLimited ? '（被限流，不完整）'
            : r.truncated ? '（已达页数上限，不完整）'
            : `（共 ${r.pages} 页，已翻到底，是全量）`),
-          (r.stopped || r.truncated) ? 's-err' : 's-ok');
+          (r.stopped || r.truncated || r.rateLimited) ? 's-err' : 's-ok');
       resCard.scrollIntoView({ block:'start', behavior:'smooth' });
 
     } catch (e) {

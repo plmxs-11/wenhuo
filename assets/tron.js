@@ -55,10 +55,14 @@
     return h;
   }
 
+  /** 限流用独立的错误类型，好让翻页循环认出来并保住已取到的数据 */
+  function RateLimited() { this.name = 'RateLimited'; }
+  RateLimited.prototype = Object.create(Error.prototype);
+
   async function grab(url, signal) {
     const resp = await fetch(url, { headers: authHeaders(), signal });
     if (!resp.ok) {
-      if (resp.status === 429) throw new Error('请求太频繁被限流了，等一会儿再试（或在下面填自己的 API key 提高上限）');
+      if (resp.status === 429) throw new RateLimited();
       throw new Error(`TronGrid 返回 HTTP ${resp.status}`);
     }
     return resp.json();
@@ -81,6 +85,7 @@
     if (o.contract) url += `&contract_address=${encodeURIComponent(o.contract)}`;
     let pages = 0;
     let stopped = false;
+    let rateLimited = false;
 
     while (url && pages < MAX_PAGES) {
       if (o.signal && o.signal.aborted) { stopped = true; break; }
@@ -89,6 +94,12 @@
         d = await grab(url, o.signal);
       } catch (e) {
         if (e && e.name === 'AbortError') { stopped = true; break; }
+        // 被限流时不要把整次查询判失败——前面几页是好的，
+        // 丢掉它们等于让用户白等。停在这里，如实说明没拿全。
+        if (e && e.name === 'RateLimited') {
+          if (pages === 0) throw new Error('请求太频繁被限流了，等一会儿再试（或在下面填自己的 API key 提高上限）');
+          rateLimited = true; break;
+        }
         throw e;
       }
       pages++;
@@ -104,7 +115,7 @@
       if (o.onProgress) o.onProgress(out.length, pages);
       url = ((d.meta || {}).links || {}).next || null;
     }
-    return { list: out, truncated: !!url && !stopped, stopped, pages };
+    return { list: out, truncated: !!url && !stopped && !rateLimited, stopped, rateLimited, pages };
   }
 
   /**
