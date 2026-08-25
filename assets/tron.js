@@ -87,7 +87,8 @@
     let stopped = false;
     let rateLimited = false;
 
-    while (url && pages < MAX_PAGES) {
+    const cap = o.maxPages || MAX_PAGES;
+    while (url && pages < cap) {
       if (o.signal && o.signal.aborted) { stopped = true; break; }
       let d;
       try {
@@ -114,8 +115,87 @@
       }
       if (o.onProgress) o.onProgress(out.length, pages);
       url = ((d.meta || {}).links || {}).next || null;
+      // 实测不加间隔连发，第二次请求就被 429 限流；400ms 间隔可以连发十几次不出事
+      if (url && o.gap) await new Promise(r => setTimeout(r, o.gap));
     }
     return { list: out, truncated: !!url && !stopped && !rateLimited, stopped, rateLimited, pages };
+  }
+
+  /* 批量查询的两个参数都是实测定下来的：
+     - 不加间隔连发，第 2 次请求就被 429 限流；间隔 400ms 连发 12 次全通。
+     - 批量时每个地址最多翻 5 页（1000 条）。批量是用来筛重点的，
+       筛出来哪个可疑再单独查那一个拿全量，否则几十个地址要跑很久。 */
+  const REQ_GAP = 400;
+  const BATCH_MAX_PAGES = 5;
+
+  /**
+   * 批量查多个地址，串行执行。
+   * 每查完一个就回调 onOne(该地址结果, 已完成数, 总数)，让界面边查边出结果——
+   * 几十个地址要跑一两分钟，只给一根进度条的话用户根本不知道在发生什么。
+   */
+  async function fetchMany(addresses, opts) {
+    const o = opts || {};
+    const list = Array.from(new Set(addresses.map(s => String(s).trim()).filter(Boolean)));
+    const results = [];
+
+    for (let i = 0; i < list.length; i++) {
+      const a = list[i];
+      if (o.signal && o.signal.aborted) break;
+
+      const rec = { address: a, status: 'ok', list: [], pages: 0, complete: true };
+      if (!isAddress(a)) {
+        rec.status = 'badaddr';
+      } else {
+        try {
+          const r = await fetchTransfers(a, {
+            signal: o.signal, maxPages: BATCH_MAX_PAGES, gap: REQ_GAP
+          });
+          rec.list = r.list;
+          rec.pages = r.pages;
+          rec.complete = !r.truncated && !r.rateLimited && !r.stopped;
+          if (r.rateLimited)   rec.status = 'limited';
+          else if (r.stopped)  rec.status = 'stopped';
+          else if (r.truncated)rec.status = 'partial';
+          else if (!r.list.length) rec.status = 'empty';
+        } catch (e) {
+          rec.status = 'error';
+          rec.error = e.message;
+        }
+      }
+      results.push(rec);
+      if (o.onOne) o.onOne(rec, results.length, list.length);
+      if (i < list.length - 1) await new Promise(r => setTimeout(r, REQ_GAP));
+    }
+    return results;
+  }
+
+  /** 把一个地址的明细压成一行汇总，用来横向比对多个地址 */
+  function summarize(address, transfers) {
+    const norm = transfers.map(t => normalize(t, address));
+    const usdt = norm.filter(t => t.isUsdt);
+    let inSum = 0, outSum = 0, first = null, last = null;
+    const others = new Set();
+    usdt.forEach(t => {
+      if (t.direction === 'in') inSum += t.amount;
+      else if (t.direction === 'out') outSum += t.amount;
+      const o = t.direction === 'in' ? t.from : t.to;
+      if (o) others.add(o);
+      const ms = t.time ? t.time.getTime() : null;
+      if (ms) {
+        if (first === null || ms < first) first = ms;
+        if (last === null || ms > last) last = ms;
+      }
+    });
+    return {
+      address,
+      total: norm.length,
+      usdtCount: usdt.length,
+      spam: norm.length - norm.filter(t => t.isKnownToken).length,
+      inSum, outSum, net: inSum - outSum,
+      counterparties: others.size,
+      first: first ? new Date(first) : null,
+      last:  last  ? new Date(last)  : null
+    };
   }
 
   /**
@@ -223,7 +303,8 @@
 
   global.Tron = {
     USDT, KNOWN, PAGE, MAX_PAGES,
-    isAddress, fetchTransfers, normalize,
+    REQ_GAP, BATCH_MAX_PAGES,
+    isAddress, fetchTransfers, fetchMany, summarize, normalize,
     fetchAddressTag, tagAddresses,
     fmtTime, fmtAmount, shortAddr, getKey, setKey
   };

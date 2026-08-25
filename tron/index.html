@@ -49,10 +49,34 @@
   </div>
 
   <div class="card">
-    <label style="display:block;font-size:14px;margin-bottom:8px">TRON 地址（T 开头，34 位）</label>
-    <div class="row" style="margin-top:0">
-      <input type="text" id="addr" placeholder="TBYoPKBz2mJQZPMG9A3hCwY9xx4QdcBnCK"
-             style="flex:1;min-width:280px;font-family:ui-monospace,Consolas,monospace">
+    <div class="row" style="margin-top:0;justify-content:space-between">
+      <div class="seg">
+        <button id="mOne" class="on">单个地址</button>
+        <button id="mMany">批量地址</button>
+      </div>
+    </div>
+
+    <div id="paneOne" style="margin-top:14px">
+      <label style="display:block;font-size:var(--fs-sm);color:var(--muted);margin-bottom:8px">TRON 地址（T 开头，34 位）</label>
+      <div class="row" style="margin-top:0">
+        <input type="text" id="addr" placeholder="TBYoPKBz2mJQZPMG9A3hCwY9xx4QdcBnCK"
+               style="flex:1;min-width:280px;font-family:ui-monospace,Consolas,monospace">
+      </div>
+    </div>
+
+    <div id="paneMany" style="display:none;margin-top:14px">
+      <label style="display:block;font-size:var(--fs-sm);color:var(--muted);margin-bottom:8px">一行一个地址，可直接从 Excel 复制一整列</label>
+      <textarea class="ta" id="ta" style="min-height:130px"
+        placeholder="TBYoPKBz2mJQZPMG9A3hCwY9xx4QdcBnCK&#10;TAUN6FwrnwwmaEqYcckffC7wYmbaS6cBiX"></textarea>
+      <div class="counter" id="cnt">0 个地址</div>
+      <div class="hint" style="margin-top:8px">
+        批量模式每个地址最多取 <b>1000 条</b>，用来快速筛出重点。
+        接口限流严，必须逐个查、每次间隔 0.4 秒，<b>100 个地址约需 1 分钟</b>。
+        筛出可疑地址后，切回「单个地址」拿它的全量明细。
+      </div>
+    </div>
+
+    <div class="row">
       <button id="btnGo" class="btn-p"><svg class="i"><use href="/assets/icons.svg#search"></use></svg> 查询</button>
       <button id="btnStop" class="btn-s" style="display:none">停止</button>
       <button id="btnClear" class="btn-s">清空</button>
@@ -97,6 +121,17 @@
       <button id="btnCopy" class="btn-s"><svg class="i"><use href="/assets/icons.svg#clipboard-text"></use></svg> 复制表格</button>
     </div>
     <div class="tblwrap" id="tbl"></div>
+  </div>
+
+  <!-- 批量结果。边查边往里填，用户能看到实际进展而不是干等一根进度条 -->
+  <div class="card" id="batchCard" style="display:none">
+    <div class="stat" id="bStat"></div>
+    <div class="row" style="margin-top:0;margin-bottom:12px">
+      <button id="bXlsx" class="btn-s"><svg class="i"><use href="/assets/icons.svg#download"></use></svg> 导出汇总</button>
+      <button id="bXlsxAll" class="btn-s"><svg class="i"><use href="/assets/icons.svg#download"></use></svg> 导出全部明细</button>
+      <button id="bCopy" class="btn-s"><svg class="i"><use href="/assets/icons.svg#clipboard-text"></use></svg> 复制表格</button>
+    </div>
+    <div class="tblwrap" id="bTbl"></div>
   </div>
 
   <div class="card tips">
@@ -218,6 +253,11 @@
 
   // ---------- 查询 ----------
   $('#btnGo').addEventListener('click', async () => {
+    if (isBatch()) {
+      const list = countAddrs();
+      if (!list.length) return say('还没有输入地址。', 's-err');
+      return runBatch(list);
+    }
     const a = addr.value.trim();
     if (!a) return say('请先输入 TRON 地址。', 's-err');
     if (!Tron.isAddress(a)) {
@@ -303,6 +343,142 @@
   $('#btnStop').addEventListener('click', () => {
     if (abort) { abort.abort(); say('正在停止…', 's-run'); }
   });
+
+  // ==================== 批量模式 ====================
+  const B_HEADERS = ['序号','地址','USDT 笔数','转入','转出','净额','对手方数',
+                     '首次交易','最后交易','垃圾币','状态'];
+  const STATUS_CN = { ok:'完整', empty:'无记录', partial:'超1000条,未取全',
+                      limited:'被限流,未取全', stopped:'已停止', error:'查询失败',
+                      badaddr:'地址格式错误' };
+  let bRows = [], bRaw = [];
+
+  const setMode = one => {
+    $('#mOne').classList.toggle('on', one);
+    $('#mMany').classList.toggle('on', !one);
+    $('#paneOne').style.display = one ? '' : 'none';
+    $('#paneMany').style.display = one ? 'none' : '';
+    resCard.style.display = 'none';
+    $('#batchCard').style.display = 'none';
+    say('');
+  };
+  $('#mOne').addEventListener('click', () => setMode(true));
+  $('#mMany').addEventListener('click', () => setMode(false));
+  const isBatch = () => $('#mMany').classList.contains('on');
+
+  const countAddrs = () => {
+    const r = Batch.readPasted($('#ta').value, s => Tron.isAddress(s) ? String(s).trim() : null);
+    $('#cnt').textContent = r.skipped.length
+      ? `识别出 ${r.items.length} 个地址（另有 ${r.skipped.length} 项不是 TRON 地址，已忽略）`
+      : `${r.items.length} 个地址`;
+    return r.items;
+  };
+  $('#ta').addEventListener('input', Batch.debounce(countAddrs, 200));
+
+  /** 把一条汇总结果转成表格行。汇总只算一次挂到 rec 上——
+      边查边刷新时如果每次都全量重算，100 个地址会重复算上万次。 */
+  function bRow(rec, i) {
+    const s = rec.sum || (rec.sum = Tron.summarize(rec.address, rec.list));
+    const bad = rec.status !== 'ok' && rec.status !== 'empty';
+    return [
+      i + 1,
+      { v: rec.address, cls: 'mono' },
+      s.usdtCount,
+      Tron.fmtAmount(s.inSum),
+      Tron.fmtAmount(s.outSum),
+      Tron.fmtAmount(s.net),
+      s.counterparties,
+      s.first ? Tron.fmtTime(s.first).slice(0, 10) : '',
+      s.last ? Tron.fmtTime(s.last).slice(0, 10) : '',
+      s.spam ? { v: s.spam, cls: 'fail' } : '',
+      bad ? { v: STATUS_CN[rec.status] || rec.status, cls: 'fail' }
+          : { v: STATUS_CN[rec.status], cls: 'dim' }
+    ];
+  }
+
+  function bStatLine(done, total, running) {
+    const sumIn = bRaw.reduce((a, r) => a + (r.sum ? r.sum.inSum : 0), 0);
+    const sumOut = bRaw.reduce((a, r) => a + (r.sum ? r.sum.outSum : 0), 0);
+    const bad = bRaw.filter(r => r.status !== 'ok' && r.status !== 'empty').length;
+    $('#bStat').innerHTML =
+      `<div>进度<b>${done} / ${total}</b></div>` +
+      `<div class="in">转入合计<b>+${Tron.fmtAmount(sumIn)}</b></div>` +
+      `<div class="out">转出合计<b>−${Tron.fmtAmount(sumOut)}</b></div>` +
+      (bad ? `<div>未取全或失败<b style="color:var(--err)">${bad}</b></div>` : '') +
+      (running ? `<div>状态<b style="color:var(--brand)">查询中</b></div>` : '');
+  }
+
+  async function runBatch(list) {
+    abort = new AbortController();
+    bRows = []; bRaw = [];
+    $('#batchCard').style.display = '';
+    resCard.style.display = 'none';
+    $('#btnGo').disabled = true;
+    $('#btnStop').style.display = '';
+    prog.classList.add('on');
+
+    const t0 = Date.now();
+    try {
+      await Tron.fetchMany(list, {
+        signal: abort.signal,
+        onOne: (rec, done, total) => {
+          bRaw.push(rec);
+          bRows.push(bRow(rec, bRows.length));
+          // 边查边渲染：几十个地址要跑一两分钟，用户得看得见在动
+          Batch.renderTable($('#bTbl'), B_HEADERS, bRows);
+          bStatLine(done, total, true);
+          bar.style.width = Math.round(done / total * 100) + '%';
+          const per = (Date.now() - t0) / done;
+          const left = Math.round(per * (total - done) / 1000);
+          progTxt.textContent = `已查 ${done} / ${total} 个地址` +
+            (left > 1 ? `，预计还需 ${left} 秒` : '');
+          say(`正在查询：${rec.address.slice(0, 8)}…（${done}/${total}）`, 's-run');
+        }
+      });
+
+      const bad = bRaw.filter(r => r.status !== 'ok' && r.status !== 'empty').length;
+      bStatLine(bRaw.length, list.length, false);
+      say(`批量查询完成，共 ${bRaw.length} 个地址` +
+          (bad ? `，其中 ${bad} 个未取全或失败` : ''), bad ? 's-err' : 's-ok');
+      $('#batchCard').scrollIntoView({ block: 'start', behavior: 'smooth' });
+    } catch (e) {
+      console.error(e);
+      say('批量查询中断：' + e.message, 's-err');
+    } finally {
+      prog.classList.remove('on');
+      $('#btnGo').disabled = false;
+      $('#btnStop').style.display = 'none';
+      abort = null;
+    }
+  }
+
+  // 批量导出
+  const bGuard = fn => async () => {
+    if (!bRows.length) return say('还没有结果可以导出。', 's-err');
+    try { await fn(); } catch (e) { say('导出失败：' + e.message, 's-err'); }
+  };
+  $('#bXlsx').addEventListener('click', bGuard(async () => {
+    await Batch.exportXlsx(B_HEADERS, bRows, `USDT批量汇总_${Batch.stamp()}.xlsx`, m => say(m, 's-run'));
+    say('汇总已导出', 's-ok');
+  }));
+  $('#bXlsxAll').addEventListener('click', bGuard(async () => {
+    const H = ['查询地址','时间','方向','金额','代币','对方地址','交易哈希'];
+    const rows = [];
+    bRaw.forEach(rec => rec.list.forEach(t => {
+      const n = Tron.normalize(t, rec.address);
+      rows.push([{ v: rec.address, cls:'mono' }, Tron.fmtTime(n.time),
+                 n.direction === 'in' ? '转入' : n.direction === 'out' ? '转出' : '—',
+                 Tron.fmtAmount(n.amount), n.symbol,
+                 { v: n.direction === 'in' ? n.from : n.to, cls:'mono' },
+                 { v: n.txId, cls:'mono' }]);
+    }));
+    if (!rows.length) return say('没有明细可以导出。', 's-err');
+    await Batch.exportXlsx(H, rows, `USDT批量明细_${Batch.stamp()}.xlsx`, m => say(m, 's-run'));
+    say(`明细已导出，共 ${rows.length.toLocaleString()} 条`, 's-ok');
+  }));
+  $('#bCopy').addEventListener('click', bGuard(async () => {
+    try { await Batch.copyTsv(B_HEADERS, bRows); say('已复制，可直接粘进 Excel', 's-ok'); }
+    catch (e) { say('复制失败，请改用导出。', 's-err'); }
+  }));
 
   addr.addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnGo').click(); });
 
