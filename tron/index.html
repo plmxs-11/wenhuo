@@ -41,11 +41,9 @@
     </div>
   </header>
 
-  <div class="netwarn">
-    <b><svg class="i"><use href="/assets/icons.svg#alert-triangle"></use></svg> 这个工具需要联网，和本站其他工具不一样。</b><br>
-    查询链上数据必须把你输入的地址发送给 <b>TronScan 的服务器</b>，这一步绕不开。
-    本站其余工具全部在你本地完成、不发送任何数据，
-    <a href="/verify/">那个承诺不适用于本页</a>。地址本身是公开的链上信息，但你查了哪个地址，TronScan 会知道。
+  <div class="hint">
+    查询链上数据需要把地址发送给 <b>TronGrid</b>（TRON 官方节点）。
+    地址本身是公开的链上信息，但你查了哪个地址，对方会知道。
   </div>
 
   <div class="card">
@@ -104,7 +102,7 @@
           </div>
           <div style="margin-top:6px;font-size:12px">
             不填也能正常查——实测带不带 key 返回的数据完全一样，key 只是放宽调用频率。
-            填了只存在<b>你自己浏览器的 localStorage</b> 里，不会发给除 TronScan 之外的任何地方。
+            填了只存在<b>你自己浏览器的 localStorage</b> 里，只在查询时随请求发给 TronScan。
           </div>
         </div>
       </details>
@@ -174,7 +172,7 @@
   $('#apiKey').value = Tron.getKey();
   $('#btnSaveKey').addEventListener('click', () => {
     Tron.setKey($('#apiKey').value.trim());
-    say('已保存到你自己的浏览器，不会发给第三方', 's-ok');
+    say('已保存到本地', 's-ok');
   });
   $('#btnDelKey').addEventListener('click', () => {
     Tron.setKey(''); $('#apiKey').value = '';
