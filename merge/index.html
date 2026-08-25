@@ -16,7 +16,6 @@
 <script src="/assets/vendor/pdf-lib.min.js"></script>
 </head>
 <body>
-<div class="topbar"><a href="/"><svg class="i"><use href="/assets/icons.svg#arrow-left"></use></svg> 返回文火工具箱</a></div>
 <div class="wrap">
 
   <header>
@@ -161,6 +160,7 @@
     btnGo.disabled = false;
   });
 
+  W.mountNav();
   W.mountFooter(document.querySelector('.wrap'));
 })();
 </script>

@@ -38,7 +38,6 @@
 </style>
 </head>
 <body>
-<div class="topbar"><a href="/"><svg class="i"><use href="/assets/icons.svg#arrow-left"></use></svg> 返回文火工具箱</a></div>
 <div class="wrap">
 
   <header>
@@ -119,6 +118,7 @@
   document.getElementById('goBtn').addEventListener('click', () => { location.href = sel.value; });
   sync();
 
+  W.mountNav();
   W.mountFooter(document.querySelector('.wrap'));
 })();
 </script>

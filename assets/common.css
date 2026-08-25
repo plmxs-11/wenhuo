@@ -84,20 +84,38 @@ a{color:var(--brand);text-underline-offset:2px}
    stroke-linecap:round;stroke-linejoin:round}
 .i-lg{width:1.35em;height:1.35em}
 
-/* ===== 顶部返回条 ===== */
-.topbar{max-width:1080px;margin:0 auto;padding:var(--sp-4) var(--sp-4) 0;font-size:var(--fs-sm);
-  display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);flex-wrap:wrap}
-.topbar a{color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:5px;
+/* ===== 顶部导航 =====
+   全站统一，吸顶。品牌名兼作返回首页的入口，所以不再单独放返回条。 */
+.nav{background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(10px);
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.nav-in{max-width:1240px;margin:0 auto;padding:0 var(--sp-5);min-height:62px;
+  display:flex;align-items:center;gap:var(--sp-5)}
+.nav .brand{display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+  color:var(--text);font-weight:600;font-size:var(--fs-md);letter-spacing:-.01em;flex:none}
+.nav .brand .i{width:19px;height:19px;color:var(--brand)}
+.nav .links{display:flex;gap:var(--sp-4);margin-left:auto;flex-wrap:wrap;align-items:center}
+.nav .links a{color:var(--muted);text-decoration:none;font-size:var(--fs-sm);
   transition:color .15s var(--ease)}
-.topbar a:hover{color:var(--brand)}
+.nav .links a:hover{color:var(--brand)}
+/* 当前页高亮，让用户知道自己在哪一层 */
+.nav .links a.on{color:var(--text);font-weight:600}
 
-/* PDF 操作切换器 */
+@media (prefers-color-scheme: dark){
+  .nav{background:rgba(22,26,32,.86)}
+}
+@media(max-width:760px){
+  .nav-in{padding:10px var(--sp-4);flex-wrap:wrap;gap:var(--sp-3)}
+  .nav .links{margin-left:0;gap:var(--sp-3);width:100%}
+}
+
+/* PDF 操作切换器，挂在导航右侧 */
 .pdfsw{display:inline-flex;align-items:center;gap:8px;
-  font-size:var(--fs-xs);color:var(--muted)}
+  font-size:var(--fs-xs);color:var(--muted);margin-left:var(--sp-4)}
 .pdfsw select{font-size:var(--fs-sm);font-weight:600;color:var(--text);
-  padding:7px 12px;border:1px solid var(--line);border-radius:var(--r-sm);
-  background:var(--card);cursor:pointer;min-width:170px}
+  padding:6px 11px;border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--card);cursor:pointer;min-width:150px}
 .pdfsw select:hover{border-color:var(--brand)}
+@media(max-width:760px){ .pdfsw{margin-left:0} }
 
 /* ===== 页头 =====
    工具页顶部做一条浅色渐层带，和首页的深色主视觉呼应，

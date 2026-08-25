@@ -23,24 +23,6 @@
      三层叠出纵深：极光色团（缓慢漂移）、点阵网格、顶部一道高光。
      动画只碰 transform 和 opacity，走 GPU，不会掉帧。 */
 
-  /* ---------- 顶部导航 ----------
-     原来首页完全没有导航，用户看完首屏只能往下滚。
-     通栏深色，和主视觉连成一片，不做成悬浮条。 */
-  .nav{background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(10px);
-    border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
-  .nav-in{max-width:1240px;margin:0 auto;padding:0 var(--sp-5);height:62px;
-    display:flex;align-items:center;gap:var(--sp-5)}
-  .nav .brand{display:inline-flex;align-items:center;gap:8px;text-decoration:none;
-    color:var(--text);font-weight:600;font-size:var(--fs-md);letter-spacing:-.01em}
-  .nav .brand .i{width:19px;height:19px;color:var(--brand)}
-  .nav .links{display:flex;gap:var(--sp-4);margin-left:auto;flex-wrap:wrap}
-  .nav .links a{color:var(--muted);text-decoration:none;font-size:var(--fs-sm);
-    transition:color .15s var(--ease)}
-  .nav .links a:hover{color:var(--brand)}
-  @media(max-width:700px){
-    .nav-in{height:auto;padding:10px var(--sp-4);flex-wrap:wrap;gap:var(--sp-3)}
-    .nav .links{margin-left:0;gap:var(--sp-3);width:100%}
-  }
 
   /* 通栏。原来锁在 1040px、两侧各空 430px，还带圆角，
      整块像一张卡片飘在灰底中间。 */
@@ -236,20 +218,6 @@
 </style>
 </head>
 <body>
-<nav class="nav">
-  <div class="nav-in">
-    <a class="brand" href="/">
-      <svg class="i"><use href="/assets/icons.svg#shield-check"></use></svg>
-      文火工具箱
-    </a>
-    <div class="links">
-      <a href="/pdf/">PDF 工具</a>
-      <a href="/bincard/">银行卡查询</a>
-      <a href="/ip/">IP 归属地</a>
-      <a href="/tron/">USDT 交易</a>
-    </div>
-  </div>
-</nav>
 <header class="hero">
   <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
   <div class="scrim" aria-hidden="true"></div>
@@ -400,7 +368,8 @@
 </div>
 <script src="/assets/common.js"></script>
 <script src="/assets/fx.js"></script>
-<script>W.mountFooter(document.querySelector('.wrap'));
+<script>W.mountNav();
+  W.mountFooter(document.querySelector('.wrap'));
   FX.initTilt('.tilt');
   FX.initCountUp();</script>
 </body>

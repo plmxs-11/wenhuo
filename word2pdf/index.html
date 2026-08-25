@@ -68,7 +68,6 @@
 </style>
 </head>
 <body>
-<div class="topbar"><a href="/"><svg class="i"><use href="/assets/icons.svg#arrow-left"></use></svg> 返回文火工具箱</a></div>
 <div class="wrap">
 
   <header>
@@ -325,6 +324,7 @@
     const d = ifr.contentDocument;
     d.open();
     d.write(`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>${baseName}</title><style>${css}</style></head><body>${paper.innerHTML}<script>W.mountPdfSwitch('word2pdf');</script>
+<script>W.mountNav();</script>
 </body></html>`);
     d.close();
 
@@ -413,5 +413,6 @@
 })();
 </script>
 <script>W.mountPdfSwitch('word2pdf');</script>
+<script>W.mountNav();</script>
 </body>
 </html>

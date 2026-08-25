@@ -189,6 +189,39 @@
     els.forEach(el => io.observe(el));
   }
 
+  /* 导航里的主入口。改这里全站同步。 */
+  const NAV_LINKS = [
+    { href: '/pdf/',     name: 'PDF 工具',    match: /^\/(pdf|word2pdf|merge|split|compress|pdf2jpg|jpg2pdf|rotate)\// },
+    { href: '/bincard/', name: '银行卡查询',  match: /^\/bincard\// },
+    { href: '/ip/',      name: 'IP 归属地',   match: /^\/ip\// },
+    { href: '/tron/',    name: 'USDT 交易',   match: /^\/tron\// }
+  ];
+
+  /**
+   * 在页面最顶部挂一条吸顶导航。
+   * 品牌名兼作返回首页的入口，所以不再单独放「返回工具箱」那一条，
+   * 否则两条横栏叠着占地方还重复。
+   */
+  function mountNav() {
+    if (document.querySelector('.nav')) return;
+    const path = location.pathname;
+    const nav = document.createElement('nav');
+    nav.className = 'nav';
+
+    const links = NAV_LINKS.map(l =>
+      `<a href="${l.href}"${l.match.test(path) ? ' class="on"' : ''}>${l.name}</a>`
+    ).join('');
+
+    nav.innerHTML =
+      '<div class="nav-in">' +
+        '<a class="brand" href="/">' +
+          '<svg class="i"><use href="/assets/icons.svg#shield-check"></use></svg>文火工具箱' +
+        '</a>' +
+        '<div class="links">' + links + '</div>' +
+      '</div>';
+    document.body.insertBefore(nav, document.body.firstChild);
+  }
+
   /* PDF 工具清单。顺序即下拉框里的顺序，改这里全站同步。 */
   const PDF_TOOLS = [
     { slug: 'word2pdf', name: 'Word 转 PDF' },
@@ -207,7 +240,7 @@
    * 键盘和读屏也都直接可用，自绘的那种反而更难用。
    */
   function mountPdfSwitch(currentSlug) {
-    const host = document.querySelector('.topbar');
+    const host = document.querySelector('.nav .links') || document.querySelector('.topbar');
     if (!host) return;
     const box = document.createElement('div');
     box.className = 'pdfsw';
@@ -228,5 +261,5 @@
   }
 
   global.W = { $, $$, fmtSize, download, setupDrop, statusOf, parsePages, initPdfJs,
-               renderToCanvas, baseName, mountFooter, initReveal, mountPdfSwitch, PDF_TOOLS };
+               renderToCanvas, baseName, mountFooter, initReveal, mountNav, mountPdfSwitch, PDF_TOOLS };
 })(window);
