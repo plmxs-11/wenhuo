@@ -165,7 +165,14 @@
   .sec{margin-top:var(--sp-6)}
   .sec-hd{display:flex;align-items:baseline;justify-content:space-between;
     gap:var(--sp-3);flex-wrap:wrap;margin-bottom:var(--sp-3)}
-  .sec-hd h2{font-size:var(--fs-lg);font-weight:600;margin:0;letter-spacing:-.015em}
+  /* 标题原来 20px、正文 15px，只差 1.3 倍，层级根本读不出来。
+     拉到 27px 并加重字距，让每个分区一眼有个"起点"。 */
+  .sec-hd{margin-bottom:var(--sp-4)}
+  .sec-hd h2{font-size:27px;font-weight:600;margin:0;letter-spacing:-.02em;
+    position:relative;padding-left:15px}
+  /* 标题左边一道品牌色短竖线，比纯文字有锚点感 */
+  .sec-hd h2::before{content:"";position:absolute;left:0;top:.18em;bottom:.18em;width:4px;
+    border-radius:2px;background:linear-gradient(180deg,var(--brand),#12b5a8)}
   .sec-hd .note{font-size:var(--fs-xs);color:var(--muted);display:inline-flex;align-items:center;gap:5px}
   .sec-hd .note.alert{color:var(--err)}
 
@@ -173,10 +180,27 @@
      右侧要放两列共七行，比左边那点文字需要更多宽度，所以给它更大份额。 */
   .hub{display:grid;grid-template-columns:minmax(240px,.72fr) 1.28fr;gap:0;
     border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--card)}
-  .hub .l{padding:var(--sp-5);border-right:1px solid var(--line);
-    display:flex;flex-direction:column;justify-content:center}
-  .hub .ic{color:var(--brand);margin-bottom:var(--sp-3)}
-  .hub .ic .i{width:28px;height:28px;stroke-width:1.5}
+  /* 左栏做成深色锚点，和顶部主视觉呼应。
+     原来是白底上放一个图标一行字一个按钮，359×211 的空间大半空着，
+     整块看起来没写完。 */
+  .hub .l{position:relative;overflow:hidden;padding:var(--sp-5);
+    display:flex;flex-direction:column;justify-content:center;
+    background:#0c1320;color:#e8eef8}
+  .hub .l::before{content:"";position:absolute;inset:0;z-index:0;
+    background:
+      radial-gradient(70% 90% at 12% 108%, rgba(47,107,255,.5), transparent 68%),
+      radial-gradient(60% 80% at 96% -8%, rgba(18,181,168,.32), transparent 70%)}
+  .hub .l::after{content:"";position:absolute;inset:0;z-index:0;opacity:.35;
+    background-image:radial-gradient(rgba(255,255,255,.2) 1px, transparent 1px);
+    background-size:20px 20px;
+    -webkit-mask-image:radial-gradient(80% 70% at 40% 40%,#000 20%,transparent 100%);
+    mask-image:radial-gradient(80% 70% at 40% 40%,#000 20%,transparent 100%)}
+  .hub .l > *{position:relative;z-index:1}
+  .hub .ic{color:#7fa8f0;margin-bottom:var(--sp-3)}
+  .hub .ic .i{width:30px;height:30px;stroke-width:1.5}
+  .hub h3{color:#fff}
+  .hub .go{background:#fff;color:#0c1320}
+  .hub .go:hover{background:#dbe7fb}
   .hub h3{margin:0 0 var(--sp-2);font-size:var(--fs-lg);font-weight:600;letter-spacing:-.015em}
   .hub p{margin:0 0 var(--sp-4);font-size:var(--fs-sm);color:var(--muted);line-height:1.7}
   /* align-self 不能省：外层是 column 方向的 flex，
@@ -187,12 +211,17 @@
     transition:background .16s var(--ease)}
   .hub .go:hover{background:var(--brand-d)}
   .hub .r{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
-  .hub .r a{display:flex;align-items:center;gap:9px;text-decoration:none;color:inherit;
-    background:var(--card);padding:var(--sp-3) var(--sp-4);font-size:var(--fs-sm);
-    transition:background .15s var(--ease)}
+  /* 每项前面加一个浅色图标块。原来图标直接裸放在文字旁边，
+     七行下来像一份纯文字清单，没有分量。 */
+  .hub .r a{display:flex;align-items:center;gap:11px;text-decoration:none;color:inherit;
+    background:var(--card);padding:13px var(--sp-4);font-size:var(--fs-base);
+    font-weight:500;transition:background .15s var(--ease)}
   .hub .r a:hover{background:var(--brand-soft)}
-  .hub .r a .i{width:17px;height:17px;color:var(--muted);flex:none}
-  .hub .r a:hover .i{color:var(--brand)}
+  .hub .r a em{flex:none;display:grid;place-items:center;width:30px;height:30px;
+    border-radius:8px;background:var(--brand-soft);color:var(--brand);
+    transition:transform .16s var(--ease)}
+  .hub .r a:hover em{transform:scale(1.08)}
+  .hub .r a .i{width:16px;height:16px;stroke-width:1.7}
   /* 七个工具放两列会空出一格，右下角留个灰方块很扎眼。
      让最后一个横跨两列填满。 */
   .hub .r a:last-child{grid-column:1 / -1}
@@ -222,7 +251,12 @@
   .mod:hover .ic{transform:scale(1.06)}
   .mod .ic .i{width:22px;height:22px;stroke-width:1.6}
   .mod .body{flex:1;min-width:0}
-  .mod .ds{font-size:var(--fs-base);color:var(--text);line-height:1.6}
+  .mod{padding:var(--sp-5)}
+  .mod .ds{font-size:var(--fs-md);color:var(--text);line-height:1.6;font-weight:500}
+  .mod .ic{width:52px;height:52px}
+  .mod .ic .i{width:25px;height:25px}
+  .mod .go{padding:9px 16px;border:1px solid var(--brand-line);
+    border-radius:var(--r-sm);background:var(--brand-soft)}
   .mod .meta{margin-top:7px;display:flex;gap:var(--sp-3);flex-wrap:wrap;
     font-size:var(--fs-xs);color:var(--muted);
     font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
@@ -305,13 +339,13 @@
         </a>
       </div>
       <div class="r">
-        <a href="/word2pdf/"><svg class="i"><use href="/assets/icons.svg#file-type-docx"></use></svg>Word 转 PDF</a>
-        <a href="/merge/"><svg class="i"><use href="/assets/icons.svg#arrows-join"></use></svg>合并 PDF</a>
-        <a href="/split/"><svg class="i"><use href="/assets/icons.svg#scissors"></use></svg>拆分 PDF</a>
-        <a href="/compress/"><svg class="i"><use href="/assets/icons.svg#file-zip"></use></svg>压缩扫描件</a>
-        <a href="/pdf2jpg/"><svg class="i"><use href="/assets/icons.svg#photo"></use></svg>PDF 转图片</a>
-        <a href="/jpg2pdf/"><svg class="i"><use href="/assets/icons.svg#files"></use></svg>图片转 PDF</a>
-        <a href="/rotate/"><svg class="i"><use href="/assets/icons.svg#rotate-clockwise"></use></svg>旋转 PDF</a>
+        <a href="/word2pdf/"><em><svg class="i"><use href="/assets/icons.svg#file-type-docx"></use></svg></em>Word 转 PDF</a>
+        <a href="/merge/"><em><svg class="i"><use href="/assets/icons.svg#arrows-join"></use></svg></em>合并 PDF</a>
+        <a href="/split/"><em><svg class="i"><use href="/assets/icons.svg#scissors"></use></svg></em>拆分 PDF</a>
+        <a href="/compress/"><em><svg class="i"><use href="/assets/icons.svg#file-zip"></use></svg></em>压缩扫描件</a>
+        <a href="/pdf2jpg/"><em><svg class="i"><use href="/assets/icons.svg#photo"></use></svg></em>PDF 转图片</a>
+        <a href="/jpg2pdf/"><em><svg class="i"><use href="/assets/icons.svg#files"></use></svg></em>图片转 PDF</a>
+        <a href="/rotate/"><em><svg class="i"><use href="/assets/icons.svg#rotate-clockwise"></use></svg></em>旋转 PDF</a>
       </div>
     </div>
   </section>
