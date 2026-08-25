@@ -103,8 +103,49 @@
   .glance li span{margin-left:auto;font-size:var(--fs-xs);color:#8ea4c4;
     font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
 
+  /* ---------- 滚动视差 ----------
+     用 CSS 滚动时间线，跑在合成线程，不占主线程也不用监听 scroll。
+     不支持的浏览器（Safari、旧版）自动忽略，页面照常，只是没有视差。
+     极光走得慢、读数面板走得快，两者错开就有纵深。 */
+  @supports (animation-timeline: view()) {
+    .hero .aurora{
+      animation:para-slow linear both;
+      animation-timeline:view();
+      animation-range:entry 0% exit 100%;
+    }
+    .hero .glance{
+      animation:para-fast linear both;
+      animation-timeline:view();
+      animation-range:entry 0% exit 100%;
+    }
+    @keyframes para-slow{ to{ transform:translate3d(0,7%,0) } }
+    @keyframes para-fast{ to{ transform:translate3d(0,-16%,0) } }
+  }
+
+  /* ---------- 3D 倾斜 ----------
+     角度由 JS 写进 --rx / --ry，这里只负责怎么呈现。
+     幅度刻意压小，大了就是廉价特效。 */
+  .tilt{transform-style:preserve-3d;
+    transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+    transition:transform .4s var(--ease)}
+  .tilt.tilting{transition:transform .08s linear}
+  /* 跟随光标的高光。只在倾斜时出现，不然静止状态一直有个亮斑很怪 */
+  .tilt::after{content:"";position:absolute;inset:0;border-radius:inherit;
+    pointer-events:none;opacity:0;transition:opacity .3s var(--ease);
+    background:radial-gradient(280px circle at var(--mx,50%) var(--my,50%),
+               rgba(255,255,255,.14),transparent 62%)}
+  .tilt.tilting::after{opacity:1}
+  /* 浅色卡片上的高光要用品牌色，白色在白底上看不见 */
+  .mod.tilt::after{background:radial-gradient(320px circle at var(--mx,50%) var(--my,50%),
+               rgba(31,86,214,.09),transparent 62%)}
+
+  /* 数字滚动期间用等宽体，位数变化时不会左右抖 */
+  [data-count]{font-variant-numeric:tabular-nums;font-style:normal}
+  .glance li span i,.glance .row1 span i{font-style:normal}
+
   @media (prefers-reduced-motion: reduce){
     .hero .aurora i{animation:none}
+    .tilt{transform:none}
   }
   .hero .kicker{font-size:var(--fs-sm);color:#7fa8f0;font-weight:600;
     margin-bottom:var(--sp-3);display:inline-flex;align-items:center;gap:7px}
@@ -239,12 +280,12 @@
     </div>
     </div>
 
-    <div class="glance">
-      <div class="row1"><b>工具箱里有什么</b><span>10 个工具</span></div>
+    <div class="glance tilt">
+      <div class="row1"><b>工具箱里有什么</b><span><i data-count="10"></i> 个工具</span></div>
       <ul>
-        <li><svg class="i"><use href="/assets/icons.svg#file-type-docx"></use></svg>PDF 处理<span>7 个操作</span></li>
-        <li><svg class="i"><use href="/assets/icons.svg#credit-card"></use></svg>银行卡信息<span>3156 条号段</span></li>
-        <li><svg class="i"><use href="/assets/icons.svg#world-www"></use></svg>IP 归属地<span>55 万条网段</span></li>
+        <li><svg class="i"><use href="/assets/icons.svg#file-type-docx"></use></svg>PDF 处理<span><i data-count="7"></i> 个操作</span></li>
+        <li><svg class="i"><use href="/assets/icons.svg#credit-card"></use></svg>银行卡信息<span><i data-count="3156"></i> 条号段</span></li>
+        <li><svg class="i"><use href="/assets/icons.svg#world-www"></use></svg>IP 归属地<span><i data-count="55"></i> 万条网段</span></li>
         <li><svg class="i"><use href="/assets/icons.svg#link"></use></svg>USDT 交易记录<span>可批量</span></li>
       </ul>
     </div>
@@ -279,7 +320,7 @@
     <div class="sec-hd">
       <h2>银行卡信息查询</h2>
     </div>
-    <a class="mod" href="/bincard/">
+    <a class="mod tilt" href="/bincard/">
       <div class="ic"><svg class="i"><use href="/assets/icons.svg#credit-card"></use></svg></div>
       <div class="body">
         <div class="ds">批量查发卡行、卡种和 BIN 号段，并做 Luhn 校验。</div>
@@ -297,7 +338,7 @@
     <div class="sec-hd">
       <h2>IP 归属地查询</h2>
     </div>
-    <a class="mod" href="/ip/">
+    <a class="mod tilt" href="/ip/">
       <div class="ic"><svg class="i"><use href="/assets/icons.svg#world-www"></use></svg></div>
       <div class="body">
         <div class="ds">批量查国家、省市和运营商，并标注每条结果的定位精度。</div>
@@ -316,7 +357,7 @@
       <h2>USDT 交易记录查询</h2>
       <span class="note">数据来自 TRON 官方节点</span>
     </div>
-    <a class="mod" href="/tron/">
+    <a class="mod tilt" href="/tron/">
       <div class="ic"><svg class="i"><use href="/assets/icons.svg#link"></use></svg></div>
       <div class="body">
         <div class="ds">查 TRON 地址的转入转出明细，自动识别垃圾代币并统计进出金额。</div>
@@ -361,6 +402,9 @@
 
 </div>
 <script src="/assets/common.js"></script>
-<script>W.mountFooter(document.querySelector('.wrap'));</script>
+<script src="/assets/fx.js"></script>
+<script>W.mountFooter(document.querySelector('.wrap'));
+  FX.initTilt('.tilt');
+  FX.initCountUp();</script>
 </body>
 </html>
