@@ -76,7 +76,7 @@ a{color:var(--brand);text-underline-offset:2px}
 
 /* 和 .nav-in 保持同宽同内边距，否则导航的品牌名和下面的内容左边缘对不齐。
    之前这里是 960px、导航是 1240px，差 280px，肉眼可见的错位。 */
-.wrap{max-width:1240px;margin:0 auto;padding:var(--sp-5) var(--sp-5) 72px}
+.wrap{max-width:1120px;margin:0 auto;padding:var(--sp-5) var(--sp-5) 72px}
 
 /* ===== 图标 =====
    用法：<svg class="i"><use href="/assets/icons.svg#lock"></use></svg>
@@ -90,7 +90,7 @@ a{color:var(--brand);text-underline-offset:2px}
    全站统一，吸顶。品牌名兼作返回首页的入口，所以不再单独放返回条。 */
 .nav{background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(10px);
   border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
-.nav-in{max-width:1240px;margin:0 auto;padding:0 var(--sp-5);min-height:62px;
+.nav-in{max-width:1120px;margin:0 auto;padding:0 var(--sp-5);min-height:62px;
   display:flex;align-items:center;gap:var(--sp-5)}
 .nav .brand{display:inline-flex;align-items:center;gap:8px;text-decoration:none;
   color:var(--text);font-weight:600;font-size:var(--fs-md);letter-spacing:-.01em;flex:none}
@@ -147,7 +147,7 @@ h1{font-size:var(--fs-xl);line-height:1.28;letter-spacing:-.018em;
 .card h2{font-size:var(--fs-md);font-weight:600;margin:0 0 var(--sp-3);letter-spacing:-.005em}
 
 /* ===== 拖放区 ===== */
-.drop{border:1.5px dashed var(--line);border-radius:var(--r-md);padding:44px var(--sp-4);
+.drop{border:1.5px dashed var(--line);border-radius:var(--r-md);padding:44px var(--sp-4);max-width:720px;
   text-align:center;cursor:pointer;background:var(--card-2);
   transition:border-color .18s var(--ease),background .18s var(--ease)}
 .drop:hover,.drop.over{border-color:var(--brand);background:var(--brand-soft)}
@@ -182,7 +182,9 @@ select,input[type=text],input[type=number],input[type=password]{
   border:1px solid var(--line);border-radius:var(--r-sm);
   background:var(--card);color:var(--text);transition:border-color .15s var(--ease)}
 select:focus,input:focus{outline:none;border-color:var(--brand)}
-input[type=text],input[type=password]{min-width:220px}
+/* 单行输入给个上限。之前 TRON 地址框用 flex:1 撑满整行，
+   34 个字符占一千多像素，右边一大截空着，很别扭。 */
+input[type=text],input[type=password]{min-width:220px;max-width:100%}
 ::placeholder{color:var(--muted);opacity:.75}
 
 /* ===== 提示条 ===== */
@@ -223,7 +225,7 @@ input[type=text],input[type=password]{min-width:220px}
   border-top:1px solid var(--line)}
 
 /* ===== 批量查询：粘贴框 + 结果表格 ===== */
-textarea.ta{width:100%;min-height:150px;resize:vertical;
+textarea.ta{width:100%;max-width:720px;min-height:150px;resize:vertical;
   font:var(--fs-sm)/1.75 ui-monospace,Consolas,"Courier New",monospace;
   padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-md);
   background:var(--card);color:var(--text);transition:border-color .15s var(--ease)}
