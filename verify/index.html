@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>页面已合并 · 文火工具箱</title>
+<!-- 这一页原本讲「怎么验证文件没上传」，内容已下线。
+     它在线过一段时间，可能被搜索引擎收录，所以留一个跳转避免死链。
+     静态托管做不了 301，用 canonical 指回首页把权重交回去，
+     再配 meta refresh 让人跳走。 -->
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://wenhuo.top/">
+<meta http-equiv="refresh" content="2; url=/">
+<link rel="stylesheet" href="/assets/common.css">
+<style>
+  .gone{max-width:520px;margin:12vh auto;padding:0 var(--sp-4);text-align:center}
+  .gone .ic{color:var(--muted);margin-bottom:var(--sp-3)}
+  .gone .ic .i{width:34px;height:34px;stroke-width:1.4}
+  .gone h1{font-size:var(--fs-lg);font-weight:680;margin:0 0 var(--sp-2)}
+  .gone p{color:var(--muted);font-size:var(--fs-sm);line-height:1.75;margin:0 0 var(--sp-4)}
+  .gone a.go{display:inline-flex;align-items:center;gap:7px;text-decoration:none;
+    font-size:var(--fs-sm);font-weight:600;color:#fff;background:var(--brand);
+    border-radius:var(--r-sm);padding:10px 18px}
+  .gone a.go:hover{background:var(--brand-d)}
+</style>
+</head>
+<body>
+  <div class="gone">
+    <div class="ic"><svg class="i"><use href="/assets/icons.svg#arrow-left"></use></svg></div>
+    <h1>这个页面已经下线</h1>
+    <p>正在带你回首页。没有自动跳转的话，点下面的按钮。</p>
+    <a class="go" href="/">回到文火工具箱</a>
+  </div>
+</body>
+</html>
