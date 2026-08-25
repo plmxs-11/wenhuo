@@ -55,8 +55,8 @@
     return h;
   }
 
-  async function grab(url) {
-    const resp = await fetch(url, { headers: authHeaders() });
+  async function grab(url, signal) {
+    const resp = await fetch(url, { headers: authHeaders(), signal });
     if (!resp.ok) {
       if (resp.status === 429) throw new Error('请求太频繁被限流了，等一会儿再试（或在下面填自己的 API key 提高上限）');
       throw new Error(`TronGrid 返回 HTTP ${resp.status}`);
@@ -66,9 +66,12 @@
 
   /**
    * 拉取某地址的全部 TRC20 转账，沿 meta.links.next 游标一直翻到底。
-   * onProgress(已取条数, 页数) 用于显示进度。
-   * 返回 { list, truncated }——truncated 只在撞到 MAX_PAGES 兜底上限时为真，
-   * 正常情况下拿到的就是全量。
+   *
+   * 高活跃地址（交易所热钱包这类）可能要连翻几十页，耗时很久，
+   * 所以支持 opts.signal 中断：界面上给一个「停止」按钮，
+   * 中断时把已经拿到的部分返回，不是全丢。
+   *
+   * 返回 { list, truncated, stopped, pages }。
    */
   async function fetchTransfers(address, opts) {
     const o = opts || {};
@@ -77,9 +80,17 @@
     let url = `${GRID}/${encodeURIComponent(address)}/transactions/trc20?limit=${PAGE}`;
     if (o.contract) url += `&contract_address=${encodeURIComponent(o.contract)}`;
     let pages = 0;
+    let stopped = false;
 
     while (url && pages < MAX_PAGES) {
-      const d = await grab(url);
+      if (o.signal && o.signal.aborted) { stopped = true; break; }
+      let d;
+      try {
+        d = await grab(url, o.signal);
+      } catch (e) {
+        if (e && e.name === 'AbortError') { stopped = true; break; }
+        throw e;
+      }
       pages++;
       const arr = d.data || [];
       for (const t of arr) {
@@ -93,7 +104,7 @@
       if (o.onProgress) o.onProgress(out.length, pages);
       url = ((d.meta || {}).links || {}).next || null;
     }
-    return { list: out, truncated: !!url, pages };
+    return { list: out, truncated: !!url && !stopped, stopped, pages };
   }
 
   /**

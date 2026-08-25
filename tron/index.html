@@ -54,6 +54,7 @@
       <input type="text" id="addr" placeholder="TBYoPKBz2mJQZPMG9A3hCwY9xx4QdcBnCK"
              style="flex:1;min-width:280px;font-family:ui-monospace,Consolas,monospace">
       <button id="btnGo" class="btn-p"><svg class="i"><use href="/assets/icons.svg#search"></use></svg> 查询</button>
+      <button id="btnStop" class="btn-s" style="display:none">停止</button>
       <button id="btnClear" class="btn-s">清空</button>
     </div>
 
@@ -132,6 +133,7 @@
   const HEADERS = ['序号','时间','方向','金额','代币','对方地址','对方机构','交易哈希'];
   let rows = [], all = [], queried = '';
   let tags = new Map();   // 对手方地址 -> 机构标签，点了「识别对手方机构」才有
+  let abort = null;       // 当前查询的中断控制器，高活跃地址要能中途叫停
 
   // ---------- API key（只存本地） ----------
   $('#apiKey').value = Tron.getKey();
@@ -222,62 +224,88 @@
       return say('这不是有效的 TRON 地址。地址应以 T 开头、共 34 位。', 's-err');
     }
 
-    $('#btnGo').disabled = true;
+    // 每次查询都从干净状态开始。上一次的结果、机构标签都要清掉——
+    // 否则换个地址查，旧的标签会被套到新对手方身上，是实打实的错数据。
+    abort = new AbortController();
+    all = []; rows = []; tags = new Map();
     capWarn.innerHTML = '';
+    resCard.style.display = 'none';
+    $('#btnGo').disabled = true;
+    $('#btnStop').style.display = '';
+
     try {
-      say('正在向 TronScan 查询…', 's-run');
+      say('正在查询…', 's-run');
       prog.classList.add('on');
-      bar.style.width = '10%';
-      progTxt.textContent = '正在请求 TronScan…';
+      bar.style.width = '8%';
+      progTxt.textContent = '正在请求…';
 
       const r = await Tron.fetchTransfers(a, {
+        signal: abort.signal,
         onProgress: (n, page) => {
-          // 总数事先不知道，用页数做个不断推进的观感，别假装知道百分比
-          bar.style.width = Math.min(95, page * 12) + '%';
+          // 总条数事先不知道，用页数推进，别假装知道百分比
+          bar.style.width = Math.min(95, 8 + page * 10) + '%';
           progTxt.textContent = `已取回 ${n.toLocaleString()} 条（第 ${page} 页）…`;
         }
       });
-      prog.classList.remove('on');
 
       queried = a;
       all = r.list.map(t => Tron.normalize(t, a));
 
       if (!all.length) {
-        resCard.style.display = 'none';
-        return say('这个地址没有查到 TRC20 转账记录。', 's-err');
+        say(r.stopped ? '已停止，没有取到记录。' : '这个地址没有查到 TRC20 转账记录。', 's-err');
+        return;
       }
 
       render();
 
-      // 只有撞到兜底页数上限才是真的没拿全，正常翻到底就是全量
-      if (r.truncated) {
+      if (r.stopped) {
         capWarn.innerHTML =
           `<div class="netwarn" style="margin-top:0;margin-bottom:12px">
-             <b><svg class="i"><use href="/assets/icons.svg#alert-triangle"></use></svg> 这个地址交易太多，已取回 ${all.length.toLocaleString()} 条后停止，这不是全部。</b><br>
-             为避免把浏览器拖死，最多翻 ${Tron.MAX_PAGES} 页。需要完整流水请到 TronScan 官网导出，或依法调证。
+             <b>已手动停止，这只是前 ${all.length.toLocaleString()} 条，不是全部。</b>
+           </div>`;
+      } else if (r.truncated) {
+        capWarn.innerHTML =
+          `<div class="netwarn" style="margin-top:0;margin-bottom:12px">
+             <b>这个地址交易太多，取回 ${all.length.toLocaleString()} 条后停止，这不是全部。</b><br>
+             最多翻 ${Tron.MAX_PAGES} 页。需要完整流水请到 TronScan 官网导出，或依法调证。
            </div>`;
       }
-      say(`查询完成，取回 ${all.length.toLocaleString()} 条` +
-          (r.truncated ? '（已达页数上限，数据不完整）' : `（共 ${r.pages} 页，已翻到底，是全量）`),
-          r.truncated ? 's-err' : 's-ok');
+      say(`取回 ${all.length.toLocaleString()} 条` +
+          (r.stopped ? '（已手动停止，不完整）'
+           : r.truncated ? '（已达页数上限，不完整）'
+           : `（共 ${r.pages} 页，已翻到底，是全量）`),
+          (r.stopped || r.truncated) ? 's-err' : 's-ok');
       resCard.scrollIntoView({ block:'start', behavior:'smooth' });
 
     } catch (e) {
       console.error(e);
-      prog.classList.remove('on');
       const msg = /Failed to fetch|NetworkError/i.test(e.message)
-        ? '连不上 TronScan。可能是网络问题，或浏览器插件拦截了请求。'
+        ? '连不上 TronGrid。可能是网络问题，或浏览器插件拦截了请求。'
         : e.message;
       say('查询失败：' + msg, 's-err');
+    } finally {
+      // 一定要放 finally。之前写在 try 末尾，查到 0 条时上面那个 return
+      // 会直接跳过它，按钮就永久禁用了，只能刷新页面。
+      prog.classList.remove('on');
+      $('#btnGo').disabled = false;
+      $('#btnStop').style.display = 'none';
+      abort = null;
     }
-    $('#btnGo').disabled = false;
+  });
+
+  $('#btnStop').addEventListener('click', () => {
+    if (abort) { abort.abort(); say('正在停止…', 's-run'); }
   });
 
   addr.addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnGo').click(); });
 
   $('#btnClear').addEventListener('click', () => {
-    addr.value = ''; all = []; rows = [];
-    resCard.style.display = 'none'; capWarn.innerHTML = ''; say('');
+    if (abort) abort.abort();
+    addr.value = ''; all = []; rows = []; tags = new Map(); queried = '';
+    resCard.style.display = 'none'; capWarn.innerHTML = '';
+    prog.classList.remove('on');
+    $('#btnGo').disabled = false; $('#btnStop').style.display = 'none';
+    say('');
   });
 
   // ---------- 导出 ----------
