@@ -22,8 +22,28 @@
      不用深色渐层大背景。那种"科技感"背景配中文正文很容易显廉价，
      而且和内页的浅色是割裂的。改成浅底 + 一条细的品牌色顶边，
      靠字号和留白拉开层次。 */
-  .hero{padding:var(--sp-6) 0 var(--sp-5);border-bottom:1px solid var(--line);
+  /* 左文右览。原来只有左半边有内容，右边一大片空白，
+     整块看起来像个没写完的面板。 */
+  .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:var(--sp-6);align-items:center;
+    padding:var(--sp-6) 0 var(--sp-5);border-bottom:1px solid var(--line);
     margin-bottom:var(--sp-6)}
+  @media(max-width:820px){
+    .hero{grid-template-columns:1fr;gap:var(--sp-4)}
+    .hero .glance{display:none}
+  }
+  /* 右侧：把工具箱里有什么直接摊开，省得用户还要往下翻才知道 */
+  .glance{border:1px solid var(--line);border-radius:var(--r-lg);
+    background:var(--card);overflow:hidden}
+  .glance .row1{display:flex;align-items:baseline;justify-content:space-between;
+    padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--line);
+    font-size:var(--fs-xs);color:var(--muted)}
+  .glance .row1 b{font-size:var(--fs-base);color:var(--text);font-weight:600}
+  .glance ul{list-style:none;margin:0;padding:var(--sp-2) 0}
+  .glance li{display:flex;align-items:center;gap:9px;
+    padding:6px var(--sp-4);font-size:var(--fs-sm);color:var(--text-2)}
+  .glance li .i{width:16px;height:16px;color:var(--muted);flex:none}
+  .glance li span{margin-left:auto;font-size:var(--fs-xs);color:var(--muted);
+    font-variant-numeric:tabular-nums}
   .hero .kicker{font-size:var(--fs-sm);color:var(--brand);font-weight:600;
     margin-bottom:var(--sp-3);display:inline-flex;align-items:center;gap:7px}
   .hero h1{font-size:clamp(30px,4.4vw,46px);line-height:1.2;letter-spacing:-.01em;
@@ -49,10 +69,12 @@
   .sec-hd .note{font-size:var(--fs-xs);color:var(--muted);display:inline-flex;align-items:center;gap:5px}
   .sec-hd .note.alert{color:var(--err)}
 
-  /* PDF：一个大入口，右边列出包含的操作 */
-  .hub{display:grid;grid-template-columns:1fr 1.15fr;gap:0;
+  /* PDF：左边一个入口，右边列出七项。
+     右侧要放两列共七行，比左边那点文字需要更多宽度，所以给它更大份额。 */
+  .hub{display:grid;grid-template-columns:minmax(240px,.72fr) 1.28fr;gap:0;
     border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--card)}
-  .hub .l{padding:var(--sp-5);border-right:1px solid var(--line)}
+  .hub .l{padding:var(--sp-5);border-right:1px solid var(--line);
+    display:flex;flex-direction:column;justify-content:center}
   .hub .ic{color:var(--brand);margin-bottom:var(--sp-3)}
   .hub .ic .i{width:28px;height:28px;stroke-width:1.5}
   .hub h3{margin:0 0 var(--sp-2);font-size:var(--fs-lg);font-weight:600;letter-spacing:-.015em}
@@ -122,6 +144,7 @@
 <div class="wrap">
 
   <header class="hero">
+    <div>
     <div class="kicker">
       <svg class="i"><use href="/assets/icons.svg#shield-check"></use></svg>
       wenhuo.top
@@ -138,6 +161,17 @@
         <svg class="i"><use href="/assets/icons.svg#table-export"></use></svg>
         批量查询
       </a>
+    </div>
+    </div>
+
+    <div class="glance">
+      <div class="row1"><b>工具箱里有什么</b><span>10 个工具</span></div>
+      <ul>
+        <li><svg class="i"><use href="/assets/icons.svg#file-type-docx"></use></svg>PDF 处理<span>7 个操作</span></li>
+        <li><svg class="i"><use href="/assets/icons.svg#credit-card"></use></svg>银行卡信息<span>3156 条号段</span></li>
+        <li><svg class="i"><use href="/assets/icons.svg#world-www"></use></svg>IP 归属地<span>55 万条网段</span></li>
+        <li><svg class="i"><use href="/assets/icons.svg#link"></use></svg>USDT 交易记录<span>可批量</span></li>
+      </ul>
     </div>
   </header>
 
