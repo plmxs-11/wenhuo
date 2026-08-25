@@ -74,7 +74,9 @@ body{
 }
 a{color:var(--brand);text-underline-offset:2px}
 
-.wrap{max-width:960px;margin:0 auto;padding:var(--sp-5) var(--sp-4) 72px}
+/* 和 .nav-in 保持同宽同内边距，否则导航的品牌名和下面的内容左边缘对不齐。
+   之前这里是 960px、导航是 1240px，差 280px，肉眼可见的错位。 */
+.wrap{max-width:1240px;margin:0 auto;padding:var(--sp-5) var(--sp-5) 72px}
 
 /* ===== 图标 =====
    用法：<svg class="i"><use href="/assets/icons.svg#lock"></use></svg>
@@ -280,7 +282,10 @@ table.res td.dim{color:var(--muted)}
 .prog .txt{font-size:var(--fs-xs);color:var(--muted);margin-top:7px;font-variant-numeric:tabular-nums}
 
 /* ===== 说明区 ===== */
-.tips{font-size:var(--fs-sm);color:var(--muted);line-height:1.8}
+/* 容器加宽到 1240px 后，纯文字段落一行能排到七八十个字，眼睛跟不上。
+   给说明类内容单独限一个阅读宽度，表格和控件不受影响。 */
+.tips{font-size:var(--fs-sm);color:var(--muted);line-height:1.8;max-width:78ch}
+.hint,.netwarn{max-width:82ch}
 .tips b{color:var(--text);font-weight:600}
 .tips ul{padding-left:18px;margin:8px 0 0}
 .tips li{margin-bottom:5px}
@@ -316,7 +321,7 @@ footer{text-align:center;color:var(--muted);font-size:var(--fs-xs);
 
 @media(max-width:700px){
   :root{--fs-xl:23px; --fs-2xl:27px}
-  .wrap{padding:var(--sp-4) var(--sp-3) 56px}
+  .wrap{padding:var(--sp-4) var(--sp-4) 56px}
   .topbar{padding:var(--sp-3) var(--sp-3) 0}
   .drop{padding:32px var(--sp-3)}
   input[type=text],input[type=password]{min-width:150px}
