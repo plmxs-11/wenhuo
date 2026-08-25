@@ -18,10 +18,6 @@
 <style>
   .wrap{max-width:1040px}
 
-  /* ---------- 首屏 ----------
-     不用深色渐层大背景。那种"科技感"背景配中文正文很容易显廉价，
-     而且和内页的浅色是割裂的。改成浅底 + 一条细的品牌色顶边，
-     靠字号和留白拉开层次。 */
   /* ---------- 深色主视觉 ----------
      整页只在最顶部做这一次明暗切换，读起来是"封面 → 正文"。
      三层叠出纵深：极光色团（缓慢漂移）、点阵网格、顶部一道高光。
@@ -74,10 +70,6 @@
   .hero::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;z-index:-1;
     background:linear-gradient(90deg,transparent,rgba(120,170,255,.75),transparent)}
 
-  .hero .kicker{color:#7fa8f0}
-  .hero h1{color:#fff;text-shadow:0 1px 24px rgba(60,120,255,.28)}
-  .hero p{color:#9fb2cc}
-  .hero p b{color:#fff}
   .hero-cta .primary{background:#2f6bff;color:#fff;
     box-shadow:0 4px 18px rgba(47,107,255,.42), inset 0 1px 0 rgba(255,255,255,.22)}
   .hero-cta .primary:hover{background:#4a80ff;
@@ -114,22 +106,19 @@
   @media (prefers-reduced-motion: reduce){
     .hero .aurora i{animation:none}
   }
-  .hero .kicker{font-size:var(--fs-sm);color:var(--brand);font-weight:600;
+  .hero .kicker{font-size:var(--fs-sm);color:#7fa8f0;font-weight:600;
     margin-bottom:var(--sp-3);display:inline-flex;align-items:center;gap:7px}
   .hero h1{font-size:clamp(30px,4.4vw,46px);line-height:1.2;letter-spacing:-.01em;
-    font-weight:600;margin:0 0 var(--sp-3);max-width:none;color:var(--text)}
-  .hero p{font-size:var(--fs-md);line-height:1.75;color:var(--muted);
+    font-weight:600;margin:0 0 var(--sp-3);max-width:none;color:#fff;
+    text-shadow:0 1px 24px rgba(60,120,255,.3)}
+  .hero p{font-size:var(--fs-md);line-height:1.75;color:#9fb2cc;
     margin:0 0 var(--sp-5);max-width:50ch}
-  .hero p b{color:var(--text);font-weight:600}
+  .hero p b{color:#fff;font-weight:600}
   .hero-cta{display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:center}
   .hero-cta a{display:inline-flex;align-items:center;gap:7px;text-decoration:none;
     font-size:var(--fs-sm);font-weight:600;border-radius:var(--r-sm);padding:11px 20px;
     transition:background .16s var(--ease),border-color .16s var(--ease),transform .1s var(--ease)}
   .hero-cta a:active{transform:translateY(1px)}
-  .hero-cta .primary{background:var(--brand);color:#fff}
-  .hero-cta .primary:hover{background:var(--brand-d)}
-  .hero-cta .plain{color:var(--text-2);border:1px solid var(--line);background:var(--card)}
-  .hero-cta .plain:hover{border-color:var(--muted)}
 
   /* ---------- 工具入口 ---------- */
   .sec{margin-top:var(--sp-6)}
