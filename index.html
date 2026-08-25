@@ -16,13 +16,37 @@
 <meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="/assets/common.css">
 <style>
-  .wrap{max-width:1040px}
+  .wrap{max-width:1240px;padding-left:var(--sp-5);padding-right:var(--sp-5)}
 
   /* ---------- 深色主视觉 ----------
      整页只在最顶部做这一次明暗切换，读起来是"封面 → 正文"。
      三层叠出纵深：极光色团（缓慢漂移）、点阵网格、顶部一道高光。
      动画只碰 transform 和 opacity，走 GPU，不会掉帧。 */
-  .hero{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:1.05fr .92fr;gap:var(--sp-6);align-items:center;margin:calc(var(--sp-5) * -1) calc(var(--sp-4) * -1) var(--sp-6);padding:76px var(--sp-5) 80px;background:#080d16;color:#e8eef8;border-radius:0 0 22px 22px}
+
+  /* ---------- 顶部导航 ----------
+     原来首页完全没有导航，用户看完首屏只能往下滚。
+     通栏深色，和主视觉连成一片，不做成悬浮条。 */
+  .nav{background:#080d16;border-bottom:1px solid rgba(255,255,255,.07)}
+  .nav-in{max-width:1240px;margin:0 auto;padding:0 var(--sp-5);height:62px;
+    display:flex;align-items:center;gap:var(--sp-5)}
+  .nav .brand{display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+    color:#fff;font-weight:600;font-size:var(--fs-md);letter-spacing:-.01em}
+  .nav .brand .i{width:19px;height:19px;color:#4d8bff}
+  .nav .links{display:flex;gap:var(--sp-4);margin-left:auto;flex-wrap:wrap}
+  .nav .links a{color:#9fb2cc;text-decoration:none;font-size:var(--fs-sm);
+    transition:color .15s var(--ease)}
+  .nav .links a:hover{color:#fff}
+  @media(max-width:700px){
+    .nav-in{height:auto;padding:10px var(--sp-4);flex-wrap:wrap;gap:var(--sp-3)}
+    .nav .links{margin-left:0;gap:var(--sp-3);width:100%}
+  }
+
+  /* 通栏。原来锁在 1040px、两侧各空 430px，还带圆角，
+     整块像一张卡片飘在灰底中间。 */
+  .hero{position:relative;isolation:isolate;overflow:hidden;
+    padding:68px 0 88px;background:#080d16;color:#e8eef8}
+  .hero-in{max-width:1240px;margin:0 auto;padding:0 var(--sp-5);
+    display:grid;grid-template-columns:1.05fr .9fr;gap:var(--sp-6);align-items:center}
 
   /* 极光。
      不要用 filter:blur() ——那是在给会动的大尺寸元素每帧重算模糊，
@@ -56,7 +80,8 @@
   .hero-cta .plain:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.32)}
 
   @media(max-width:820px){
-    .hero{grid-template-columns:1fr;gap:var(--sp-4);padding:56px var(--sp-4) 60px}
+    .hero{padding:56px 0 62px}
+    .hero-in{grid-template-columns:1fr;gap:var(--sp-4);padding:0 var(--sp-4)}
     .hero .glance{display:none}
   }
 
@@ -208,11 +233,24 @@
 </style>
 </head>
 <body>
-<div class="wrap">
-
-  <header class="hero">
-    <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
-    <div class="scrim" aria-hidden="true"></div>
+<nav class="nav">
+  <div class="nav-in">
+    <a class="brand" href="/">
+      <svg class="i"><use href="/assets/icons.svg#shield-check"></use></svg>
+      文火工具箱
+    </a>
+    <div class="links">
+      <a href="/pdf/">PDF 工具</a>
+      <a href="/bincard/">银行卡查询</a>
+      <a href="/ip/">IP 归属地</a>
+      <a href="/tron/">USDT 交易</a>
+    </div>
+  </div>
+</nav>
+<header class="hero">
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="scrim" aria-hidden="true"></div>
+  <div class="hero-in">
     <div>
     <div class="kicker">
       <svg class="i"><use href="/assets/icons.svg#shield-check"></use></svg>
@@ -242,7 +280,10 @@
         <li><svg class="i"><use href="/assets/icons.svg#link"></use></svg>USDT 交易记录<span>可批量</span></li>
       </ul>
     </div>
-  </header>
+  </div>
+</header>
+
+<div class="wrap">
 
   <section class="sec" style="margin-top:0">
     <div class="sec-hd">
