@@ -79,9 +79,12 @@
   .hub .ic .i{width:28px;height:28px;stroke-width:1.5}
   .hub h3{margin:0 0 var(--sp-2);font-size:var(--fs-lg);font-weight:600;letter-spacing:-.015em}
   .hub p{margin:0 0 var(--sp-4);font-size:var(--fs-sm);color:var(--muted);line-height:1.7}
-  .hub .go{display:inline-flex;align-items:center;gap:7px;text-decoration:none;
-    font-size:var(--fs-sm);font-weight:600;color:#fff;background:var(--brand);
-    border-radius:var(--r-sm);padding:10px 18px;transition:background .16s var(--ease)}
+  /* align-self 不能省：外层是 column 方向的 flex，
+     不写的话按钮会被拉成整条宽，很难看 */
+  .hub .go{display:inline-flex;align-self:flex-start;align-items:center;gap:7px;
+    text-decoration:none;font-size:var(--fs-sm);font-weight:600;color:#fff;
+    background:var(--brand);border-radius:var(--r-sm);padding:10px 18px;
+    transition:background .16s var(--ease)}
   .hub .go:hover{background:var(--brand-d)}
   .hub .r{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
   .hub .r a{display:flex;align-items:center;gap:9px;text-decoration:none;color:inherit;
