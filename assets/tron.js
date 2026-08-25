@@ -106,6 +106,10 @@
       pages++;
       const arr = d.data || [];
       for (const t of arr) {
+        // 接口会把 Approval（授权）事件混在 Transfer 里一起返回。
+        // 授权只是"允许对方划走"，不是资金转移，而且额度常写成 2^256-1，
+        // 直接当转账算会把汇总金额彻底毁掉（实测撞到过一条 78 位数）。
+        if (t.type && t.type !== 'Transfer') continue;
         const id = t.transaction_id;
         // 同一笔交易可能含多个 Transfer 事件，用 交易号+序号 去重而不是只看交易号
         const key = id + '|' + t.block_timestamp + '|' + t.from + '|' + t.to + '|' + t.value;
