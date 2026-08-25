@@ -111,7 +111,7 @@ header{position:relative;margin-bottom:var(--sp-5);padding:var(--sp-5) var(--sp-
 header::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;
   background:linear-gradient(90deg,var(--brand),transparent 72%)}
 h1{font-size:var(--fs-xl);line-height:1.28;letter-spacing:-.018em;
-  margin:0 0 var(--sp-2);font-weight:680}
+  margin:0 0 var(--sp-2);font-weight:600}
 .sub{color:var(--muted);font-size:var(--fs-base);margin:0;max-width:62ch}
 .sub b{color:var(--text-2);font-weight:600}
 
@@ -124,7 +124,7 @@ h1{font-size:var(--fs-xl);line-height:1.28;letter-spacing:-.018em;
 /* ===== 卡片 ===== */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
   padding:var(--sp-4);margin-bottom:var(--sp-3)}
-.card h2{font-size:var(--fs-md);font-weight:650;margin:0 0 var(--sp-3);letter-spacing:-.005em}
+.card h2{font-size:var(--fs-md);font-weight:600;margin:0 0 var(--sp-3);letter-spacing:-.005em}
 
 /* ===== 拖放区 ===== */
 .drop{border:1.5px dashed var(--line);border-radius:var(--r-md);padding:44px var(--sp-4);
@@ -169,13 +169,13 @@ input[type=text],input[type=password]{min-width:220px}
 .hint,.netwarn{margin-top:var(--sp-2);font-size:var(--fs-sm);border-radius:var(--r-md);
   padding:11px 15px;line-height:1.7}
 .hint{color:var(--warn);background:var(--warn-soft);border:1px solid var(--warn-line)}
-.hint b{color:var(--warn);font-weight:650}
+.hint b{color:var(--warn);font-weight:600}
 
 /* 需要联网的工具专用警示。刻意比 .hint 更重——
    全站其余工具都承诺数据不上传，这类是例外，必须一眼看见。 */
 .netwarn{color:var(--err);background:var(--err-soft);
   border:1px solid var(--err-line);border-left:3px solid var(--err)}
-.netwarn b{color:var(--err);font-weight:650}
+.netwarn b{color:var(--err);font-weight:600}
 .netwarn a{color:var(--err)}
 
 .status{margin-top:var(--sp-3);font-size:var(--fs-sm);min-height:22px;
@@ -220,7 +220,7 @@ textarea.ta:focus{outline:none;border-color:var(--brand)}
 .summary{display:flex;gap:var(--sp-5);flex-wrap:wrap;padding:var(--sp-3) var(--sp-4);
   background:var(--card-2);border:1px solid var(--line);border-radius:var(--r-md);
   margin-bottom:var(--sp-3);font-size:var(--fs-xs);color:var(--muted)}
-.summary b{display:block;font-size:var(--fs-lg);font-weight:650;color:var(--text);
+.summary b{display:block;font-size:var(--fs-lg);font-weight:600;color:var(--text);
   margin-top:2px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .summary .ok b{color:var(--ok)} .summary .bad b{color:var(--err)} .summary .all b{color:var(--brand)}
 
@@ -263,7 +263,7 @@ table.res td.dim{color:var(--muted)}
 
 /* ===== 说明区 ===== */
 .tips{font-size:var(--fs-sm);color:var(--muted);line-height:1.8}
-.tips b{color:var(--text);font-weight:650}
+.tips b{color:var(--text);font-weight:600}
 .tips ul{padding-left:18px;margin:8px 0 0}
 .tips li{margin-bottom:5px}
 .tips li:last-child{margin-bottom:0}
@@ -272,7 +272,7 @@ table.res td.dim{color:var(--muted)}
 
 /* ===== 赞赏区 ===== */
 .tip-jar{text-align:center}
-.tip-jar h3{font-size:var(--fs-md);font-weight:650;margin:0 0 6px}
+.tip-jar h3{font-size:var(--fs-md);font-weight:600;margin:0 0 6px}
 .tip-jar p{font-size:var(--fs-sm);color:var(--muted);margin:0 0 var(--sp-3)}
 .qr{display:flex;gap:var(--sp-5);justify-content:center;flex-wrap:wrap}
 .qr figure{margin:0}
@@ -290,7 +290,7 @@ footer{text-align:center;color:var(--muted);font-size:var(--fs-xs);
 .mask.on{display:flex}
 .modal{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
   padding:var(--sp-5);max-width:460px;width:100%;box-shadow:var(--shadow)}
-.modal h3{margin:0 0 var(--sp-2);font-size:var(--fs-md);font-weight:650}
+.modal h3{margin:0 0 var(--sp-2);font-size:var(--fs-md);font-weight:600}
 .modal p{margin:0 0 var(--sp-2);font-size:var(--fs-sm);color:var(--text-2)}
 .modal ol{margin:0 0 var(--sp-3);padding-left:20px;font-size:var(--fs-sm);line-height:2}
 .modal .note{font-size:var(--fs-sm);color:var(--muted);background:var(--card-2);

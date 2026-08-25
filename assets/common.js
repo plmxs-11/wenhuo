@@ -154,15 +154,16 @@
     const box = document.createElement('div');
     box.className = 'card tip-jar';
     box.innerHTML =
-      '<h3>☕ 觉得好用，请作者喝杯奶茶</h3>' +
-      '<p>所有工具永久免费，赞赏全凭自愿，1 块也是心意</p>' +
+      '<h3>觉得好用，请作者喝杯奶茶</h3>' +
+      '<p>所有工具免费，赞赏全凭自愿</p>' +
       '<div class="qr">' +
       '<figure><img src="/wechat-qr.png" alt="微信赞赏码" onerror="this.style.opacity=.25"><figcaption>微信</figcaption></figure>' +
       '<figure><img src="/alipay-qr.png" alt="支付宝收款码" onerror="this.style.opacity=.25"><figcaption>支付宝</figcaption></figure>' +
       '</div>';
+    // 这里原来印着「所有处理均在本地浏览器完成，我们看不到也拿不到你的文件」。
+    // 它由 JS 生成、出现在全站每一页，前几轮只扫 HTML 所以一直没清掉。
     const ft = document.createElement('footer');
-    ft.innerHTML = '所有处理均在本地浏览器完成，我们看不到也拿不到你的文件<br>' +
-      '<a href="/">文火工具箱</a> · wenhuo.top';
+    ft.innerHTML = '<a href="/">文火工具箱</a> · wenhuo.top';
     wrapEl.appendChild(box);
     wrapEl.appendChild(ft);
   }

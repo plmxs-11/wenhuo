@@ -24,10 +24,10 @@
      靠字号和留白拉开层次。 */
   .hero{padding:var(--sp-6) 0 var(--sp-5);border-bottom:1px solid var(--line);
     margin-bottom:var(--sp-6)}
-  .hero .kicker{font-size:var(--fs-sm);color:var(--brand);font-weight:650;
+  .hero .kicker{font-size:var(--fs-sm);color:var(--brand);font-weight:600;
     margin-bottom:var(--sp-3);display:inline-flex;align-items:center;gap:7px}
-  .hero h1{font-size:clamp(30px,4.4vw,46px);line-height:1.2;letter-spacing:-.028em;
-    font-weight:700;margin:0 0 var(--sp-3);max-width:17ch;color:var(--text)}
+  .hero h1{font-size:clamp(30px,4.4vw,46px);line-height:1.2;letter-spacing:-.01em;
+    font-weight:600;margin:0 0 var(--sp-3);max-width:none;color:var(--text)}
   .hero p{font-size:var(--fs-md);line-height:1.75;color:var(--muted);
     margin:0 0 var(--sp-5);max-width:50ch}
   .hero p b{color:var(--text);font-weight:600}
@@ -45,7 +45,7 @@
   .sec{margin-top:var(--sp-6)}
   .sec-hd{display:flex;align-items:baseline;justify-content:space-between;
     gap:var(--sp-3);flex-wrap:wrap;margin-bottom:var(--sp-3)}
-  .sec-hd h2{font-size:var(--fs-lg);font-weight:680;margin:0;letter-spacing:-.015em}
+  .sec-hd h2{font-size:var(--fs-lg);font-weight:600;margin:0;letter-spacing:-.015em}
   .sec-hd .note{font-size:var(--fs-xs);color:var(--muted);display:inline-flex;align-items:center;gap:5px}
   .sec-hd .note.alert{color:var(--err)}
 
@@ -55,7 +55,7 @@
   .hub .l{padding:var(--sp-5);border-right:1px solid var(--line)}
   .hub .ic{color:var(--brand);margin-bottom:var(--sp-3)}
   .hub .ic .i{width:28px;height:28px;stroke-width:1.5}
-  .hub h3{margin:0 0 var(--sp-2);font-size:var(--fs-lg);font-weight:680;letter-spacing:-.015em}
+  .hub h3{margin:0 0 var(--sp-2);font-size:var(--fs-lg);font-weight:600;letter-spacing:-.015em}
   .hub p{margin:0 0 var(--sp-4);font-size:var(--fs-sm);color:var(--muted);line-height:1.7}
   .hub .go{display:inline-flex;align-items:center;gap:7px;text-decoration:none;
     font-size:var(--fs-sm);font-weight:600;color:#fff;background:var(--brand);
@@ -68,6 +68,9 @@
   .hub .r a:hover{background:var(--brand-soft)}
   .hub .r a .i{width:17px;height:17px;color:var(--muted);flex:none}
   .hub .r a:hover .i{color:var(--brand)}
+  /* 七个工具放两列会空出一格，右下角留个灰方块很扎眼。
+     让最后一个横跨两列填满。 */
+  .hub .r a:last-child{grid-column:1 / -1}
   @media(max-width:820px){
     .hub{grid-template-columns:1fr}
     .hub .l{border-right:0;border-bottom:1px solid var(--line)}
@@ -105,7 +108,7 @@
   .why{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0}
   .why > div{padding:var(--sp-4);border-left:1px solid var(--line)}
   .why > div:first-child{border-left:0;padding-left:0}
-  .why h4{margin:0 0 7px;font-size:var(--fs-base);font-weight:650;
+  .why h4{margin:0 0 7px;font-size:var(--fs-base);font-weight:600;
     display:flex;align-items:center;gap:8px}
   .why h4 .i{color:var(--brand)}
   .why p{margin:0;font-size:var(--fs-sm);color:var(--muted);line-height:1.75}
@@ -123,8 +126,8 @@
       <svg class="i"><use href="/assets/icons.svg#shield-check"></use></svg>
       wenhuo.top
     </div>
-    <h1>文件和数据，一处理清楚</h1>
-    <p>PDF 的合并、拆分、压缩和格式转换，加上银行卡、IP、USDT 的批量查询。
+    <h1>常用的文件和数据工具</h1>
+    <p>PDF 合并、拆分、压缩、格式转换，以及银行卡、IP、USDT 批量查询。<br>
        打开就用，<b>免费、无需注册、不限次数</b>。</p>
     <div class="hero-cta">
       <a class="primary" href="/pdf/">
