@@ -14,16 +14,16 @@
 <meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="/assets/common.css">
 <style>
-  .addr{font-family:ui-monospace,Consolas,monospace;font-size:13px}
+  .addr{font-family:ui-monospace,Consolas,monospace;font-size:var(--fs-sm)}
   .dir-in{color:var(--ok);font-weight:600}
   .dir-out{color:var(--err);font-weight:600}
   .spam{color:var(--err)}
-  .keybox{margin-top:12px;font-size:13px;color:var(--muted)}
-  .keybox input{font-family:ui-monospace,Consolas,monospace;font-size:12px;min-width:300px}
-  .stat{display:flex;gap:20px;flex-wrap:wrap;padding:14px;background:#f6f8fc;
-    border:1px solid #e2e8f5;border-radius:10px;margin-bottom:12px}
-  .stat div{font-size:13px;color:var(--muted)}
-  .stat b{display:block;font-size:19px;margin-top:3px;color:var(--text)}
+  .keybox{margin-top:12px;font-size:var(--fs-sm);color:var(--muted)}
+  .keybox input{font-family:ui-monospace,Consolas,monospace;font-size:var(--fs-xs);min-width:300px}
+  .stat{display:flex;gap:20px;flex-wrap:wrap;padding:14px;background:var(--card-2);
+    border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:12px}
+  .stat div{font-size:var(--fs-sm);color:var(--muted)}
+  .stat b{display:block;font-size:var(--fs-lg);margin-top:3px;color:var(--text)}
   .stat .in b{color:var(--ok)} .stat .out b{color:var(--err)}
 </style>
 </head>
@@ -101,7 +101,7 @@
             <button id="btnDelKey" class="btn-s">删除</button>
           </div>
           <div style="margin-top:6px;font-size:12px">
-            不填也能正常查——实测带不带 key 返回的数据完全一样，key 只是放宽调用频率。
+            不填也能正常查。实测带不带 key 返回的数据完全一样，key 只是放宽调用频率。
             填了只存在<b>你自己浏览器的 localStorage</b> 里，只在查询时随请求发给 TronScan。
           </div>
         </div>

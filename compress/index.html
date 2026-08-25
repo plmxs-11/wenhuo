@@ -16,15 +16,15 @@
 <script src="/assets/vendor/pdf.min.js"></script>
 <script src="/assets/vendor/pdf-lib.min.js"></script>
 <style>
-  .verdict{border-radius:12px;padding:14px 16px;margin-top:14px;font-size:14px;line-height:1.8;display:none}
+  .verdict{border-radius:var(--r-md);padding:14px 16px;margin-top:14px;font-size:var(--fs-sm);line-height:1.8;display:none}
   .verdict.on{display:block}
-  .verdict.good{border:1px solid #bfe3c9;background:#f2fbf5}
-  .verdict.bad{border:1px solid #f0d8a8;background:#fff8e1}
+  .verdict.good{border:1px solid var(--ok-line);background:var(--ok-soft)}
+  .verdict.bad{border:1px solid var(--warn-line);background:var(--warn-soft)}
   .verdict .hd{font-weight:600;margin-bottom:4px;color:var(--text)}
   .verdict .bd{color:var(--muted)}
   .verdict .bd b{color:var(--text)}
   .cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px;
-    background:#f6f8fc;border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:14px}
+    background:var(--card-2);border:1px solid var(--line);border-radius:var(--r-md);padding:16px;margin-top:14px}
   .cmp .n{font-size:22px;font-weight:800;line-height:1.2}
   .cmp .n.save{color:var(--ok)}
   .cmp .n.grow{color:var(--err)}
