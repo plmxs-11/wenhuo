@@ -14,6 +14,7 @@
 <meta name="twitter:card" content="summary">
 <script src="/assets/vendor/mammoth.browser.min.js"></script>
 <script src="/assets/vendor/html2pdf.bundle.min.js"></script>
+<script src="/assets/common.js"></script>
 <link rel="stylesheet" href="/assets/common.css">
 <style>
   /* 本页独有：A4 纸张预览。其余外壳样式一律走 common.css，
@@ -323,9 +324,7 @@
 
     const d = ifr.contentDocument;
     d.open();
-    d.write(`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>${baseName}</title><style>${css}</style></head><body>${paper.innerHTML}<script>W.mountPdfSwitch('word2pdf');</script>
-<script>W.mountNav();</script>
-</body></html>`);
+    d.write(`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>${baseName}</title><style>${css}</style></head><body>${paper.innerHTML}</body></html>`);
     d.close();
 
     say('已打开打印窗口，目标请选择「另存为 PDF」', 's-run');
