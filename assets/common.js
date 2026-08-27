@@ -154,8 +154,10 @@
     const box = document.createElement('div');
     box.className = 'card tip-jar';
     box.innerHTML =
-      '<h3>觉得好用，请作者喝杯奶茶</h3>' +
-      '<p>所有工具免费，赞赏全凭自愿</p>' +
+      '<div class="say">' +
+        '<h3>觉得好用，请作者喝杯奶茶</h3>' +
+        '<p>所有工具免费，赞赏全凭自愿，1 块也是心意</p>' +
+      '</div>' +
       '<div class="qr">' +
       '<figure><img src="/wechat-qr.png" alt="微信赞赏码" onerror="this.style.opacity=.25"><figcaption>微信</figcaption></figure>' +
       '<figure><img src="/alipay-qr.png" alt="支付宝收款码" onerror="this.style.opacity=.25"><figcaption>支付宝</figcaption></figure>' +

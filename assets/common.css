@@ -295,15 +295,27 @@ table.res td.dim{color:var(--muted)}
 .tips code{font-family:ui-monospace,Consolas,monospace;font-size:.92em;
   background:var(--card-2);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
 
-/* ===== 赞赏区 ===== */
-.tip-jar{text-align:center}
+/* ===== 赞赏区 =====
+   原来用 object-fit:cover 把竖长的收款码裁成正方形，上下各切掉约 30%，
+   二维码本体缺角、可能扫不出来。改成 contain 完整显示。
+   同时由居中竖排改为横排：原先整块高 360px，信息量却很少。 */
+.tip-jar{display:flex;align-items:center;gap:var(--sp-5);flex-wrap:wrap;text-align:left}
+.tip-jar .say{flex:1;min-width:220px}
 .tip-jar h3{font-size:var(--fs-md);font-weight:600;margin:0 0 6px}
-.tip-jar p{font-size:var(--fs-sm);color:var(--muted);margin:0 0 var(--sp-3)}
-.qr{display:flex;gap:var(--sp-5);justify-content:center;flex-wrap:wrap}
-.qr figure{margin:0}
-.qr img{width:148px;height:148px;object-fit:cover;border:1px solid var(--line);
-  border-radius:var(--r-sm);background:var(--card-2)}
-.qr figcaption{font-size:var(--fs-xs);color:var(--muted);margin-top:7px}
+.tip-jar p{font-size:var(--fs-sm);color:var(--muted);margin:0;line-height:1.7}
+.qr{display:flex;gap:var(--sp-3);flex-wrap:wrap}
+.qr figure{margin:0;text-align:center}
+.qr img{width:104px;height:142px;object-fit:contain;
+  border:1px solid var(--line);border-radius:var(--r-sm);background:#fff;
+  transition:transform .18s var(--ease),box-shadow .18s var(--ease)}
+/* 收款码本来就小，悬停放大方便扫 */
+.qr figure:hover img{transform:scale(1.06);box-shadow:0 8px 24px rgba(22,40,80,.14)}
+.qr figcaption{font-size:var(--fs-xs);color:var(--muted);margin-top:6px}
+/* 弹窗里的收款码是独立居中展示的，不走赞赏区那套横排 */
+.modal .qr{justify-content:center}
+@media(max-width:560px){
+  .tip-jar{flex-direction:column;align-items:flex-start;gap:var(--sp-3)}
+}
 
 footer{text-align:center;color:var(--muted);font-size:var(--fs-xs);
   margin-top:var(--sp-5);padding-top:var(--sp-4);border-top:1px solid var(--line);line-height:2}
