@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>数二高数讲义 · 多元函数微分学与二重积分 | 文火工具箱</title>
+<meta name="description" content="考研数学二高数讲义：多元函数微分学（二重极限、偏导数、可微、复合与隐函数求导、极值最值）与二重积分（直角坐标、交换次序、极坐标、对称性）。从零讲起，含速查表。">
+<link rel="canonical" href="https://wenhuo.top/kaoyan/gaoshu/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="文火工具箱">
+<meta property="og:title" content="数二高数讲义 · 多元函数微分学与二重积分">
+<meta property="og:description" content="从零讲起的考研数二高数讲义，含关系图、穿线法图解和速查表。">
+<meta property="og:url" content="https://wenhuo.top/kaoyan/gaoshu/">
+<meta name="twitter:card" content="summary">
+<style>
+/* artifact 原壳里的基础重置，保留安全区适配 */
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;padding:0}
+img{max-width:100%}
+[hidden]:not([hidden=until-found i]){display:none!important}
+/* 返回站点的细条，不用全站吸顶导航：本页左侧已有吸顶目录，两个 sticky 会打架 */
+.backbar{max-width:1100px;margin:0 auto;padding:14px 0 0;font-size:14px}
+.backbar a{color:var(--muted);text-decoration:none}
+.backbar a:hover{color:var(--accent)}
+</style>
+<style>
+/* 学习讲义：单栏阅读，左侧目录在宽屏固定；配色取自题册的绿色色带 */
+:root{
+  --bg:#f6f8f7; --paper:#ffffff; --ink:#1d2622; --muted:#5c6a64; --line:#d9e2de;
+  --accent:#1f8a4c; --accent-soft:#e3f2e9; --warn:#b5541c; --warn-soft:#fbeee4;
+  --display:"Noto Serif SC","Songti SC","SimSun",serif;
+  --body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121715; --paper:#1a211e; --ink:#e3ebe7; --muted:#9aaba3; --line:#2e3a35;
+  --accent:#5cc58a; --accent-soft:#1d3428; --warn:#f0a070; --warn-soft:#3a2619; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121715; --paper:#1a211e; --ink:#e3ebe7; --muted:#9aaba3; --line:#2e3a35;
+  --accent:#5cc58a; --accent-soft:#1d3428; --warn:#f0a070; --warn-soft:#3a2619; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.8;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px;padding-block:32px 80px}
+nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;font-size:14px;line-height:1.6}
+nav h2{font-family:var(--display);font-size:15px;margin:18px 0 6px;color:var(--accent)}
+nav a{display:block;color:var(--muted);text-decoration:none;padding:2px 0}
+nav a:hover,nav a:focus-visible{color:var(--ink)}
+main{min-width:0}
+header.top{border-bottom:3px solid var(--accent);padding-bottom:16px;margin-bottom:8px}
+header.top h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,5vw,40px);margin:0;text-wrap:balance}
+header.top p{color:var(--muted);margin:6px 0 0}
+.chapter{margin-top:48px}
+.chapter>h2{font-family:var(--display);font-size:clamp(24px,4vw,30px);margin:0 0 12px;display:flex;gap:12px;align-items:baseline}
+.chapter>h2 .tag{font-family:var(--body);font-size:13px;background:var(--accent);color:var(--paper);padding:2px 10px;border-radius:4px;letter-spacing:.05em}
+section.block{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px 24px;margin-top:20px}
+section.block h3{font-family:var(--display);font-size:21px;margin:0 0 8px;text-wrap:balance}
+section.block h4{font-size:16px;margin:20px 0 4px;color:var(--accent)}
+p{margin:8px 0}
+.lead{font-weight:500}
+table{border-collapse:collapse;width:100%;font-size:15px;margin:10px 0}
+.tbl{overflow-x:auto}
+th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:13px;letter-spacing:.04em}
+.note{background:var(--warn-soft);border-left:3px solid var(--warn);padding:8px 14px;border-radius:0 6px 6px 0;margin:12px 0}
+.tip{background:var(--accent-soft);padding:8px 14px;border-radius:6px;margin:12px 0}
+.math{overflow-x:auto;overflow-y:hidden;padding:2px 0}
+ol,ul{padding-left:1.4em;margin:6px 0}
+li{margin:3px 0}
+figure{margin:14px 0;overflow-x:auto}
+figure svg{display:block;max-width:100%;height:auto;margin:0 auto}
+figcaption{font-size:13px;color:var(--muted);text-align:center}
+mjx-container[display="true"]{overflow-x:auto;overflow-y:hidden;max-width:100%}
+nav summary{display:none}
+@media (max-width:820px){
+  nav summary{display:block;list-style:none;cursor:pointer;font-weight:600;color:var(--accent);
+    padding:10px 2px;font-family:var(--display);font-size:16px}
+  nav summary::-webkit-details-marker{display:none}
+  nav summary::after{content:" ▾"}
+  nav details[open] summary::after{content:" ▴"}
+  nav details[open]{padding-bottom:6px}
+  nav h2:first-of-type{margin-top:10px}
+}
+@media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr);gap:0}nav{position:static;border-bottom:1px solid var(--line);padding-bottom:12px}
+  section.block{padding:16px}}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['$','$']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},options:{enableMenu:false}};
+</script>
+<script src="/assets/vendor/mathjax-tex-svg.js"></script>
+</head>
+<body>
+<div class="backbar"><a href="/">← 回文火工具箱</a></div>
+<div class="wrap">
+<nav aria-label="目录">
+  <details id="toc" open>
+  <summary>目录</summary>
+  <h2>多元函数微分学</h2>
+  <a href="#m0">全章地图</a><a href="#m1">1 二元函数</a><a href="#m2">2 二重极限与连续</a><a href="#m3">3 偏导数</a><a href="#m4">4 全微分与可微</a><a href="#m5">5 复合与隐函数</a><a href="#m6">6 极值与最值</a><a href="#m7">速查表</a>
+  <h2>二重积分</h2>
+  <a href="#d0">全章地图</a><a href="#d1">1 是什么</a><a href="#d2">2 性质</a><a href="#d3">3 直角坐标</a><a href="#d4">4 交换次序</a><a href="#d5">5 极坐标</a><a href="#d6">6 对称性</a><a href="#d7">7 绝对值与 max</a><a href="#d8">速查表</a>
+  </details>
+</nav>
+<main>
+<header class="top">
+  <h1>数二高数讲义</h1>
+  <p>多元函数微分学 · 二重积分 ｜ 从零讲起，配合题册使用</p>
+</header>
+
+<!-- ============ 多元函数微分学 ============ -->
+<div class="chapter" id="multi">
+<h2><span class="tag">第八章</span>多元函数微分学</h2>
+
+<section class="block" id="m0">
+<h3>全章地图</h3>
+<p>按 1→6 的顺序学，后面每一块都建立在前面上。第 5、6 块是大题主力，第 2、4 块主要出选择题。数二不考方向导数和梯度。</p>
+<div class="tbl"><table>
+<tr><th>块</th><th>内容</th><th>难度</th><th>考法</th></tr>
+<tr><td>1</td><td>二元函数是什么</td><td>★</td><td>打基础</td></tr>
+<tr><td>2</td><td>二重极限、连续</td><td>★★</td><td>选择、填空</td></tr>
+<tr><td>3</td><td>偏导数</td><td>★</td><td>计算基础，必须熟</td></tr>
+<tr><td>4</td><td>全微分、可微</td><td>★★★</td><td>选择题（概念关系）</td></tr>
+<tr><td>5</td><td>复合函数、隐函数求导</td><td>★★★</td><td>填空、大题（重点）</td></tr>
+<tr><td>6</td><td>极值与最值</td><td>★★★</td><td>大题（重点）</td></tr>
+</table></div>
+</section>
+
+<section class="block" id="m1">
+<h3>1　二元函数是什么</h3>
+<p>给两个数 $x$、$y$，得到一个数 $z=f(x,y)$。一元函数的图像是曲线，二元函数的图像是<b>曲面</b>。</p>
+<p class="tip"><b>地形图比喻：</b>$x$ 是往东走多远，$y$ 是往北走多远，$z$ 是脚下的海拔。偏导数是某个方向的坡度，极值是山顶和谷底，可微是山面光滑没有折痕。</p>
+<p>例：$z=x^2+y^2$ 是一个碗口朝上的碗，原点最低。</p>
+</section>
+
+<section class="block" id="m2">
+<h3>2　二重极限与连续</h3>
+<p class="lead">二重极限存在 = 不管沿哪条路走向这个点，最后到的高度都一样。</p>
+<p>一元极限 $x\to0$ 只有左右两条路；二重极限 $(x,y)\to(0,0)$ 在平面上有无数条路。</p>
+<h4>两种题型</h4>
+<div class="tbl"><table>
+<tr><th>要证明</th><th>方法</th><th>例子</th></tr>
+<tr><td>极限不存在</td><td>找两条路，结果不同</td><td>$\dfrac{xy}{x^2+y^2}$：沿 $x$ 轴得 $0$，沿 $y=x$ 得 $\dfrac12$</td></tr>
+<tr><td>极限存在（常为 0）</td><td>放缩夹逼</td><td>$\left|\dfrac{x^2y}{x^2+y^2}\right|\le|y|\to0$</td></tr>
+</table></div>
+<p>找路技巧：常用 $y=kx$；分母有 $y^4$ 时试 $x=ky^2$，让分子分母次数凑齐。</p>
+<h4>放缩常用不等式</h4>
+\[x^2+y^2\ge2|xy|,\qquad |x|\le\sqrt{x^2+y^2},\qquad |x^2-y^2|\le x^2+y^2,\qquad x^2+y^2\ge\frac{(x+y)^2}{2}\]
+<h4>次数口诀</h4>
+<ul><li>分子次数比分母高 → 多半存在且为 0，用放缩证</li><li>分子分母次数一样 → 多半不存在，找两条路</li></ul>
+<h4>两个陷阱</h4>
+<ol>
+<li><b>有界 × 无穷小 = 无穷小。</b>$\dfrac{xy^2}{x^2+y^4}$ 本身没有极限，但绝对值 $\le\dfrac12$；乘上 $\sin ky\to0$ 后极限为 $0$。</li>
+<li><b>$1^\infty$ 型照样用公式：</b>$\lim f^g=\mathrm e^{\lim g\,(f-1)}$，再对指数部分放缩。</li>
+</ol>
+<h4>连续</h4>
+<p>极限值 = 函数值。求"使 $f$ 在原点连续的 $a$"，就是算原点处的极限。</p>
+</section>
+
+<section class="block" id="m3">
+<h3>3　偏导数</h3>
+<p class="lead">对 $x$ 求偏导 = 把 $y$ 当常数，对 $x$ 求普通导数。</p>
+<p>例：$f(x,y)=x^2y+\sin(xy)$</p>
+\[\frac{\partial f}{\partial x}=2xy+y\cos(xy),\qquad \frac{\partial f}{\partial y}=x^2+x\cos(xy)\]
+<h4>特殊点必须用定义</h4>
+<p>原点、分段点、根号或绝对值为 0 的点：先令另一个变量为 0，变成一元函数，再按定义求导。</p>
+\[f'_x(0,0)=\lim_{x\to0}\frac{f(x,0)-f(0,0)}{x},\qquad f'_y(0,0)=\lim_{y\to0}\frac{f(0,y)-f(0,0)}{y}\]
+<p class="note"><b>看根号开出来带不带绝对值。</b>$f=\sin\sqrt{x^4+y^2}$：$f(x,0)=\sin x^2$ 光滑，$f'_x(0,0)=0$；$f(0,y)=\sin|y|$ 是尖角，$f'_y(0,0)$ 不存在。</p>
+<h4>求某一点的偏导：先代后求</h4>
+<p>对 $x$ 求偏导时 $y$ 本来就是常数，先把 $y$ 的值代进去。例：$z=(x-2y)^{y-2x}$ 在 $(1,0)$ 处，先得 $z=x^{-2x}$，取对数求导得 $-2$。</p>
+<h4>二阶偏导</h4>
+<p>$f''_{xx},\ f''_{xy},\ f''_{yx},\ f''_{yy}$。两个混合偏导都连续时 $f''_{xy}=f''_{yx}$，可省一半计算。</p>
+</section>
+
+<section class="block" id="m4">
+<h3>4　全微分与可微</h3>
+<p class="lead">可微 = 这一点附近，山面可以用一块平板（切平面）很好地近似。</p>
+\[\mathrm dz=f'_x\,\mathrm dx+f'_y\,\mathrm dy\]
+<h4>判断可微三步走</h4>
+<ol>
+<li>用定义求 $f'_x(0,0)$、$f'_y(0,0)$，不存在则直接不可微。</li>
+<li>计算误差极限：
+\[\lim_{(\Delta x,\Delta y)\to(0,0)}\frac{\Delta z-f'_x\Delta x-f'_y\Delta y}{\sqrt{(\Delta x)^2+(\Delta y)^2}}\]</li>
+<li>等于 0 → 可微；否则不可微。</li>
+</ol>
+<p class="tip"><b>对比记忆：</b>$\dfrac{xy^2}{x^2+y^2}$ 与 $\dfrac{x^2y^2}{x^2+y^2}$（原点补 0）。误差极限分母 $(x^2+y^2)^{3/2}$ 是 3 次：前者分子 3 次，沿 $y=x$ 得 $\dfrac1{2\sqrt2}$，不可微；后者分子 4 次，$\le\dfrac{\sqrt{x^2+y^2}}4\to0$，可微且偏导连续。</p>
+<h4>关系图（必背）</h4>
+<figure>
+<svg viewBox="0 0 560 250" role="img" aria-label="偏导数连续推出可微，可微推出连续和偏导数存在">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+<g font-size="15" text-anchor="middle" fill="var(--ink)">
+<rect x="200" y="14" width="160" height="42" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="280" y="40">偏导数连续</text>
+<rect x="200" y="100" width="160" height="42" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><text x="280" y="126" font-weight="700">可微</text>
+<rect x="40" y="186" width="160" height="42" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="120" y="212">连续</text>
+<rect x="360" y="186" width="160" height="42" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"/><text x="440" y="212">偏导数存在</text>
+<text x="280" y="200" font-size="13" fill="var(--muted)">互不推出</text>
+</g>
+<g stroke="var(--muted)" stroke-width="1.5" fill="none">
+<line x1="280" y1="56" x2="280" y2="98" marker-end="url(#ar)"/>
+<line x1="240" y1="142" x2="150" y2="184" marker-end="url(#ar)"/>
+<line x1="320" y1="142" x2="410" y2="184" marker-end="url(#ar)"/>
+<line x1="200" y1="207" x2="360" y2="207" stroke-dasharray="4 4"/>
+</g>
+</svg>
+<figcaption>只有箭头方向成立，反过来都不成立</figcaption>
+</figure>
+<p><b>必背反例：</b>$f=\dfrac{xy}{x^2+y^2}$（原点补 0）。两个偏导都存在且为 0，但沿 $y=x$ 函数值恒为 $\dfrac12$，不连续，更不可微。</p>
+<h4>限制到一条直线上，一元性质一定成立</h4>
+<ul>
+<li>$f'_x(x_0,y_0)$ 存在 ⇒ $\displaystyle\lim_{x\to x_0}f(x,y_0)$ 存在（注意极限下只有一个变量）。</li>
+<li>$f$ 在 $(x_0,y_0)$ 取极小值 ⇒ $f(x,y_0)$ 在 $x_0$ 取极小值；但推不出偏导为 0（圆锥 $\sqrt{x^2+y^2}$ 的尖底偏导不存在）。</li>
+</ul>
+<h4>由全微分反求函数</h4>
+<p>已知 $\mathrm df=P\,\mathrm dx+Q\,\mathrm dy$：对 $P$ 关于 $x$ 积分，常数写成 $\varphi(y)$；再对结果求 $\dfrac{\partial}{\partial y}$ 与 $Q$ 比较定 $\varphi(y)$，最后带 $+C$。</p>
+</section>
+
+<section class="block" id="m5">
+<h3>5　复合函数与隐函数求导</h3>
+<p class="lead">画路线图，每条路上导数相乘，不同的路结果相加。</p>
+<h4>5.1 链式法则</h4>
+\[\frac{\mathrm df}{\mathrm dx}=\frac{\partial f}{\partial u}\cdot\frac{\mathrm du}{\mathrm dx}+\frac{\partial f}{\partial v}\cdot\frac{\mathrm dv}{\mathrm dx}\]
+<p>验证：$f=u^2v$，$u=v=x$。直接代入得 $x^3$，导数 $3x^2$；链式法则得 $2uv\cdot1+u^2\cdot1=3x^2$。</p>
+<h4>5.2 记号</h4>
+<p>$f'_1$ 对第 1 个位置求偏导，$f'_2$ 对第 2 个位置，$f''_{12}$ 先 1 后 2。例：$z=f(x,x)$，$\dfrac{\mathrm dz}{\mathrm dx}=f'_1+f'_2$。$f$ 只有一个位置时写 $f'$。</p>
+<h4>5.3 抽象函数二阶偏导</h4>
+<p>例：$z=f(xy,\ x+y)$。一阶 $\dfrac{\partial z}{\partial x}=yf'_1+f'_2$。</p>
+<p class="note">$f'_1$、$f'_2$ 仍是 $(u,v)$ 的函数，对它们求导还要再走一遍路线图。</p>
+\[\frac{\partial^2z}{\partial x\partial y}=f'_1+xyf''_{11}+(x+y)f''_{12}+f''_{22}\]
+<p>易错：①忘了 $f'_1$ 还要链式求导；②乘积法则漏项（$yf'_1$ 中 $y$ 也要求导）；③合并时忘了 $f''_{12}=f''_{21}$。</p>
+<h4>5.4 隐函数求导</h4>
+<p>$z$ 藏在 $F(x,y,z)=0$ 里（求 $F'_x$ 时 $y$、$z$ 都当常数）：</p>
+\[\frac{\partial z}{\partial x}=-\frac{F'_x}{F'_z},\qquad \frac{\partial z}{\partial y}=-\frac{F'_y}{F'_z}\]
+<p><b>负号来自移项：</b>两边对 $x$ 求偏导得 $F'_x+F'_z\dfrac{\partial z}{\partial x}=0$，移项再除以 $F'_z$。</p>
+<ul>
+<li>算完还剩抽象函数 $f$ 本身，回原方程找它等于什么，换掉。</li>
+<li>$f(x,y,z)$ 中 $z$ 是隐函数时：$\dfrac{\partial}{\partial x}f=f'_x+f'_z\dfrac{\partial z}{\partial x}$。</li>
+<li>只有一个源头 $t$ 时全是一元求导：先算 $t$ 取定值时各坐标，再逐个对 $t$ 求导。</li>
+</ul>
+<h4>5.5 含未知函数又给了条件</h4>
+<p>先用条件解出 $f$。例：$z=\mathrm e^x+y^2+f(x+y)$，$y=0$ 时 $z=x^3$ ⇒ $f(x)=x^3-\mathrm e^x$。</p>
+</section>
+
+<section class="block" id="m6">
+<h3>6　极值与最值</h3>
+<h4>6.1 无条件极值</h4>
+<p>① 驻点：$f'_x=0,\ f'_y=0$。② 记 $A=f''_{xx},\ B=f''_{xy},\ C=f''_{yy}$：</p>
+<div class="tbl"><table>
+<tr><th>$AC-B^2$</th><th>结论</th></tr>
+<tr><td>$>0$ 且 $A>0$</td><td>极小值</td></tr>
+<tr><td>$>0$ 且 $A<0$</td><td>极大值</td></tr>
+<tr><td>$<0$</td><td>不是极值（马鞍点）</td></tr>
+<tr><td>$=0$</td><td>判不了</td></tr>
+</table></div>
+<p>例：$f=x^3-3x+y^2$，驻点 $(\pm1,0)$；$(1,0)$ 处 $AC-B^2=12>0,\ A=6>0$，极小值 $-2$；$(-1,0)$ 不是极值。</p>
+<h4>6.2 条件极值：拉格朗日乘数法</h4>
+\[L=f(x,y)+\lambda\,\varphi(x,y),\qquad L'_x=0,\ L'_y=0,\ \varphi=0\]
+<p>例：$x+y=10$ 下求 $xy$ 最大值，得 $x=y=5$，最大值 $25$。消 $\lambda$ 常用两式交叉相乘再因式分解。</p>
+<p class="note">求距离最值先改求距离平方；曲线有范围限制时，别忘了检查端点。</p>
+<h4>6.3 闭区域最值</h4>
+<ol><li>内部驻点，算函数值</li><li>每段边界化成一元函数求最值</li><li>全部比大小</li></ol>
+</section>
+
+<section class="block" id="m7">
+<h3>速查表</h3>
+<div class="tbl"><table>
+<tr><th>要求</th><th>怎么做</th></tr>
+<tr><td>二重极限不存在</td><td>找两条路，结果不同</td></tr>
+<tr><td>二重极限存在</td><td>放缩夹逼；有界 × 无穷小</td></tr>
+<tr><td>偏导数</td><td>另一个变量当常数；特殊点用定义</td></tr>
+<tr><td>某点的偏导</td><td>先代后求</td></tr>
+<tr><td>判断可微</td><td>偏导存在 + 误差极限为 0</td></tr>
+<tr><td>复合函数</td><td>路线图；$f'_1$ 求导还要再走路线</td></tr>
+<tr><td>隐函数</td><td>$-\dfrac{F'_x}{F'_z}$，别丢负号</td></tr>
+<tr><td>无条件极值</td><td>驻点 → $AC-B^2$</td></tr>
+<tr><td>条件极值</td><td>拉格朗日</td></tr>
+<tr><td>闭区域最值</td><td>内部 + 边界 → 比大小</td></tr>
+</table></div>
+</section>
+</div>
+
+<!-- ============ 二重积分 ============ -->
+<div class="chapter" id="double">
+<h2><span class="tag">第九章</span>二重积分</h2>
+
+<section class="block" id="d0">
+<h3>全章地图</h3>
+<p class="lead">整章最重要的一句话：<b>先画图。</b>数二只考二重积分，不考三重积分、曲线积分、曲面积分。</p>
+<div class="tbl"><table>
+<tr><th>块</th><th>内容</th><th>难度</th><th>考法</th></tr>
+<tr><td>1</td><td>二重积分是什么</td><td>★</td><td>打基础</td></tr>
+<tr><td>2</td><td>性质</td><td>★</td><td>选择题</td></tr>
+<tr><td>3</td><td>直角坐标计算</td><td>★★</td><td>所有计算的基础</td></tr>
+<tr><td>4</td><td>交换积分次序</td><td>★★★</td><td>高频</td></tr>
+<tr><td>5</td><td>极坐标计算</td><td>★★★</td><td>高频</td></tr>
+<tr><td>6</td><td>对称性</td><td>★★</td><td>每题都可能用</td></tr>
+<tr><td>7</td><td>绝对值、max</td><td>★★★</td><td>大题</td></tr>
+</table></div>
+</section>
+
+<section class="block" id="d1">
+<h3>1　二重积分是什么</h3>
+<p>定积分是曲线下的<b>面积</b>，二重积分是曲面下的<b>体积</b>：区域 $D$ 是地基，$z=f(x,y)$ 是屋顶。</p>
+\[\iint_D 1\,\mathrm d\sigma=D\ \text{的面积}\]
+</section>
+
+<section class="block" id="d2">
+<h3>2　性质</h3>
+<ol>
+<li><b>比大小：</b>$f\le g\ \Rightarrow\ \displaystyle\iint_D f\,\mathrm d\sigma\le\iint_D g\,\mathrm d\sigma$。常见 $\ln(x+y)$、$(x+y)^2$、$(x+y)^3$，看 $x+y$ 比 1 大还是小。</li>
+<li><b>估值：</b>$m\le f\le M$，面积 $S$，则 $mS\le\displaystyle\iint_D f\,\mathrm d\sigma\le MS$。</li>
+<li><b>中值定理：</b>$\displaystyle\iint_D f\,\mathrm d\sigma=f(\xi,\eta)\cdot S$。</li>
+</ol>
+</section>
+
+<section class="block" id="d3">
+<h3>3　直角坐标计算</h3>
+<p class="lead">一次积一个变量，拆成累次积分。方法：画图 + 穿线。</p>
+\[\iint_D f\,\mathrm d\sigma=\int_a^b\mathrm dx\int_{y_1(x)}^{y_2(x)}f(x,y)\,\mathrm dy\]
+<div class="tbl"><table>
+<tr><th>类型</th><th>穿线</th><th>内层（先积）限</th><th>外层（后积）限</th></tr>
+<tr><td>X 型：先 $y$ 后 $x$</td><td>竖线从下往上</td><td>先碰下限、后碰上限（$x$ 的式子）</td><td>竖线左右范围（常数）</td></tr>
+<tr><td>Y 型：先 $x$ 后 $y$</td><td>横线从左往右</td><td>先碰下限、后碰上限（$y$ 的式子）</td><td>横线上下范围（常数）</td></tr>
+</table></div>
+<p class="tip">口诀：后积的限是常数，先积的限是式子。</p>
+<h4>例题：$D$ 由 $y=x$ 与 $y=x^2$ 围成，求 $\displaystyle\iint_D xy\,\mathrm d\sigma$</h4>
+<figure>
+<svg viewBox="0 0 560 270" role="img" aria-label="X型竖线穿与Y型横线穿">
+<defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--warn)"/></marker></defs>
+<g id="panelA">
+<path d="M40 230 Q140 230 240 30 L40 230Z" fill="var(--accent-soft)" stroke="none"/>
+<path d="M40 230 Q140 230 240 30" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+<line x1="40" y1="230" x2="240" y2="30" stroke="var(--muted)" stroke-width="1.5"/>
+<line x1="40" y1="230" x2="270" y2="230" stroke="var(--line)"/><line x1="40" y1="230" x2="40" y2="20" stroke="var(--line)"/>
+<line x1="140" y1="248" x2="140" y2="90" stroke="var(--warn)" stroke-width="2" marker-end="url(#ar2)"/>
+<circle cx="140" cy="180" r="4" fill="var(--warn)"/><circle cx="140" cy="130" r="4" fill="var(--warn)"/>
+</g>
+<g font-size="13" fill="var(--ink)">
+<text x="40" y="262">X 型：竖线从下往上</text>
+<text x="148" y="196">下限 y = x²</text><text x="132" y="126" text-anchor="end">上限 y = x</text>
+</g>
+<g transform="translate(290,0)">
+<path d="M40 230 Q140 230 240 30 L40 230Z" fill="var(--accent-soft)" stroke="none"/>
+<path d="M40 230 Q140 230 240 30" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+<line x1="40" y1="230" x2="240" y2="30" stroke="var(--muted)" stroke-width="1.5"/>
+<line x1="40" y1="230" x2="260" y2="230" stroke="var(--line)"/><line x1="40" y1="230" x2="40" y2="20" stroke="var(--line)"/>
+<line x1="28" y1="130" x2="250" y2="130" stroke="var(--warn)" stroke-width="2" marker-end="url(#ar2)"/>
+<circle cx="140" cy="130" r="4" fill="var(--warn)"/><circle cx="183" cy="130" r="4" fill="var(--warn)"/>
+<g font-size="13" fill="var(--ink)"><text x="40" y="262">Y 型：横线从左往右</text>
+<text x="132" y="118" text-anchor="end">下限 x = y</text><text x="190" y="152">上限 x = √y</text></g>
+</g>
+</svg>
+<figcaption>阴影为区域 D：竖线先碰抛物线后碰直线；横线先碰直线后碰抛物线</figcaption>
+</figure>
+<p>交点 $x=0,1$；$0\lt x\lt 1$ 时 $x^2\lt x$。</p>
+\[\int_0^1\mathrm dx\int_{x^2}^{x}xy\,\mathrm dy=\int_0^1\frac{x^3-x^5}{2}\,\mathrm dx=\frac12\left(\frac14-\frac16\right)=\frac1{24}\]
+<p>换成 Y 型验证：</p>
+\[\int_0^1\mathrm dy\int_{y}^{\sqrt y}xy\,\mathrm dx=\int_0^1\frac{y^2-y^3}{2}\,\mathrm dy=\frac1{24}\]
+<h4>先积谁？</h4>
+<ol><li><b>积不出来的变量放后面积</b>：$\mathrm e^{y^2}$、$\dfrac{\sin y}{y}$、$\mathrm e^{-y^2}$ 对 $y$ 积不出，就先积 $x$。</li><li><b>哪种穿线不用分块就选哪种。</b></li></ol>
+</section>
+
+<section class="block" id="d4">
+<h3>4　交换积分次序</h3>
+<p>内层积不出来时要换，例如：</p>
+\[\int_0^1\mathrm dx\int_x^1\mathrm e^{y^2}\,\mathrm dy\]
+<ol>
+<li><b>还原区域：</b>$0\le x\le1,\ x\le y\le1$。</li>
+<li><b>画图：</b>顶点 $(0,0),(0,1),(1,1)$ 的三角形。</li>
+<li><b>换横线穿：</b>$0\le y\le1,\ 0\le x\le y$。</li>
+</ol>
+\[\int_0^1\mathrm dy\int_0^y\mathrm e^{y^2}\,\mathrm dx=\int_0^1 y\,\mathrm e^{y^2}\,\mathrm dy=\frac12\mathrm e^{y^2}\Big|_0^1=\frac{\mathrm e-1}{2}\]
+<p class="note">不画图直接把上下限"对调"是最常见的错误。</p>
+</section>
+
+<section class="block" id="d5">
+<h3>5　极坐标计算</h3>
+<p>区域是圆、扇形、圆环，或被积函数含 $x^2+y^2$ 时使用。</p>
+\[x=r\cos\theta,\quad y=r\sin\theta,\quad x^2+y^2=r^2,\quad \boxed{\mathrm d\sigma=r\,\mathrm dr\,\mathrm d\theta}\]
+<p class="note">最容易丢的是 $\mathrm d\sigma$ 里那个 $r$：极坐标的小块是扇环，离原点越远越大。</p>
+<p>定限：$\theta$ 看区域夹在哪两个角度之间；$r$ 沿射线从原点出发，进入处为下限，离开处为上限。</p>
+<h4>例 1：$D:\ x^2+y^2\le1$</h4>
+\[\iint_D\mathrm e^{x^2+y^2}\mathrm d\sigma=\int_0^{2\pi}\mathrm d\theta\int_0^1\mathrm e^{r^2}\,r\,\mathrm dr=2\pi\cdot\frac{\mathrm e-1}{2}=\pi(\mathrm e-1)\]
+<h4>例 2：$D:\ x^2+y^2\le2x$（考试最爱）</h4>
+<p>配方得 $(x-1)^2+y^2\le1$，代入极坐标 $r^2\le2r\cos\theta$：</p>
+\[D:\ -\frac\pi2\le\theta\le\frac\pi2,\qquad 0\le r\le2\cos\theta\]
+<p>同理 $x^2+y^2\le2y$ ⇒ $0\le\theta\le\pi,\ 0\le r\le2\sin\theta$。</p>
+</section>
+
+<section class="block" id="d6">
+<h3>6　对称性</h3>
+<div class="tbl"><table>
+<tr><th>区域对称性</th><th>被积函数</th><th>结果</th></tr>
+<tr><td>关于 $y$ 轴（左右）</td><td>对 $x$ 奇</td><td>$0$</td></tr>
+<tr><td>关于 $y$ 轴（左右）</td><td>对 $x$ 偶</td><td>2 倍右半边</td></tr>
+<tr><td>关于 $x$ 轴（上下）</td><td>对 $y$ 奇</td><td>$0$</td></tr>
+<tr><td>关于 $x$ 轴（上下）</td><td>对 $y$ 偶</td><td>2 倍上半边</td></tr>
+</table></div>
+<p>例：$D:\ x^2+y^2\le1$，$\displaystyle\iint_D(x+y^3+1)\,\mathrm d\sigma=0+0+\pi=\pi$。</p>
+<h4>轮换对称</h4>
+<p>区域关于 $y=x$ 对称时 $\displaystyle\iint_D f(x,y)\,\mathrm d\sigma=\iint_D f(y,x)\,\mathrm d\sigma$。</p>
+\[\iint_{x^2+y^2\le1}x^2\,\mathrm d\sigma=\frac12\iint(x^2+y^2)\,\mathrm d\sigma=\frac12\int_0^{2\pi}\mathrm d\theta\int_0^1r^3\,\mathrm dr=\frac\pi4\]
+</section>
+
+<section class="block" id="d7">
+<h3>7　绝对值、max 等特殊被积函数</h3>
+<p>画出"里面等于 0 / 两者相等"的分界线，把区域切开，每块去掉绝对值。</p>
+<h4>例：$\displaystyle\iint_D|y-x|\,\mathrm d\sigma$，$D:\ 0\le x\le1,\ 0\le y\le1$</h4>
+<p>$y=x$ 把正方形切成两块，且关于 $y=x$ 对称，只算上三角乘 2：</p>
+\[2\int_0^1\mathrm dx\int_x^1(y-x)\,\mathrm dy=\int_0^1(1-x)^2\,\mathrm dx=\frac13\]
+</section>
+
+<section class="block" id="d8">
+<h3>速查表</h3>
+<div class="tbl"><table>
+<tr><th>遇到</th><th>怎么做</th></tr>
+<tr><td>任何二重积分</td><td>先画图，再看对称性</td></tr>
+<tr><td>一般区域</td><td>竖线穿（X 型）或横线穿（Y 型）</td></tr>
+<tr><td>内层积不出来</td><td>交换次序：还原区域 → 画图 → 换方向穿线</td></tr>
+<tr><td>圆、扇形、含 $x^2+y^2$</td><td>极坐标，$\mathrm d\sigma=r\,\mathrm dr\,\mathrm d\theta$</td></tr>
+<tr><td>$x^2+y^2\le2x$</td><td>$r\le2\cos\theta,\ \theta\in[-\frac\pi2,\frac\pi2]$</td></tr>
+<tr><td>$x^2+y^2\le2y$</td><td>$r\le2\sin\theta,\ \theta\in[0,\pi]$</td></tr>
+<tr><td>左右 / 上下对称</td><td>奇函数为 0，偶函数取一半乘 2</td></tr>
+<tr><td>关于 $y=x$ 对称</td><td>$x,y$ 互换，凑 $x^2+y^2$</td></tr>
+<tr><td>$|\cdot|$、max、min</td><td>画分界线切块</td></tr>
+</table></div>
+<p>学习建议：穿线法练熟；交换次序和极坐标定限各做 5 道以上；每题动笔前先查对称性。</p>
+</section>
+</div>
+</main>
+</div>
+<script>
+(function(){
+  var d = document.getElementById('toc');
+  var mq = window.matchMedia('(max-width:820px)');
+  if (mq.matches) d.open = false;
+  d.addEventListener('click', function(e){
+    if (e.target.tagName === 'A' && mq.matches) d.open = false;
+  });
+})();
+</script>
+</body>
+</html>
