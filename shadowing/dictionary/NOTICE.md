@@ -1,0 +1,1 @@
+English-Chinese definitions and phonetics extracted from [ECDICT](https://github.com/skywind3000/ECDICT/tree/39cfb9672c0906b63569e0453c2e6abfb9ab182a). Uses the MIT license included here. Data is grouped by initial letter and limited to the first three definition lines.

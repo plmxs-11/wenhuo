@@ -33,6 +33,10 @@
   let continuous = null;
   let exporting = false;
   let translationJob = null;
+  let questionJob;
+  let tipAnchor;
+  const dictionary = new Map();
+  const wordTip = $('#word-tip');
   const words = $('#words');
   const library = $('#materials');
   const libraryKey = 'wenhuo.shadowing.materials';
@@ -54,6 +58,9 @@
     $('#compare').disabled = busy;
     voiceSelect.disabled = busy || voiceSelect.options.length < 2;
     recording.hidden = !sentences[selected].recording;
+    $('#question-result').querySelectorAll('button').forEach(button => {
+      button.disabled = busy || !(voices.length || canUseBuiltInVoice);
+    });
     sentenceList.querySelectorAll('button').forEach(button => {
       button.disabled = busy || !hasAudio ||
         (button.classList.contains('sentence-word') && !(voices.length || canUseBuiltInVoice));
@@ -94,7 +101,7 @@
   function selectSentence(index) {
     selected = index;
     const sentence = sentences[index];
-    const tokens = sentence.en.match(/[a-z]+(?:['’][a-z]+)*/gi) || [];
+    const tokens = sentence.en.match(/[a-z]+(?:['’-][a-z]+)*/gi) || [];
     words.replaceChildren(...[...new Set(tokens.map(word => word.toLowerCase()))].map(word => new Option(word)));
     updateLookup();
     [...sentenceList.children].forEach((item, i) => {
@@ -113,8 +120,86 @@
     if (words.value) link.href = 'https://www.youdao.com/result?lang=en&word=' + encodeURIComponent(words.value);
   }
 
+  function hideWordTip() {
+    tipAnchor?.removeAttribute('aria-describedby');
+    tipAnchor = null;
+    wordTip.hidden = true;
+  }
+
+  function positionWordTip() {
+    const bounds = tipAnchor.getBoundingClientRect();
+    const left = Math.max(10, Math.min(bounds.left, innerWidth - wordTip.offsetWidth - 10));
+    const top = bounds.bottom + wordTip.offsetHeight + 16 <= innerHeight
+      ? bounds.bottom + 8 : Math.max(8, bounds.top - wordTip.offsetHeight - 8);
+    wordTip.style.left = left + 'px';
+    wordTip.style.top = top + 'px';
+  }
+
+  async function showWordTip(button) {
+    tipAnchor?.removeAttribute('aria-describedby');
+    tipAnchor = button;
+    button.setAttribute('aria-describedby', 'word-tip');
+    const key = button.textContent.toLowerCase().replace(/’/g, "'");
+    $('#tip-word').textContent = button.textContent;
+    $('#tip-phonetic').textContent = '';
+    $('#tip-definition').textContent = '正在查词…';
+    wordTip.hidden = false;
+    positionWordTip();
+    try {
+      const initial = key[0];
+      if (!dictionary.has(initial)) {
+        const request = fetch('/shadowing/dictionary/' + initial + '.json').then(response => {
+          if (!response.ok) throw new Error('Dictionary unavailable');
+          return response.json();
+        }).catch(error => {
+          dictionary.delete(initial);
+          throw error;
+        });
+        dictionary.set(initial, request);
+      }
+      const words = await dictionary.get(initial);
+      if (tipAnchor !== button) return;
+      const entry = Object.hasOwn(words, key) ? words[key] : null;
+      $('#tip-phonetic').textContent = entry?.[0] ? '/' + entry[0] + '/' : '';
+      $('#tip-definition').textContent = entry?.[1] || '词典未收录，仍可点击听发音。';
+    } catch {
+      if (tipAnchor !== button) return;
+      $('#tip-definition').textContent = '词典加载失败，请稍后重试。';
+    }
+    positionWordTip();
+  }
+
+  function wordText(text, onPlay) {
+    const line = document.createElement('span');
+    line.className = 'sentence-en';
+    line.lang = 'en';
+    for (const token of text.split(/([a-z]+(?:['’\-][a-z]+)*)/gi)) {
+      if (!token) continue;
+      if (!/^[a-z]/i.test(token)) { line.append(token); continue; }
+      const word = document.createElement('button');
+      word.className = 'sentence-word';
+      word.type = 'button';
+      word.textContent = token;
+      word.setAttribute('aria-pressed', 'false');
+      word.addEventListener('pointerenter', () => showWordTip(word));
+      word.addEventListener('pointerleave', () => { if (tipAnchor === word) hideWordTip(); });
+      word.addEventListener('focus', () => showWordTip(word));
+      word.addEventListener('blur', () => { if (tipAnchor === word) hideWordTip(); });
+      word.addEventListener('click', async () => {
+        if (capture || continuous) return;
+        if (tipAnchor !== word) showWordTip(word);
+        word.setAttribute('aria-pressed', 'true');
+        try { await onPlay(token); }
+        finally { word.setAttribute('aria-pressed', 'false'); }
+      });
+      line.append(word);
+    }
+    return line;
+  }
+
   function showSentences(items, isExample) {
     translationJob?.abort();
+    hideWordTip();
     continuous?.abort();
     continuous = null;
     stopPlayback();
@@ -133,31 +218,13 @@
       button.textContent = (index + 1) + ' · 听';
       button.setAttribute('aria-label', '听第 ' + (index + 1) + ' 句');
       const text = document.createElement('span');
-      const original = document.createElement('span');
-      original.className = 'sentence-en';
-      original.lang = 'en';
-      for (const token of en.split(/([a-z]+(?:['’\-][a-z]+)*)/gi)) {
-        if (!token) continue;
-        if (!/^[a-z]/i.test(token)) {
-          original.append(token);
-          continue;
-        }
-        const word = document.createElement('button');
-        word.className = 'sentence-word';
-        word.type = 'button';
-        word.textContent = token;
-        word.setAttribute('aria-pressed', 'false');
-        word.addEventListener('click', async () => {
-          navigate(index);
-          const option = [...words.options].find(item => item.value === token.toLowerCase());
-          if (option) words.value = option.value;
-          updateLookup();
-          word.setAttribute('aria-pressed', 'true');
-          try { await play([index], false, token); }
-          finally { word.setAttribute('aria-pressed', 'false'); }
-        });
-        original.append(word);
-      }
+      const original = wordText(en, token => {
+        navigate(index);
+        const option = [...words.options].find(item => item.value === token.toLowerCase());
+        if (option) words.value = option.value;
+        updateLookup();
+        return play([index], false, token);
+      });
       original.hidden = !$('#show-english').checked;
       text.append(original);
       const translation = document.createElement('span');
@@ -551,16 +618,29 @@
     if (chunk.trim()) chunks.push(chunk.trim());
     const translated = [];
     for (const part of chunks) {
-      const url = new URL('https://api.mymemory.translated.net/get');
-      url.search = new URLSearchParams({ q: part, langpair: 'en|zh-CN' });
-      const response = await fetch(url, { signal: AbortSignal.any([signal, AbortSignal.timeout(12000)]), credentials: 'omit' });
-      if (!response.ok) throw new Error('Translation unavailable');
-      const data = await response.json();
-      const value = data.responseData?.translatedText;
-      if (Number(data.responseStatus) !== 200 || typeof value !== 'string' || !value.trim()) {
-        throw new Error('Translation unavailable');
+      const request = async (endpoint, params) => {
+        const url = new URL(endpoint);
+        url.search = new URLSearchParams(params);
+        const response = await fetch(url, {
+          signal: AbortSignal.any([signal, AbortSignal.timeout(9500)]), credentials: 'omit'
+        });
+        if (!response.ok) throw new Error('Translation unavailable');
+        return response.json();
+      };
+      try {
+        const data = await request('https://api.mymemory.translated.net/get', { q: part, langpair: 'en|zh-CN' });
+        const value = data.responseData?.translatedText;
+        if (Number(data.responseStatus) !== 200 || !value?.trim()) throw new Error('Translation unavailable');
+        translated.push(value.trim());
+      } catch {
+        signal.throwIfAborted();
+        const data = await request('https://translate.googleapis.com/translate_a/single', {
+          client: 'gtx', sl: 'en', tl: 'zh-CN', dt: 't', q: part
+        });
+        const value = data[0]?.map(item => item[0]).join('').trim();
+        if (!value) throw new Error('Translation unavailable');
+        translated.push(value);
       }
-      translated.push(value.trim());
     }
     return translated.join('');
   }
@@ -601,6 +681,48 @@
     showSourceStatus(failed ? '有 ' + failed + ' 句未译出。可重试或手填译文，英文仍可朗读。'
       : '已生成 ' + items.length + ' 句中英对照。', failed ? 's-err' : 's-ok');
   }
+
+  $('#question-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const text = $('#question').value.trim();
+    const status = statusOf($('#question-status'));
+    if (!/[a-z]/i.test(text)) {
+      status('请先输入英文题目。', 's-err');
+      $('#question').focus();
+      return;
+    }
+    questionJob?.abort();
+    hideWordTip();
+    const job = new AbortController();
+    questionJob = job;
+    const result = $('#question-result');
+    const entries = splitEnglish(text).map(sentence => {
+      const row = document.createElement('div');
+      const translation = document.createElement('p');
+      translation.className = 'sentence-zh';
+      translation.textContent = '正在翻译…';
+      row.append(wordText(sentence, word => play([selected], false, word)), translation);
+      return { sentence, row, translation };
+    });
+    result.replaceChildren(...entries.map(entry => entry.row));
+    result.hidden = false;
+    updateControls();
+    status('正在翻译题目…', 's-run');
+    let failed = 0;
+    for (const entry of entries) {
+      if (job.signal.aborted) return;
+      try {
+        const translated = await translateSentence(entry.sentence, job.signal);
+        if (job.signal.aborted) return;
+        entry.translation.textContent = translated;
+      } catch {
+        if (job.signal.aborted) return;
+        failed++;
+        entry.translation.textContent = '本句暂未译出。';
+      }
+    }
+    status(failed ? '部分题目未译出，请稍后重试。' : '题目已翻译。', failed ? 's-err' : 's-ok');
+  });
 
   $('#source').addEventListener('submit', event => {
     event.preventDefault();
@@ -652,6 +774,7 @@
     sentenceList.querySelectorAll('.sentence-zh').forEach(item => { item.hidden = !item.textContent || !event.target.checked; });
   });
   $('#show-english').addEventListener('change', event => {
+    hideWordTip();
     sentenceList.querySelectorAll('.sentence-en').forEach(item => { item.hidden = !event.target.checked; });
   });
   $('#save-material').addEventListener('click', () => {
@@ -680,6 +803,7 @@
   $('#recognition-option').hidden = !Recognition || !canRecord;
   $('#recognize').addEventListener('change', event => { $('#recognition-note').hidden = !event.target.checked; });
   window.addEventListener('pagehide', () => {
+    questionJob?.abort();
     translationJob?.abort();
     continuous?.abort();
     continuous = null;
@@ -687,6 +811,12 @@
     cancelCapture();
     updateControls();
   });
+  window.addEventListener('scroll', hideWordTip, { passive: true });
+  window.addEventListener('resize', hideWordTip);
+  document.addEventListener('pointerdown', event => {
+    if (tipAnchor && !tipAnchor.contains(event.target)) hideWordTip();
+  });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') hideWordTip(); });
   W.mountNav();
   W.mountFooter($('.wrap'));
   loadExample();

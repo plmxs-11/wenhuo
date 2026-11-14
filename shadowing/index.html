@@ -7,6 +7,7 @@
 <meta name="description" content="在线英语跟读练习。粘贴英文，逐句朗读、录音回放，对比自己的跟读。">
 <link rel="canonical" href="https://wenhuo.top/shadowing/">
 <link rel="stylesheet" href="/assets/common.css">
+<link rel="stylesheet" href="/shadowing/practice.css">
 <style>
   [hidden]{display:none!important}
   .practice-wrap{max-width:920px}
@@ -29,7 +30,6 @@
   .sentence-list .sentence-read{background:var(--card);border-color:var(--line);padding:3px 7px}
   .sentence-list .sentence-word{display:inline;padding:1px 2px;border:0;border-radius:4px;background:transparent;color:inherit;font:inherit}
   .sentence-list .sentence-word:hover,.sentence-list .sentence-word[aria-pressed=true]{background:var(--brand);color:var(--on-brand)}
-  .sentence-num{color:var(--muted);font-variant-numeric:tabular-nums}
   .sentence-en,.sentence-zh{display:block}
   .sentence-en{font-size:var(--fs-base);font-weight:600}
   .sentence-zh,.practice-note{color:var(--muted);font-size:var(--fs-sm)}
@@ -37,32 +37,45 @@
   .practice-wrap audio{display:block;width:100%;margin-top:12px}
 </style>
 <script src="/assets/common.js" defer></script>
-<script src="/shadowing/practice.js" defer></script>
+<script src="/shadowing/practice.js?v=question-dictionary" defer></script>
 </head>
-<body>
+<body class="shadowing-page">
 <main class="wrap practice-wrap">
   <div class="practice-links"><a href="/#other-tools">返回其他工具</a></div>
   <header>
+    <div class="practice-mark"><svg class="i" aria-hidden="true"><use href="/assets/icons.svg#mic"></use></svg></div>
     <h1>英语跟读练习</h1>
-    <p class="sub">听一句，跟读一句。录完可以回听，或和参考朗读对比。</p>
+    <p class="sub">翻译题目和正文，逐句听读、录音回放。</p>
   </header>
 
-  <section class="card" aria-labelledby="source-title">
-    <h2 id="source-title">练习材料</h2>
+  <section class="card question-card" aria-labelledby="question-title">
+    <h2 id="question-title">作文题目</h2>
+    <form id="question-form">
+      <label class="practice-label" for="question">英文题目</label>
+      <textarea class="ta" id="question" maxlength="4000" placeholder="粘贴题目，例如：Write a letter inviting a friend to a reading club."></textarea>
+      <div class="row"><button class="btn-p" type="submit">翻译题目</button></div>
+      <p class="practice-note">在线翻译会将题目发给 MyMemory，服务不可用时会尝试 Google 翻译。</p>
+      <p id="question-status" class="status" role="status"></p>
+    </form>
+    <div id="question-result" class="question-result" hidden></div>
+  </section>
+
+  <section class="card article-card" aria-labelledby="source-title">
+    <h2 id="source-title">作文 / 阅读正文</h2>
     <form id="source">
-      <label class="practice-label" for="english">英文题目或文章</label>
-      <textarea class="ta" id="english" maxlength="12000" placeholder="粘贴英文作文题目、范文或阅读材料"></textarea>
+      <label class="practice-label" for="english">英文正文</label>
+      <textarea class="ta" id="english" maxlength="12000" placeholder="粘贴作文正文、范文或阅读材料"></textarea>
       <details>
         <summary>添加中文译文（可选）</summary>
         <label class="practice-label" for="chinese">每句译文占一行，按英文句子的顺序填写</label>
         <textarea class="ta translation" id="chinese" maxlength="12000"></textarea>
       </details>
       <div class="row">
-        <button class="btn-p" type="submit" id="translate">翻译并准备练习</button>
+        <button class="btn-p" type="submit" id="translate">翻译正文并练习</button>
         <button class="btn-s" type="submit" id="prepare-only">仅准备练习</button>
         <button class="btn-s" type="button" id="example">载入示例</button>
       </div>
-      <p class="practice-note">在线翻译会将英文发给 MyMemory。手填译文可直接用于练习。</p>
+      <p class="practice-note">在线翻译会将正文发给 MyMemory，服务不可用时会尝试 Google 翻译。手填译文可直接用于练习。</p>
       <details>
         <summary>练习收藏</summary>
         <p class="practice-note">材料保存在当前浏览器。</p>
@@ -78,7 +91,7 @@
   </section>
 
   <section class="card" id="practice" aria-labelledby="practice-title">
-    <h2 id="practice-title">听读与录音</h2>
+    <h2 id="practice-title">正文跟读</h2>
     <div class="practice-toolbar">
       <label>朗读声音 <select id="voice"></select></label>
       <label>语速 <input id="rate" type="range" min="0.6" max="1.4" step="0.1" value="1"><output id="rate-value" for="rate">1.0×</output></label>
@@ -87,7 +100,7 @@
       <label><input type="checkbox" id="show-english" checked> 显示英文</label>
     </div>
     <p class="practice-note" id="voice-note"></p>
-    <p class="practice-note">点击英文单词听发音，点击句号旁的「听」按钮朗读整句。</p>
+    <p class="practice-note">悬停看词义，点击听单词。点句子左侧的「听」朗读整句。</p>
     <ol class="sentence-list" id="sentences" aria-label="练习句子"></ol>
     <div class="row">
       <button class="btn-s" id="previous">上一句</button>
@@ -115,5 +128,9 @@
     <p id="practice-status" class="status" role="status"></p>
   </section>
 </main>
+<div id="word-tip" role="tooltip" hidden>
+  <strong id="tip-word"></strong> <span id="tip-phonetic"></span>
+  <div id="tip-definition"></div>
+</div>
 </body>
 </html>
