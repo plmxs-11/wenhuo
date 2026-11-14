@@ -23,10 +23,12 @@
   #practice{scroll-margin-top:145px}
   .practice-wrap .status:empty{display:none}
   .sentence-list{display:grid;gap:8px;margin:var(--sp-4) 0;padding:0;list-style:none}
-  .sentence-list button{display:grid;grid-template-columns:2ch minmax(0,1fr);gap:12px;width:100%;text-align:left;
-    background:var(--card-2);color:var(--text);overflow-wrap:anywhere}
-  .sentence-list button[aria-current=true]{border-color:var(--brand);background:var(--brand-soft)}
-  .sentence-list button:disabled{opacity:1;cursor:default}
+  .sentence-list li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;padding:12px;
+    border:1px solid transparent;border-radius:var(--r-sm);background:var(--card-2);overflow-wrap:anywhere}
+  .sentence-list li[data-selected]{border-color:var(--brand);background:var(--brand-soft)}
+  .sentence-list .sentence-read{background:var(--card);border-color:var(--line);padding:3px 7px}
+  .sentence-list .sentence-word{display:inline;padding:1px 2px;border:0;border-radius:4px;background:transparent;color:inherit;font:inherit}
+  .sentence-list .sentence-word:hover,.sentence-list .sentence-word[aria-pressed=true]{background:var(--brand);color:var(--on-brand)}
   .sentence-num{color:var(--muted);font-variant-numeric:tabular-nums}
   .sentence-en,.sentence-zh{display:block}
   .sentence-en{font-size:var(--fs-base);font-weight:600}
@@ -56,9 +58,11 @@
         <textarea class="ta translation" id="chinese" maxlength="12000"></textarea>
       </details>
       <div class="row">
-        <button class="btn-p" type="submit">准备练习</button>
+        <button class="btn-p" type="submit" id="translate">翻译并准备练习</button>
+        <button class="btn-s" type="submit" id="prepare-only">仅准备练习</button>
         <button class="btn-s" type="button" id="example">载入示例</button>
       </div>
+      <p class="practice-note">在线翻译会将英文发给 MyMemory。手填译文可直接用于练习。</p>
       <details>
         <summary>练习收藏</summary>
         <p class="practice-note">材料保存在当前浏览器。</p>
@@ -83,6 +87,7 @@
       <label><input type="checkbox" id="show-english" checked> 显示英文</label>
     </div>
     <p class="practice-note" id="voice-note"></p>
+    <p class="practice-note">点击英文单词听发音，点击句号旁的「听」按钮朗读整句。</p>
     <ol class="sentence-list" id="sentences" aria-label="练习句子"></ol>
     <div class="row">
       <button class="btn-s" id="previous">上一句</button>

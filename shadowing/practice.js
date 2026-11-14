@@ -32,6 +32,7 @@
   let builtInVoice;
   let continuous = null;
   let exporting = false;
+  let translationJob = null;
   const words = $('#words');
   const library = $('#materials');
   const libraryKey = 'wenhuo.shadowing.materials';
@@ -53,7 +54,10 @@
     $('#compare').disabled = busy;
     voiceSelect.disabled = busy || voiceSelect.options.length < 2;
     recording.hidden = !sentences[selected].recording;
-    sentenceList.querySelectorAll('button').forEach(button => { button.disabled = busy; });
+    sentenceList.querySelectorAll('button').forEach(button => {
+      button.disabled = busy || !hasAudio ||
+        (button.classList.contains('sentence-word') && !(voices.length || canUseBuiltInVoice));
+    });
   }
 
   function loadVoices() {
@@ -93,8 +97,9 @@
     const tokens = sentence.en.match(/[a-z]+(?:['’][a-z]+)*/gi) || [];
     words.replaceChildren(...[...new Set(tokens.map(word => word.toLowerCase()))].map(word => new Option(word)));
     updateLookup();
-    sentenceList.querySelectorAll('button').forEach((button, i) => {
-      button.setAttribute('aria-current', String(i === index));
+    [...sentenceList.children].forEach((item, i) => {
+      item.toggleAttribute('data-selected', i === index);
+      item.querySelector('.sentence-read').setAttribute('aria-current', String(i === index));
     });
     if (sentence.recording) recording.src = sentence.recording;
     else recording.removeAttribute('src');
@@ -109,6 +114,7 @@
   }
 
   function showSentences(items, isExample) {
+    translationJob?.abort();
     continuous?.abort();
     continuous = null;
     stopPlayback();
@@ -123,27 +129,44 @@
       const item = document.createElement('li');
       const button = document.createElement('button');
       button.type = 'button';
-      const number = document.createElement('span');
-      number.className = 'sentence-num';
-      number.textContent = index + 1;
+      button.className = 'sentence-read btn-s';
+      button.textContent = (index + 1) + ' · 听';
+      button.setAttribute('aria-label', '听第 ' + (index + 1) + ' 句');
       const text = document.createElement('span');
       const original = document.createElement('span');
       original.className = 'sentence-en';
       original.lang = 'en';
-      original.textContent = en;
-      original.hidden = !$('#show-english').checked;
-      if (original.hidden) button.setAttribute('aria-label', '第 ' + (index + 1) + ' 句');
-      text.append(original);
-      if (zh) {
-        const translation = document.createElement('span');
-        translation.className = 'sentence-zh';
-        translation.hidden = !$('#show-translation').checked;
-        translation.textContent = zh;
-        text.append(translation);
+      for (const token of en.split(/([a-z]+(?:['’\-][a-z]+)*)/gi)) {
+        if (!token) continue;
+        if (!/^[a-z]/i.test(token)) {
+          original.append(token);
+          continue;
+        }
+        const word = document.createElement('button');
+        word.className = 'sentence-word';
+        word.type = 'button';
+        word.textContent = token;
+        word.setAttribute('aria-pressed', 'false');
+        word.addEventListener('click', async () => {
+          navigate(index);
+          const option = [...words.options].find(item => item.value === token.toLowerCase());
+          if (option) words.value = option.value;
+          updateLookup();
+          word.setAttribute('aria-pressed', 'true');
+          try { await play([index], false, token); }
+          finally { word.setAttribute('aria-pressed', 'false'); }
+        });
+        original.append(word);
       }
-      button.append(number, text);
-      button.addEventListener('click', () => navigate(index));
-      item.append(button);
+      original.hidden = !$('#show-english').checked;
+      text.append(original);
+      const translation = document.createElement('span');
+      translation.className = 'sentence-zh';
+      translation.hidden = !zh || !$('#show-translation').checked;
+      translation.textContent = zh;
+      text.append(translation);
+      button.addEventListener('click', () => play([index]));
+      item.append(button, text);
       return item;
     });
     sentenceList.replaceChildren(...entries);
@@ -508,6 +531,77 @@
     }
   }
 
+  async function translateSentence(text, signal) {
+    const chunks = [];
+    const encoder = new TextEncoder();
+    let chunk = '';
+    for (const char of text) {
+      if (encoder.encode(chunk + char).length > 480) {
+        const split = chunk.lastIndexOf(' ');
+        if (split > 100) {
+          chunks.push(chunk.slice(0, split));
+          chunk = chunk.slice(split + 1);
+        } else {
+          chunks.push(chunk);
+          chunk = '';
+        }
+      }
+      chunk += char;
+    }
+    if (chunk.trim()) chunks.push(chunk.trim());
+    const translated = [];
+    for (const part of chunks) {
+      const url = new URL('https://api.mymemory.translated.net/get');
+      url.search = new URLSearchParams({ q: part, langpair: 'en|zh-CN' });
+      const response = await fetch(url, { signal: AbortSignal.any([signal, AbortSignal.timeout(12000)]), credentials: 'omit' });
+      if (!response.ok) throw new Error('Translation unavailable');
+      const data = await response.json();
+      const value = data.responseData?.translatedText;
+      if (Number(data.responseStatus) !== 200 || typeof value !== 'string' || !value.trim()) {
+        throw new Error('Translation unavailable');
+      }
+      translated.push(value.trim());
+    }
+    return translated.join('');
+  }
+
+  async function translatePractice() {
+    const job = new AbortController();
+    translationJob = job;
+    const items = sentences;
+    let next = 0;
+    let done = 0;
+    let failed = 0;
+    const progress = () => {
+      if (items !== sentences || job.signal.aborted) return;
+      showSourceStatus('正在逐句翻译 ' + done + ' / ' + items.length + '…', 's-run');
+    };
+    progress();
+    const worker = async () => {
+      while (!job.signal.aborted && next < items.length) {
+        const index = next++;
+        try {
+          const result = await translateSentence(items[index].en, job.signal);
+          if (job.signal.aborted || items !== sentences) return;
+          items[index].zh = result;
+          const translation = sentenceList.children[index].querySelector('.sentence-zh');
+          translation.textContent = result;
+          translation.hidden = !$('#show-translation').checked;
+          $('#translation-toggle').hidden = false;
+        } catch {
+          failed++;
+        }
+        done++;
+        progress();
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(3, items.length) }, worker));
+    if (job.signal.aborted || items !== sentences) return;
+    translationJob = null;
+    showSourceStatus(failed ? '有 ' + failed + ' 句未译出。可重试或手填译文，英文仍可朗读。'
+      : '已生成 ' + items.length + ' 句中英对照。', failed ? 's-err' : 's-ok');
+  }
+
   $('#source').addEventListener('submit', event => {
     event.preventDefault();
     const items = splitEnglish(english.value);
@@ -524,6 +618,10 @@
     showSentences(items.map((en, index) => ({ en, zh: translations[index]?.trim() || '' })), false);
     showSourceStatus('已准备 ' + items.length + ' 句。', 's-ok');
     $('#practice').scrollIntoView({ block: 'start' });
+    if (event.submitter?.id !== 'prepare-only' && !translations.length) {
+      $('#show-translation').checked = true;
+      translatePractice();
+    }
   });
   $('#example').addEventListener('click', loadExample);
   $('#previous').addEventListener('click', () => navigate(selected - 1));
@@ -551,14 +649,10 @@
     samplePlayer.playbackRate = Number(event.target.value);
   });
   $('#show-translation').addEventListener('change', event => {
-    sentenceList.querySelectorAll('.sentence-zh').forEach(item => { item.hidden = !event.target.checked; });
+    sentenceList.querySelectorAll('.sentence-zh').forEach(item => { item.hidden = !item.textContent || !event.target.checked; });
   });
   $('#show-english').addEventListener('change', event => {
-    sentenceList.querySelectorAll('button').forEach((button, index) => {
-      button.querySelector('.sentence-en').hidden = !event.target.checked;
-      if (event.target.checked) button.removeAttribute('aria-label');
-      else button.setAttribute('aria-label', '第 ' + (index + 1) + ' 句');
-    });
+    sentenceList.querySelectorAll('.sentence-en').forEach(item => { item.hidden = !event.target.checked; });
   });
   $('#save-material').addEventListener('click', () => {
     const en = sentences.map(sentence => sentence.en).join('\n');
@@ -586,6 +680,7 @@
   $('#recognition-option').hidden = !Recognition || !canRecord;
   $('#recognize').addEventListener('change', event => { $('#recognition-note').hidden = !event.target.checked; });
   window.addEventListener('pagehide', () => {
+    translationJob?.abort();
     continuous?.abort();
     continuous = null;
     stopPlayback();
