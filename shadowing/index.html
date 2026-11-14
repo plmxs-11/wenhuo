@@ -7,7 +7,7 @@
 <meta name="description" content="在线英语跟读练习。粘贴英文，逐句朗读、录音回放，对比自己的跟读。">
 <link rel="canonical" href="https://wenhuo.top/shadowing/">
 <link rel="stylesheet" href="/assets/common.css">
-<link rel="stylesheet" href="/shadowing/practice.css">
+<link rel="stylesheet" href="/shadowing/practice.css?v=polish2">
 <style>
   [hidden]{display:none!important}
   .practice-wrap{max-width:920px}
@@ -49,7 +49,7 @@
   </header>
 
   <section class="card question-card" aria-labelledby="question-title">
-    <h2 id="question-title">作文题目</h2>
+    <h2 id="question-title">作文题目 <small>翻译与查词</small></h2>
     <form id="question-form">
       <label class="practice-label" for="question">英文题目</label>
       <textarea class="ta" id="question" maxlength="4000" placeholder="粘贴题目，例如：Write a letter inviting a friend to a reading club."></textarea>
@@ -61,7 +61,7 @@
   </section>
 
   <section class="card article-card" aria-labelledby="source-title">
-    <h2 id="source-title">作文 / 阅读正文</h2>
+    <h2 id="source-title">作文 / 阅读正文 <small>逐句翻译、点词与跟读</small></h2>
     <form id="source">
       <label class="practice-label" for="english">英文正文</label>
       <textarea class="ta" id="english" maxlength="12000" placeholder="粘贴作文正文、范文或阅读材料"></textarea>
@@ -101,8 +101,7 @@
     </div>
     <p class="practice-note" id="voice-note"></p>
     <p class="practice-note">悬停看词义，点击听单词。点句子左侧的「听」朗读整句。</p>
-    <ol class="sentence-list" id="sentences" aria-label="练习句子"></ol>
-    <div class="row">
+    <div class="row player-actions">
       <button class="btn-s" id="previous">上一句</button>
       <button class="btn-s" id="next">下一句</button>
       <button class="btn-p" id="listen">听这句</button>
@@ -110,12 +109,12 @@
       <button class="btn-s" id="download-reference">下载本句 WAV</button>
       <button class="btn-s" id="stop" hidden>停止</button>
     </div>
-    <div class="row practice-toolbar">
+    <div class="row practice-toolbar word-actions">
       <label>本句单词 <select id="words"></select></label>
       <button class="btn-s" id="listen-word">听单词</button>
       <a id="lookup-word" target="_blank" rel="noopener noreferrer">查词义（有道）</a>
     </div>
-    <div class="row">
+    <div class="row shadow-actions">
       <button class="btn-p" id="record">跟读这句</button>
       <button class="btn-s" id="continuous">连续跟读</button>
       <button class="btn-s" id="finish" hidden>结束录音</button>
@@ -126,6 +125,7 @@
     <audio id="recording" controls hidden></audio>
     <p id="feedback" class="practice-note" aria-live="polite"></p>
     <p id="practice-status" class="status" role="status"></p>
+    <ol class="sentence-list" id="sentences" aria-label="练习句子"></ol>
   </section>
 </main>
 <div id="word-tip" role="tooltip" hidden>

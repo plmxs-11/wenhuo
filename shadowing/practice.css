@@ -41,6 +41,30 @@
   background:var(--card-2);padding:12px;border:1px solid var(--line);border-radius:12px
 }
 .practice-wrap #materials{max-width:min(65vw,290px)}
+.shadowing-page .practice-wrap{max-width:940px}
+.shadowing-page .practice-wrap>header{
+  display:block;padding:8px 2px 2px;background:none;border:0;overflow:visible
+}
+.shadowing-page .practice-mark{display:none}
+.shadowing-page .practice-wrap h1{font-size:27px;letter-spacing:-.025em}
+.shadowing-page .practice-wrap>header .sub{margin-top:5px;font-size:14px}
+.shadowing-page .practice-wrap>.card{border:1px solid var(--line);border-radius:18px}
+.shadowing-page .practice-wrap>.card h2{display:flex;align-items:baseline;gap:10px}
+.shadowing-page .practice-wrap>.card h2 small{font-size:12px;font-weight:400;color:var(--muted)}
+.shadowing-page .practice-wrap .btn-p,.shadowing-page .practice-wrap .btn-s{border-radius:999px}
+.shadowing-page .practice-wrap textarea{border-radius:12px}
+.practice-wrap .player-actions,.practice-wrap .shadow-actions{
+  padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card)
+}
+.practice-wrap .shadow-actions{background:var(--brand-soft);border-color:var(--brand-line)}
+.practice-wrap .word-actions{padding:3px 2px}
+.practice-wrap .sentence-list li{
+  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px
+}
+.practice-wrap .sentence-list li[data-selected]{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.practice-wrap .sentence-read{border-radius:999px;color:var(--brand);font-weight:650}
+.practice-wrap .sentence-en{line-height:1.95}
+.practice-wrap .sentence-zh{line-height:1.75}
 #word-tip{
   position:fixed;z-index:100;max-width:min(325px,calc(100vw - 20px));padding:10px 13px;
   border-radius:11px;background:#352720;color:#fff7ee;box-shadow:0 8px 24px #27160938;
@@ -56,10 +80,10 @@
     --brand:#ffb38c;--brand-d:#ffcca8;--brand-soft:#483026;--on-brand:#2e1b13
   }
   .shadowing-page .nav{background:#2b221ef0}
-  .shadowing-page .practice-wrap>header{background:#392b24;border-color:var(--line)}
+  .shadowing-page .practice-wrap>header{background:none}
 }
 @media(max-width:520px){
-  .shadowing-page .practice-wrap>header{padding:16px;gap:10px}
+  .shadowing-page .practice-wrap>header{padding:4px 2px}
   .practice-mark{width:42px;height:42px;border-radius:12px}
   .practice-mark .i{width:22px;height:22px}
 }
