@@ -52,6 +52,7 @@
     $('#record').disabled = busy || !canRecord;
     $('#continuous').disabled = busy || !canRecord || !hasAudio;
     $('#listen-word').disabled = busy || !words.value || !(voices.length || canUseBuiltInVoice);
+    $('#try-voice').disabled = busy || !hasAudio;
     $('#download-reference').disabled = busy || exporting || (!canUseBuiltInVoice && !usingExample);
     $('#finish').hidden = !capture?.recorder || capture.recorder.state !== 'recording';
     $('#compare').hidden = !sentences[selected].recording || !hasAudio;
@@ -75,10 +76,17 @@
     for (const voice of voices) {
       voiceSelect.add(new Option(voice.name, voice.voiceURI));
     }
-    if (canUseBuiltInVoice) voiceSelect.add(new Option('内置英语语音', 'built-in'));
+    if (canUseBuiltInVoice) {
+      voiceSelect.add(new Option('内置美式英语', 'built-in:en-us'));
+      voiceSelect.add(new Option('内置英式英语', 'built-in:en-gb'));
+    }
     if (!voiceSelect.options.length) voiceSelect.add(new Option('未找到英语语音', ''));
-    if (preferred && [...voiceSelect.options].some(option => option.value === preferred)) {
-      voiceSelect.value = preferred;
+    const saved = prefVoice();
+    const choice = saved || preferred;
+    if (choice && [...voiceSelect.options].some(option => option.value === choice)) {
+      voiceSelect.value = choice;
+    } else if (canUseBuiltInVoice && !usingExample && !voices.length) {
+      voiceSelect.value = 'built-in:en-us';
     }
     $('#voice-note').textContent = canUseBuiltInVoice
       ? '内置英语语音首次使用时下载语音资源，文章在浏览器里合成。'
@@ -297,11 +305,19 @@
     return builtInVoice;
   }
 
+  function prefVoice(value) {
+    try {
+      if (value !== undefined) localStorage.setItem('wenhuo.shadowing.voice', value);
+      return localStorage.getItem('wenhuo.shadowing.voice');
+    } catch { return null; }
+  }
+
   async function speakBuiltIn(text, rate, signal) {
     try {
       const { engine, encodeWav } = await getBuiltInVoice();
       if (signal.aborted) return;
-      const { samples, sampleRate } = engine.synthesize(text);
+      const voice = voiceSelect.value.startsWith('built-in:') ? voiceSelect.value.slice(9) : 'en-us';
+      const { samples, sampleRate } = engine.synthesize(text, { voice });
       const url = URL.createObjectURL(new Blob([encodeWav(samples, sampleRate)], { type: 'audio/wav' }));
       try {
         samplePlayer.src = url;
@@ -323,7 +339,7 @@
       return waitForAudio(samplePlayer, signal);
     }
     const text = word || sentences[index].en;
-    if (voiceSelect.value === 'built-in' ||
+    if (voiceSelect.value.startsWith('built-in:') ||
         (word && voiceSelect.value === 'sample' && canUseBuiltInVoice)) {
       return speakBuiltIn(text, rate, signal);
     }
@@ -585,7 +601,8 @@
         wav = await response.blob();
       } else {
         const { engine, encodeWav } = await getBuiltInVoice();
-        const { samples, sampleRate } = engine.synthesize(sentence.en);
+        const voice = voiceSelect.value.startsWith('built-in:') ? voiceSelect.value.slice(9) : 'en-us';
+        const { samples, sampleRate } = engine.synthesize(sentence.en, { voice });
         wav = new Blob([encodeWav(samples, sampleRate)], { type: 'audio/wav' });
       }
       download(wav, '英语跟读-第' + index + '句.wav');
@@ -765,7 +782,8 @@
   $('#record').addEventListener('click', () => startRecording());
   $('#continuous').addEventListener('click', runContinuous);
   $('#finish').addEventListener('click', finishRecording);
-  voiceSelect.addEventListener('change', () => navigate(selected));
+  voiceSelect.addEventListener('change', () => { prefVoice(voiceSelect.value); navigate(selected); });
+  $('#try-voice').addEventListener('click', () => play([selected]));
   $('#rate').addEventListener('input', event => {
     $('#rate-value').value = Number(event.target.value).toFixed(1) + '×';
     samplePlayer.playbackRate = Number(event.target.value);
