@@ -1,0 +1,1465 @@
+{
+  "version": 1,
+  "espeakVersion": "1.52.0",
+  "encoding": "gzip",
+  "core": {
+    "file": "core.bin.gz",
+    "size": 725529,
+    "entries": [
+      {
+        "path": "intonations",
+        "size": 2312
+      },
+      {
+        "path": "lang/aav/vi",
+        "size": 111
+      },
+      {
+        "path": "lang/aav/vi-VN-x-central",
+        "size": 143
+      },
+      {
+        "path": "lang/aav/vi-VN-x-south",
+        "size": 142
+      },
+      {
+        "path": "lang/art/eo",
+        "size": 41
+      },
+      {
+        "path": "lang/art/ia",
+        "size": 29
+      },
+      {
+        "path": "lang/art/io",
+        "size": 50
+      },
+      {
+        "path": "lang/art/jbo",
+        "size": 69
+      },
+      {
+        "path": "lang/art/lfn",
+        "size": 135
+      },
+      {
+        "path": "lang/art/piqd",
+        "size": 56
+      },
+      {
+        "path": "lang/art/py",
+        "size": 140
+      },
+      {
+        "path": "lang/art/qdb",
+        "size": 57
+      },
+      {
+        "path": "lang/art/qya",
+        "size": 173
+      },
+      {
+        "path": "lang/art/sjn",
+        "size": 175
+      },
+      {
+        "path": "lang/art/xex",
+        "size": 103
+      },
+      {
+        "path": "lang/azc/nci",
+        "size": 114
+      },
+      {
+        "path": "lang/bat/lt",
+        "size": 28
+      },
+      {
+        "path": "lang/bat/ltg",
+        "size": 312
+      },
+      {
+        "path": "lang/bat/lv",
+        "size": 229
+      },
+      {
+        "path": "lang/bnt/sw",
+        "size": 41
+      },
+      {
+        "path": "lang/bnt/tn",
+        "size": 42
+      },
+      {
+        "path": "lang/ccs/ka",
+        "size": 124
+      },
+      {
+        "path": "lang/cel/cy",
+        "size": 37
+      },
+      {
+        "path": "lang/cel/ga",
+        "size": 66
+      },
+      {
+        "path": "lang/cel/gd",
+        "size": 51
+      },
+      {
+        "path": "lang/cus/om",
+        "size": 39
+      },
+      {
+        "path": "lang/dra/kn",
+        "size": 55
+      },
+      {
+        "path": "lang/dra/ml",
+        "size": 57
+      },
+      {
+        "path": "lang/dra/ta",
+        "size": 51
+      },
+      {
+        "path": "lang/dra/te",
+        "size": 70
+      },
+      {
+        "path": "lang/esx/kl",
+        "size": 30
+      },
+      {
+        "path": "lang/eu",
+        "size": 54
+      },
+      {
+        "path": "lang/gmq/da",
+        "size": 43
+      },
+      {
+        "path": "lang/gmq/fo",
+        "size": 104
+      },
+      {
+        "path": "lang/gmq/is",
+        "size": 27
+      },
+      {
+        "path": "lang/gmq/nb",
+        "size": 87
+      },
+      {
+        "path": "lang/gmq/sv",
+        "size": 25
+      },
+      {
+        "path": "lang/gmw/af",
+        "size": 123
+      },
+      {
+        "path": "lang/gmw/de",
+        "size": 42
+      },
+      {
+        "path": "lang/gmw/en",
+        "size": 140
+      },
+      {
+        "path": "lang/gmw/en-029",
+        "size": 335
+      },
+      {
+        "path": "lang/gmw/en-GB-scotland",
+        "size": 295
+      },
+      {
+        "path": "lang/gmw/en-GB-x-gbclan",
+        "size": 238
+      },
+      {
+        "path": "lang/gmw/en-GB-x-gbcwmd",
+        "size": 188
+      },
+      {
+        "path": "lang/gmw/en-GB-x-rp",
+        "size": 249
+      },
+      {
+        "path": "lang/gmw/en-Shaw",
+        "size": 119
+      },
+      {
+        "path": "lang/gmw/en-US",
+        "size": 257
+      },
+      {
+        "path": "lang/gmw/en-US-nyc",
+        "size": 271
+      },
+      {
+        "path": "lang/gmw/lb",
+        "size": 31
+      },
+      {
+        "path": "lang/gmw/nl",
+        "size": 23
+      },
+      {
+        "path": "lang/grk/el",
+        "size": 23
+      },
+      {
+        "path": "lang/grk/grc",
+        "size": 99
+      },
+      {
+        "path": "lang/inc/as",
+        "size": 42
+      },
+      {
+        "path": "lang/inc/bn",
+        "size": 25
+      },
+      {
+        "path": "lang/inc/bpy",
+        "size": 39
+      },
+      {
+        "path": "lang/inc/gu",
+        "size": 42
+      },
+      {
+        "path": "lang/inc/hi",
+        "size": 23
+      },
+      {
+        "path": "lang/inc/kok",
+        "size": 26
+      },
+      {
+        "path": "lang/inc/mr",
+        "size": 41
+      },
+      {
+        "path": "lang/inc/ne",
+        "size": 37
+      },
+      {
+        "path": "lang/inc/or",
+        "size": 39
+      },
+      {
+        "path": "lang/inc/pa",
+        "size": 25
+      },
+      {
+        "path": "lang/inc/sd",
+        "size": 66
+      },
+      {
+        "path": "lang/inc/si",
+        "size": 55
+      },
+      {
+        "path": "lang/inc/ur",
+        "size": 94
+      },
+      {
+        "path": "lang/ine/hy",
+        "size": 61
+      },
+      {
+        "path": "lang/ine/hyw",
+        "size": 365
+      },
+      {
+        "path": "lang/ine/sq",
+        "size": 103
+      },
+      {
+        "path": "lang/ira/fa",
+        "size": 90
+      },
+      {
+        "path": "lang/ira/fa-Latn",
+        "size": 269
+      },
+      {
+        "path": "lang/ira/ku",
+        "size": 40
+      },
+      {
+        "path": "lang/iro/chr",
+        "size": 569
+      },
+      {
+        "path": "lang/itc/la",
+        "size": 297
+      },
+      {
+        "path": "lang/jpx/ja",
+        "size": 52
+      },
+      {
+        "path": "lang/ko",
+        "size": 51
+      },
+      {
+        "path": "lang/map/haw",
+        "size": 42
+      },
+      {
+        "path": "lang/miz/mto",
+        "size": 183
+      },
+      {
+        "path": "lang/myn/quc",
+        "size": 210
+      },
+      {
+        "path": "lang/poz/id",
+        "size": 134
+      },
+      {
+        "path": "lang/poz/mi",
+        "size": 367
+      },
+      {
+        "path": "lang/poz/ms",
+        "size": 430
+      },
+      {
+        "path": "lang/qu",
+        "size": 88
+      },
+      {
+        "path": "lang/roa/an",
+        "size": 27
+      },
+      {
+        "path": "lang/roa/ca",
+        "size": 38
+      },
+      {
+        "path": "lang/roa/ca-ba",
+        "size": 80
+      },
+      {
+        "path": "lang/roa/ca-nw",
+        "size": 73
+      },
+      {
+        "path": "lang/roa/ca-va",
+        "size": 81
+      },
+      {
+        "path": "lang/roa/es",
+        "size": 63
+      },
+      {
+        "path": "lang/roa/es-419",
+        "size": 167
+      },
+      {
+        "path": "lang/roa/fr",
+        "size": 79
+      },
+      {
+        "path": "lang/roa/fr-BE",
+        "size": 84
+      },
+      {
+        "path": "lang/roa/fr-CH",
+        "size": 86
+      },
+      {
+        "path": "lang/roa/ht",
+        "size": 140
+      },
+      {
+        "path": "lang/roa/it",
+        "size": 109
+      },
+      {
+        "path": "lang/roa/pap",
+        "size": 62
+      },
+      {
+        "path": "lang/roa/pt",
+        "size": 95
+      },
+      {
+        "path": "lang/roa/pt-BR",
+        "size": 109
+      },
+      {
+        "path": "lang/roa/ro",
+        "size": 26
+      },
+      {
+        "path": "lang/sai/gn",
+        "size": 47
+      },
+      {
+        "path": "lang/sem/am",
+        "size": 41
+      },
+      {
+        "path": "lang/sem/ar",
+        "size": 50
+      },
+      {
+        "path": "lang/sem/he",
+        "size": 40
+      },
+      {
+        "path": "lang/sem/mt",
+        "size": 41
+      },
+      {
+        "path": "lang/sem/ti",
+        "size": 93
+      },
+      {
+        "path": "lang/sit/cmn",
+        "size": 686
+      },
+      {
+        "path": "lang/sit/cmn-Latn-pinyin",
+        "size": 161
+      },
+      {
+        "path": "lang/sit/hak",
+        "size": 128
+      },
+      {
+        "path": "lang/sit/my",
+        "size": 56
+      },
+      {
+        "path": "lang/sit/yue",
+        "size": 194
+      },
+      {
+        "path": "lang/sit/yue-Latn-jyutping",
+        "size": 213
+      },
+      {
+        "path": "lang/tai/shn",
+        "size": 92
+      },
+      {
+        "path": "lang/tai/th",
+        "size": 37
+      },
+      {
+        "path": "lang/trk/az",
+        "size": 45
+      },
+      {
+        "path": "lang/trk/ba",
+        "size": 25
+      },
+      {
+        "path": "lang/trk/cv",
+        "size": 40
+      },
+      {
+        "path": "lang/trk/kaa",
+        "size": 28
+      },
+      {
+        "path": "lang/trk/kk",
+        "size": 40
+      },
+      {
+        "path": "lang/trk/ky",
+        "size": 43
+      },
+      {
+        "path": "lang/trk/nog",
+        "size": 39
+      },
+      {
+        "path": "lang/trk/tk",
+        "size": 25
+      },
+      {
+        "path": "lang/trk/tr",
+        "size": 25
+      },
+      {
+        "path": "lang/trk/tt",
+        "size": 23
+      },
+      {
+        "path": "lang/trk/ug",
+        "size": 24
+      },
+      {
+        "path": "lang/trk/uz",
+        "size": 39
+      },
+      {
+        "path": "lang/urj/et",
+        "size": 237
+      },
+      {
+        "path": "lang/urj/fi",
+        "size": 237
+      },
+      {
+        "path": "lang/urj/hu",
+        "size": 73
+      },
+      {
+        "path": "lang/urj/smj",
+        "size": 45
+      },
+      {
+        "path": "lang/zle/be",
+        "size": 52
+      },
+      {
+        "path": "lang/zle/ru",
+        "size": 57
+      },
+      {
+        "path": "lang/zle/ru-LV",
+        "size": 280
+      },
+      {
+        "path": "lang/zle/ru-cl",
+        "size": 91
+      },
+      {
+        "path": "lang/zle/uk",
+        "size": 97
+      },
+      {
+        "path": "lang/zls/bg",
+        "size": 111
+      },
+      {
+        "path": "lang/zls/bs",
+        "size": 230
+      },
+      {
+        "path": "lang/zls/hr",
+        "size": 262
+      },
+      {
+        "path": "lang/zls/mk",
+        "size": 28
+      },
+      {
+        "path": "lang/zls/sl",
+        "size": 43
+      },
+      {
+        "path": "lang/zls/sr",
+        "size": 250
+      },
+      {
+        "path": "lang/zlw/cs",
+        "size": 23
+      },
+      {
+        "path": "lang/zlw/pl",
+        "size": 38
+      },
+      {
+        "path": "lang/zlw/sk",
+        "size": 24
+      },
+      {
+        "path": "phondata",
+        "size": 554740
+      },
+      {
+        "path": "phonindex",
+        "size": 43316
+      },
+      {
+        "path": "phontab",
+        "size": 58652
+      },
+      {
+        "path": "voices/!v/Alex",
+        "size": 128
+      },
+      {
+        "path": "voices/!v/Alicia",
+        "size": 474
+      },
+      {
+        "path": "voices/!v/Andrea",
+        "size": 357
+      },
+      {
+        "path": "voices/!v/Andy",
+        "size": 320
+      },
+      {
+        "path": "voices/!v/Annie",
+        "size": 315
+      },
+      {
+        "path": "voices/!v/AnxiousAndy",
+        "size": 361
+      },
+      {
+        "path": "voices/!v/Demonic",
+        "size": 3858
+      },
+      {
+        "path": "voices/!v/Denis",
+        "size": 305
+      },
+      {
+        "path": "voices/!v/Diogo",
+        "size": 379
+      },
+      {
+        "path": "voices/!v/Gene",
+        "size": 281
+      },
+      {
+        "path": "voices/!v/Gene2",
+        "size": 283
+      },
+      {
+        "path": "voices/!v/Henrique",
+        "size": 381
+      },
+      {
+        "path": "voices/!v/Hugo",
+        "size": 378
+      },
+      {
+        "path": "voices/!v/Jacky",
+        "size": 267
+      },
+      {
+        "path": "voices/!v/Lee",
+        "size": 338
+      },
+      {
+        "path": "voices/!v/Marco",
+        "size": 467
+      },
+      {
+        "path": "voices/!v/Mario",
+        "size": 270
+      },
+      {
+        "path": "voices/!v/Michael",
+        "size": 270
+      },
+      {
+        "path": "voices/!v/Mike",
+        "size": 112
+      },
+      {
+        "path": "voices/!v/Mr serious",
+        "size": 3193
+      },
+      {
+        "path": "voices/!v/Nguyen",
+        "size": 280
+      },
+      {
+        "path": "voices/!v/Reed",
+        "size": 202
+      },
+      {
+        "path": "voices/!v/RicishayMax",
+        "size": 233
+      },
+      {
+        "path": "voices/!v/RicishayMax2",
+        "size": 435
+      },
+      {
+        "path": "voices/!v/RicishayMax3",
+        "size": 435
+      },
+      {
+        "path": "voices/!v/Storm",
+        "size": 420
+      },
+      {
+        "path": "voices/!v/Tweaky",
+        "size": 3189
+      },
+      {
+        "path": "voices/!v/UniRobot",
+        "size": 417
+      },
+      {
+        "path": "voices/!v/adam",
+        "size": 75
+      },
+      {
+        "path": "voices/!v/anika",
+        "size": 493
+      },
+      {
+        "path": "voices/!v/anikaRobot",
+        "size": 512
+      },
+      {
+        "path": "voices/!v/announcer",
+        "size": 300
+      },
+      {
+        "path": "voices/!v/antonio",
+        "size": 381
+      },
+      {
+        "path": "voices/!v/aunty",
+        "size": 358
+      },
+      {
+        "path": "voices/!v/belinda",
+        "size": 340
+      },
+      {
+        "path": "voices/!v/benjamin",
+        "size": 201
+      },
+      {
+        "path": "voices/!v/boris",
+        "size": 224
+      },
+      {
+        "path": "voices/!v/caleb",
+        "size": 57
+      },
+      {
+        "path": "voices/!v/croak",
+        "size": 93
+      },
+      {
+        "path": "voices/!v/david",
+        "size": 112
+      },
+      {
+        "path": "voices/!v/ed",
+        "size": 287
+      },
+      {
+        "path": "voices/!v/edward",
+        "size": 151
+      },
+      {
+        "path": "voices/!v/edward2",
+        "size": 152
+      },
+      {
+        "path": "voices/!v/f1",
+        "size": 324
+      },
+      {
+        "path": "voices/!v/f2",
+        "size": 357
+      },
+      {
+        "path": "voices/!v/f3",
+        "size": 375
+      },
+      {
+        "path": "voices/!v/f4",
+        "size": 350
+      },
+      {
+        "path": "voices/!v/f5",
+        "size": 432
+      },
+      {
+        "path": "voices/!v/fast",
+        "size": 149
+      },
+      {
+        "path": "voices/!v/grandma",
+        "size": 263
+      },
+      {
+        "path": "voices/!v/grandpa",
+        "size": 256
+      },
+      {
+        "path": "voices/!v/gustave",
+        "size": 253
+      },
+      {
+        "path": "voices/!v/ian",
+        "size": 3168
+      },
+      {
+        "path": "voices/!v/iven",
+        "size": 261
+      },
+      {
+        "path": "voices/!v/iven2",
+        "size": 279
+      },
+      {
+        "path": "voices/!v/iven3",
+        "size": 262
+      },
+      {
+        "path": "voices/!v/iven4",
+        "size": 261
+      },
+      {
+        "path": "voices/!v/john",
+        "size": 3186
+      },
+      {
+        "path": "voices/!v/kaukovalta",
+        "size": 361
+      },
+      {
+        "path": "voices/!v/klatt",
+        "size": 38
+      },
+      {
+        "path": "voices/!v/klatt2",
+        "size": 38
+      },
+      {
+        "path": "voices/!v/klatt3",
+        "size": 39
+      },
+      {
+        "path": "voices/!v/klatt4",
+        "size": 39
+      },
+      {
+        "path": "voices/!v/klatt5",
+        "size": 39
+      },
+      {
+        "path": "voices/!v/klatt6",
+        "size": 39
+      },
+      {
+        "path": "voices/!v/linda",
+        "size": 350
+      },
+      {
+        "path": "voices/!v/m1",
+        "size": 335
+      },
+      {
+        "path": "voices/!v/m2",
+        "size": 264
+      },
+      {
+        "path": "voices/!v/m3",
+        "size": 300
+      },
+      {
+        "path": "voices/!v/m4",
+        "size": 290
+      },
+      {
+        "path": "voices/!v/m5",
+        "size": 262
+      },
+      {
+        "path": "voices/!v/m6",
+        "size": 188
+      },
+      {
+        "path": "voices/!v/m7",
+        "size": 254
+      },
+      {
+        "path": "voices/!v/m8",
+        "size": 284
+      },
+      {
+        "path": "voices/!v/marcelo",
+        "size": 251
+      },
+      {
+        "path": "voices/!v/max",
+        "size": 225
+      },
+      {
+        "path": "voices/!v/michel",
+        "size": 404
+      },
+      {
+        "path": "voices/!v/miguel",
+        "size": 382
+      },
+      {
+        "path": "voices/!v/mike2",
+        "size": 188
+      },
+      {
+        "path": "voices/!v/norbert",
+        "size": 3189
+      },
+      {
+        "path": "voices/!v/pablo",
+        "size": 3142
+      },
+      {
+        "path": "voices/!v/paul",
+        "size": 284
+      },
+      {
+        "path": "voices/!v/pedro",
+        "size": 352
+      },
+      {
+        "path": "voices/!v/quincy",
+        "size": 354
+      },
+      {
+        "path": "voices/!v/rob",
+        "size": 265
+      },
+      {
+        "path": "voices/!v/robert",
+        "size": 274
+      },
+      {
+        "path": "voices/!v/robosoft",
+        "size": 451
+      },
+      {
+        "path": "voices/!v/robosoft2",
+        "size": 454
+      },
+      {
+        "path": "voices/!v/robosoft3",
+        "size": 455
+      },
+      {
+        "path": "voices/!v/robosoft4",
+        "size": 447
+      },
+      {
+        "path": "voices/!v/robosoft5",
+        "size": 445
+      },
+      {
+        "path": "voices/!v/robosoft6",
+        "size": 287
+      },
+      {
+        "path": "voices/!v/robosoft7",
+        "size": 410
+      },
+      {
+        "path": "voices/!v/robosoft8",
+        "size": 243
+      },
+      {
+        "path": "voices/!v/sandro",
+        "size": 530
+      },
+      {
+        "path": "voices/!v/shelby",
+        "size": 280
+      },
+      {
+        "path": "voices/!v/steph",
+        "size": 364
+      },
+      {
+        "path": "voices/!v/steph2",
+        "size": 367
+      },
+      {
+        "path": "voices/!v/steph3",
+        "size": 377
+      },
+      {
+        "path": "voices/!v/travis",
+        "size": 383
+      },
+      {
+        "path": "voices/!v/victor",
+        "size": 253
+      },
+      {
+        "path": "voices/!v/whisper",
+        "size": 186
+      },
+      {
+        "path": "voices/!v/whisperf",
+        "size": 392
+      },
+      {
+        "path": "voices/!v/zac",
+        "size": 275
+      }
+    ]
+  },
+  "dictionaries": {
+    "af": {
+      "file": "af_dict.gz",
+      "size": 121473
+    },
+    "am": {
+      "file": "am_dict.gz",
+      "size": 63878
+    },
+    "an": {
+      "file": "an_dict.gz",
+      "size": 6691
+    },
+    "ar": {
+      "file": "ar_dict.gz",
+      "size": 478165
+    },
+    "as": {
+      "file": "as_dict.gz",
+      "size": 5005
+    },
+    "az": {
+      "file": "az_dict.gz",
+      "size": 43773
+    },
+    "ba": {
+      "file": "ba_dict.gz",
+      "size": 2098
+    },
+    "be": {
+      "file": "be_dict.gz",
+      "size": 2652
+    },
+    "bg": {
+      "file": "bg_dict.gz",
+      "size": 87051
+    },
+    "bn": {
+      "file": "bn_dict.gz",
+      "size": 89979
+    },
+    "bpy": {
+      "file": "bpy_dict.gz",
+      "size": 5226
+    },
+    "bs": {
+      "file": "bs_dict.gz",
+      "size": 47068
+    },
+    "ca": {
+      "file": "ca_dict.gz",
+      "size": 310331
+    },
+    "chr": {
+      "file": "chr_dict.gz",
+      "size": 2859
+    },
+    "cmn": {
+      "file": "cmn_dict.gz",
+      "size": 1566347
+    },
+    "cs": {
+      "file": "cs_dict.gz",
+      "size": 50455
+    },
+    "cv": {
+      "file": "cv_dict.gz",
+      "size": 1344
+    },
+    "cy": {
+      "file": "cy_dict.gz",
+      "size": 43130
+    },
+    "da": {
+      "file": "da_dict.gz",
+      "size": 245287
+    },
+    "de": {
+      "file": "de_dict.gz",
+      "size": 69277
+    },
+    "el": {
+      "file": "el_dict.gz",
+      "size": 72841
+    },
+    "en": {
+      "file": "en_dict.gz",
+      "size": 168204
+    },
+    "eo": {
+      "file": "eo_dict.gz",
+      "size": 4666
+    },
+    "es": {
+      "file": "es_dict.gz",
+      "size": 49285
+    },
+    "et": {
+      "file": "et_dict.gz",
+      "size": 44263
+    },
+    "eu": {
+      "file": "eu_dict.gz",
+      "size": 48841
+    },
+    "fa": {
+      "file": "fa_dict.gz",
+      "size": 292907
+    },
+    "fi": {
+      "file": "fi_dict.gz",
+      "size": 43928
+    },
+    "fr": {
+      "file": "fr_dict.gz",
+      "size": 63727
+    },
+    "ga": {
+      "file": "ga_dict.gz",
+      "size": 52673
+    },
+    "gd": {
+      "file": "gd_dict.gz",
+      "size": 49121
+    },
+    "gn": {
+      "file": "gn_dict.gz",
+      "size": 3248
+    },
+    "grc": {
+      "file": "grc_dict.gz",
+      "size": 3433
+    },
+    "gu": {
+      "file": "gu_dict.gz",
+      "size": 82480
+    },
+    "hak": {
+      "file": "hak_dict.gz",
+      "size": 3335
+    },
+    "haw": {
+      "file": "haw_dict.gz",
+      "size": 2443
+    },
+    "he": {
+      "file": "he_dict.gz",
+      "size": 10665
+    },
+    "hi": {
+      "file": "hi_dict.gz",
+      "size": 92143
+    },
+    "hr": {
+      "file": "hr_dict.gz",
+      "size": 49388
+    },
+    "ht": {
+      "file": "ht_dict.gz",
+      "size": 1803
+    },
+    "hu": {
+      "file": "hu_dict.gz",
+      "size": 177886
+    },
+    "hy": {
+      "file": "hy_dict.gz",
+      "size": 62263
+    },
+    "ia": {
+      "file": "ia_dict.gz",
+      "size": 331275
+    },
+    "id": {
+      "file": "id_dict.gz",
+      "size": 43458
+    },
+    "io": {
+      "file": "io_dict.gz",
+      "size": 2165
+    },
+    "is": {
+      "file": "is_dict.gz",
+      "size": 44354
+    },
+    "it": {
+      "file": "it_dict.gz",
+      "size": 154408
+    },
+    "ja": {
+      "file": "ja_dict.gz",
+      "size": 47652
+    },
+    "jbo": {
+      "file": "jbo_dict.gz",
+      "size": 2243
+    },
+    "ka": {
+      "file": "ka_dict.gz",
+      "size": 87775
+    },
+    "kk": {
+      "file": "kk_dict.gz",
+      "size": 1859
+    },
+    "kl": {
+      "file": "kl_dict.gz",
+      "size": 2838
+    },
+    "kn": {
+      "file": "kn_dict.gz",
+      "size": 87828
+    },
+    "ko": {
+      "file": "ko_dict.gz",
+      "size": 47523
+    },
+    "kok": {
+      "file": "kok_dict.gz",
+      "size": 6394
+    },
+    "ku": {
+      "file": "ku_dict.gz",
+      "size": 2265
+    },
+    "ky": {
+      "file": "ky_dict.gz",
+      "size": 64977
+    },
+    "la": {
+      "file": "la_dict.gz",
+      "size": 3806
+    },
+    "lb": {
+      "file": "lb_dict.gz",
+      "size": 687931
+    },
+    "lfn": {
+      "file": "lfn_dict.gz",
+      "size": 2793
+    },
+    "lt": {
+      "file": "lt_dict.gz",
+      "size": 49890
+    },
+    "lv": {
+      "file": "lv_dict.gz",
+      "size": 66337
+    },
+    "mi": {
+      "file": "mi_dict.gz",
+      "size": 1346
+    },
+    "mk": {
+      "file": "mk_dict.gz",
+      "size": 63859
+    },
+    "ml": {
+      "file": "ml_dict.gz",
+      "size": 92345
+    },
+    "mr": {
+      "file": "mr_dict.gz",
+      "size": 87391
+    },
+    "ms": {
+      "file": "ms_dict.gz",
+      "size": 53541
+    },
+    "mt": {
+      "file": "mt_dict.gz",
+      "size": 4384
+    },
+    "mto": {
+      "file": "mto_dict.gz",
+      "size": 3960
+    },
+    "my": {
+      "file": "my_dict.gz",
+      "size": 95948
+    },
+    "nci": {
+      "file": "nci_dict.gz",
+      "size": 1534
+    },
+    "ne": {
+      "file": "ne_dict.gz",
+      "size": 95377
+    },
+    "nl": {
+      "file": "nl_dict.gz",
+      "size": 65396
+    },
+    "no": {
+      "file": "no_dict.gz",
+      "size": 4178
+    },
+    "nog": {
+      "file": "nog_dict.gz",
+      "size": 3294
+    },
+    "om": {
+      "file": "om_dict.gz",
+      "size": 2302
+    },
+    "or": {
+      "file": "or_dict.gz",
+      "size": 89246
+    },
+    "pa": {
+      "file": "pa_dict.gz",
+      "size": 79953
+    },
+    "pap": {
+      "file": "pap_dict.gz",
+      "size": 2128
+    },
+    "piqd": {
+      "file": "piqd_dict.gz",
+      "size": 1710
+    },
+    "pl": {
+      "file": "pl_dict.gz",
+      "size": 76620
+    },
+    "pt": {
+      "file": "pt_dict.gz",
+      "size": 76389
+    },
+    "py": {
+      "file": "py_dict.gz",
+      "size": 2409
+    },
+    "qdb": {
+      "file": "qdb_dict.gz",
+      "size": 3028
+    },
+    "qu": {
+      "file": "qu_dict.gz",
+      "size": 1919
+    },
+    "quc": {
+      "file": "quc_dict.gz",
+      "size": 1450
+    },
+    "qya": {
+      "file": "qya_dict.gz",
+      "size": 1939
+    },
+    "ro": {
+      "file": "ro_dict.gz",
+      "size": 68538
+    },
+    "ru": {
+      "file": "ru_dict.gz",
+      "size": 8538195
+    },
+    "sd": {
+      "file": "sd_dict.gz",
+      "size": 59928
+    },
+    "shn": {
+      "file": "shn_dict.gz",
+      "size": 88172
+    },
+    "si": {
+      "file": "si_dict.gz",
+      "size": 85384
+    },
+    "sjn": {
+      "file": "sjn_dict.gz",
+      "size": 1783
+    },
+    "sk": {
+      "file": "sk_dict.gz",
+      "size": 50002
+    },
+    "sl": {
+      "file": "sl_dict.gz",
+      "size": 45047
+    },
+    "smj": {
+      "file": "smj_dict.gz",
+      "size": 35095
+    },
+    "sq": {
+      "file": "sq_dict.gz",
+      "size": 45003
+    },
+    "sr": {
+      "file": "sr_dict.gz",
+      "size": 46832
+    },
+    "sv": {
+      "file": "sv_dict.gz",
+      "size": 47836
+    },
+    "sw": {
+      "file": "sw_dict.gz",
+      "size": 47804
+    },
+    "ta": {
+      "file": "ta_dict.gz",
+      "size": 209553
+    },
+    "te": {
+      "file": "te_dict.gz",
+      "size": 94837
+    },
+    "th": {
+      "file": "th_dict.gz",
+      "size": 2301
+    },
+    "ti": {
+      "file": "ti_dict.gz",
+      "size": 57920
+    },
+    "tk": {
+      "file": "tk_dict.gz",
+      "size": 20868
+    },
+    "tn": {
+      "file": "tn_dict.gz",
+      "size": 3072
+    },
+    "tr": {
+      "file": "tr_dict.gz",
+      "size": 46793
+    },
+    "tt": {
+      "file": "tt_dict.gz",
+      "size": 2121
+    },
+    "ug": {
+      "file": "ug_dict.gz",
+      "size": 2070
+    },
+    "uk": {
+      "file": "uk_dict.gz",
+      "size": 3492
+    },
+    "ur": {
+      "file": "ur_dict.gz",
+      "size": 133556
+    },
+    "uz": {
+      "file": "uz_dict.gz",
+      "size": 2540
+    },
+    "vi": {
+      "file": "vi_dict.gz",
+      "size": 52608
+    },
+    "yue": {
+      "file": "yue_dict.gz",
+      "size": 563571
+    }
+  }
+}

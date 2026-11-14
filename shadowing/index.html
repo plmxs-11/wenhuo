@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>英语跟读练习 · 文火工具箱</title>
+<meta name="description" content="在线英语跟读练习。粘贴英文，逐句朗读、录音回放，对比自己的跟读。">
+<link rel="canonical" href="https://wenhuo.top/shadowing/">
+<link rel="stylesheet" href="/assets/common.css">
+<style>
+  [hidden]{display:none!important}
+  .practice-wrap{max-width:920px}
+  .practice-links{margin-bottom:var(--sp-2);font-size:var(--fs-sm)}
+  .practice-label{display:block;margin-bottom:6px;font-weight:600}
+  .practice-wrap .ta{display:block;max-width:none}
+  .practice-wrap .translation{min-height:76px;margin-top:8px}
+  .practice-wrap details{margin-top:var(--sp-3)}
+  .practice-wrap summary{cursor:pointer;color:var(--brand)}
+  .practice-toolbar{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center}
+  .practice-toolbar label{display:inline-flex;gap:7px;align-items:center}
+  .practice-toolbar select{min-width:0;max-width:min(52vw,240px)}
+  .practice-toolbar input[type=range]{width:104px;accent-color:var(--brand)}
+  #practice{scroll-margin-top:145px}
+  .practice-wrap .status:empty{display:none}
+  .sentence-list{display:grid;gap:8px;margin:var(--sp-4) 0;padding:0;list-style:none}
+  .sentence-list button{display:grid;grid-template-columns:2ch minmax(0,1fr);gap:12px;width:100%;text-align:left;
+    background:var(--card-2);color:var(--text);overflow-wrap:anywhere}
+  .sentence-list button[aria-current=true]{border-color:var(--brand);background:var(--brand-soft)}
+  .sentence-list button:disabled{opacity:1;cursor:default}
+  .sentence-num{color:var(--muted);font-variant-numeric:tabular-nums}
+  .sentence-en,.sentence-zh{display:block}
+  .sentence-en{font-size:var(--fs-base);font-weight:600}
+  .sentence-zh,.practice-note{color:var(--muted);font-size:var(--fs-sm)}
+  .practice-note{margin:8px 0 0}
+  .practice-wrap audio{display:block;width:100%;margin-top:12px}
+</style>
+<script src="/assets/common.js" defer></script>
+<script src="/shadowing/practice.js" defer></script>
+</head>
+<body>
+<main class="wrap practice-wrap">
+  <div class="practice-links"><a href="/#other-tools">返回其他工具</a></div>
+  <header>
+    <h1>英语跟读练习</h1>
+    <p class="sub">听一句，跟读一句。录完可以回听，或和参考朗读对比。</p>
+  </header>
+
+  <section class="card" aria-labelledby="source-title">
+    <h2 id="source-title">练习材料</h2>
+    <form id="source">
+      <label class="practice-label" for="english">英文题目或文章</label>
+      <textarea class="ta" id="english" maxlength="12000" placeholder="粘贴英文作文题目、范文或阅读材料"></textarea>
+      <details>
+        <summary>添加中文译文（可选）</summary>
+        <label class="practice-label" for="chinese">每句译文占一行，按英文句子的顺序填写</label>
+        <textarea class="ta translation" id="chinese" maxlength="12000"></textarea>
+      </details>
+      <div class="row">
+        <button class="btn-p" type="submit">准备练习</button>
+        <button class="btn-s" type="button" id="example">载入示例</button>
+      </div>
+      <details>
+        <summary>练习收藏</summary>
+        <p class="practice-note">材料保存在当前浏览器。</p>
+        <div class="row">
+          <button class="btn-s" type="button" id="save-material">收藏当前练习</button>
+          <label>已收藏 <select id="materials"></select></label>
+          <button class="btn-s" type="button" id="open-material">打开</button>
+          <button class="btn-s" type="button" id="delete-material">移除收藏</button>
+        </div>
+      </details>
+      <p id="source-status" class="status" role="status"></p>
+    </form>
+  </section>
+
+  <section class="card" id="practice" aria-labelledby="practice-title">
+    <h2 id="practice-title">听读与录音</h2>
+    <div class="practice-toolbar">
+      <label>朗读声音 <select id="voice"></select></label>
+      <label>语速 <input id="rate" type="range" min="0.6" max="1.4" step="0.1" value="1"><output id="rate-value" for="rate">1.0×</output></label>
+      <label>每句 <select id="repeat"><option>1</option><option>2</option><option>3</option></select> 遍</label>
+      <label id="translation-toggle"><input type="checkbox" id="show-translation" checked> 显示中文</label>
+      <label><input type="checkbox" id="show-english" checked> 显示英文</label>
+    </div>
+    <p class="practice-note" id="voice-note"></p>
+    <ol class="sentence-list" id="sentences" aria-label="练习句子"></ol>
+    <div class="row">
+      <button class="btn-s" id="previous">上一句</button>
+      <button class="btn-s" id="next">下一句</button>
+      <button class="btn-p" id="listen">听这句</button>
+      <button class="btn-s" id="listen-all">朗读全文</button>
+      <button class="btn-s" id="download-reference">下载本句 WAV</button>
+      <button class="btn-s" id="stop" hidden>停止</button>
+    </div>
+    <div class="row practice-toolbar">
+      <label>本句单词 <select id="words"></select></label>
+      <button class="btn-s" id="listen-word">听单词</button>
+      <a id="lookup-word" target="_blank" rel="noopener noreferrer">查词义（有道）</a>
+    </div>
+    <div class="row">
+      <button class="btn-p" id="record">跟读这句</button>
+      <button class="btn-s" id="continuous">连续跟读</button>
+      <button class="btn-s" id="finish" hidden>结束录音</button>
+      <button class="btn-s" id="compare" hidden>先听原声，再听我的</button>
+    </div>
+    <label class="practice-note practice-label" id="recognition-option" hidden><input type="checkbox" id="recognize"> 用浏览器识别并比对词句</label>
+    <p class="practice-note" id="recognition-note" hidden>开启后，浏览器可能将音频发送给其语音识别服务。匹配率按识别文本计算，用于检查是否读全。</p>
+    <audio id="recording" controls hidden></audio>
+    <p id="feedback" class="practice-note" aria-live="polite"></p>
+    <p id="practice-status" class="status" role="status"></p>
+  </section>
+</main>
+</body>
+</html>
