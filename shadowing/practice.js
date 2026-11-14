@@ -77,15 +77,15 @@
       voiceSelect.add(new Option(voice.name, voice.voiceURI));
     }
     if (canUseBuiltInVoice) {
-      voiceSelect.add(new Option('内置美式英语', 'built-in:en-us'));
-      voiceSelect.add(new Option('内置英式英语', 'built-in:en-gb'));
+      voiceSelect.add(new Option('内置美式男声', 'built-in:en-us'));
+      voiceSelect.add(new Option('内置英式男声', 'built-in:en-gb'));
     }
     if (!voiceSelect.options.length) voiceSelect.add(new Option('未找到英语语音', ''));
     const saved = prefVoice();
     const choice = saved || preferred;
     if (choice && [...voiceSelect.options].some(option => option.value === choice)) {
       voiceSelect.value = choice;
-    } else if (canUseBuiltInVoice && !usingExample && !voices.length) {
+    } else if (canUseBuiltInVoice) {
       voiceSelect.value = 'built-in:en-us';
     }
     $('#voice-note').textContent = canUseBuiltInVoice
