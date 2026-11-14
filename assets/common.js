@@ -211,13 +211,13 @@
     nav.className = 'nav';
 
     const links = NAV_LINKS.map(l =>
-      `<a href="${l.href}"${l.match.test(path) ? ' class="on"' : ''}>${l.name}</a>`
+      `<a href="${l.href}"${l.match.test(path) ? ' class="on"' : ''}${path === l.href ? ' aria-current="page"' : ''}>${l.name}</a>`
     ).join('');
 
     nav.innerHTML =
       '<div class="nav-in">' +
         '<a class="brand" href="/">' +
-          '<svg class="i"><use href="/assets/icons.svg#shield-check"></use></svg>文火工具箱' +
+          '<span class="brand-mark"><svg class="i" aria-hidden="true"><use href="/assets/icons.svg#shield-check"></use></svg></span>文火工具箱' +
         '</a>' +
         '<div class="links">' + links + '</div>' +
       '</div>';

@@ -68,8 +68,7 @@
   let items = [];   // {file, pages, err}
 
   const refreshButtons = () => {
-    const usable = items.filter(i => !i.err).length;
-    btnGo.disabled = usable < 2;
+    btnGo.disabled = items.length < 2 || items.some(i => i.err);
     btnClear.disabled = items.length === 0;
     btnSortName.disabled = items.length < 2;
   };
@@ -82,11 +81,13 @@
                           : `<span class="meta">${it.pages} 页 · ${fmtSize(it.file.size)}</span>`;
       li.innerHTML =
         `<span class="idx">${i + 1}</span>` +
-        `<span class="nm" title="${it.file.name}">${it.file.name}</span>` +
+        '<span class="nm"></span>' +
         meta +
         `<button class="btn-mini" data-act="up" ${i === 0 ? 'disabled' : ''}>↑</button>` +
         `<button class="btn-mini" data-act="down" ${i === items.length - 1 ? 'disabled' : ''}>↓</button>` +
         `<button class="btn-mini" data-act="del"></button>`;
+      const name = li.querySelector('.nm');
+      name.title = name.textContent = it.file.name;
       li.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
         const act = b.dataset.act;
         if (act === 'del') items.splice(i, 1);
@@ -107,7 +108,7 @@
     for (const f of pdfs) {
       let pages = 0, err = null;
       try {
-        const doc = await PDFLib.PDFDocument.load(await f.arrayBuffer(), { ignoreEncryption: true });
+        const doc = await PDFLib.PDFDocument.load(await f.arrayBuffer());
         pages = doc.getPageCount();
       } catch (e) {
         err = '无法读取（可能已加密或文件损坏）';
@@ -118,7 +119,7 @@
     const bad = items.filter(i => i.err).length;
     say(`已添加 ${pdfs.length} 个文件，共 ${items.length} 个` +
         (skipped ? `（忽略了 ${skipped} 个非 PDF 文件）` : '') +
-        (bad ? `，其中 ${bad} 个无法读取` : ''), bad ? 's-err' : 's-ok');
+        (bad ? `，其中 ${bad} 个无法读取。移除这些文件后可继续合并。` : ''), bad ? 's-err' : 's-ok');
   }
 
   setupDrop($('#drop'), $('#file'), addFiles);
@@ -135,29 +136,29 @@
   });
 
   btnGo.addEventListener('click', async () => {
-    const usable = items.filter(i => !i.err);
-    if (usable.length < 2) return;
+    if (items.length < 2 || items.some(i => i.err)) return;
+    const selected = items.slice();
 
     btnGo.disabled = true;
     say('正在合并…', 's-run');
     try {
       const out = await PDFLib.PDFDocument.create();
       let total = 0;
-      for (const it of usable) {
-        const src = await PDFLib.PDFDocument.load(await it.file.arrayBuffer(), { ignoreEncryption: true });
+      for (const it of selected) {
+        const src = await PDFLib.PDFDocument.load(await it.file.arrayBuffer());
         const copied = await out.copyPages(src, src.getPageIndices());
         copied.forEach(p => out.addPage(p));
         total += copied.length;
       }
       const bytes = await out.save();
-      const name = baseName(usable[0].file.name) + '_等' + usable.length + '个文件_合并.pdf';
+      const name = baseName(selected[0].file.name) + '_等' + selected.length + '个文件_合并.pdf';
       download(new Blob([bytes], { type: 'application/pdf' }), name);
       say(`合并完成，共 ${total} 页，已开始下载`, 's-ok');
     } catch (e) {
       console.error(e);
       say('合并失败：' + (e && e.message ? e.message : '未知错误'), 's-err');
     }
-    btnGo.disabled = false;
+    refreshButtons();
   });
 
   W.mountNav();

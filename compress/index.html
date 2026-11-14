@@ -117,31 +117,21 @@
 
   const setBusy = b => { $('#btnGo').disabled = b || !pdf; $('#btnClear').disabled = b || !srcFile; };
 
-  /**
-   * 判断这个 PDF 是不是扫描件。
-   *
-   * 判据是每页的文字层：扫描件是纯图片，getTextContent() 基本取不到东西；
-   * Word 导出的 PDF 每页都有大量文字项。抽样前几页就够，整本扫下来太慢。
-   *
-   * 这一步是这个工具存在的意义——市面上的压缩工具照单全收，把有文字层的
-   * PDF 也压成图片，用户事后才发现文字选不中了。宁可劝退也不糊弄。
-   */
-  async function detect(doc){
-    const sample = Math.min(doc.numPages, 5);
-    let withText = 0, chars = 0;
-    for (let i = 1; i <= sample; i++){
+  /** 返回首个含文字的页码。扫描件需要检查到最后一页。 */
+  async function firstTextPage(doc){
+    for (let i = 1; i <= doc.numPages; i++){
       const page = await doc.getPage(i);
       const tc = await page.getTextContent();
-      const t = tc.items.map(it => it.str).join('').trim();
-      if (t.length > 20) { withText++; chars += t.length; }
+      if (tc.items.some(item => item.str && item.str.trim())) return i;
     }
-    return { sample, withText, avgChars: withText ? Math.round(chars / withText) : 0 };
+    return null;
   }
 
   setupDrop($('#drop'), $('#file'), async files => {
     const f = files[0];
     if (!f) return;
     srcFile = f; pdf = null;
+    setBusy(true);
     $('#cmp').style.display = 'none';
     $('#verdict').className = 'verdict';
     say('正在读取…', 's-run');
@@ -149,32 +139,28 @@
       srcBuf = await f.arrayBuffer();
       // pdf.js 会接管（detach）传进去的 buffer，必须给它一份拷贝，
       // 否则后面再想读 srcBuf 会拿到一个长度为 0 的空壳。
-      pdf = await pdfjsLib.getDocument({ data: srcBuf.slice(0) }).promise;
-      $('#info').textContent = `${f.name} · 共 ${pdf.numPages} 页 · ${fmtSize(f.size)}`;
+      const doc = await pdfjsLib.getDocument({ data: srcBuf.slice(0) }).promise;
+      if (srcFile !== f) { doc.destroy(); return; }
+      $('#info').textContent = `${f.name} · 共 ${doc.numPages} 页 · ${fmtSize(f.size)}`;
 
-      const d = await detect(pdf);
+      say('正在检测文字层…', 's-run');
+      const textPage = await firstTextPage(doc);
+      if (srcFile !== f) { doc.destroy(); return; }
+      pdf = doc;
       const v = $('#verdict'), hd = $('#vHd'), bd = $('#vBd');
-      if (d.withText === 0) {
+      if (textPage === null) {
         v.className = 'verdict on good';
-        hd.textContent = '检测结果：这是扫描件，适合压缩';
-        bd.innerHTML = `抽查了前 ${d.sample} 页，都没有文字层，说明是扫描或拍照生成的。
-          压缩不会造成额外损失，放心压。`;
-      } else if (d.withText < d.sample) {
-        v.className = 'verdict on bad';
-        hd.textContent = '检测结果：混合型，请谨慎';
-        bd.innerHTML = `抽查的前 ${d.sample} 页里，有 <b>${d.withText} 页带文字层</b>。
-          压缩后这些页的文字会变成图片、无法复制搜索。如果你只是想发给别人看，可以压；
-          如果要留档或需要检索，建议别压。`;
+        hd.textContent = '检测结果：未发现文字层';
+        bd.textContent = `已检查全部 ${doc.numPages} 页。压缩会降低图像清晰度。`;
       } else {
         v.className = 'verdict on bad';
-        hd.textContent = '检测结果：这不是扫描件，不建议用本工具';
-        bd.innerHTML = `抽查的前 ${d.sample} 页都有完整文字层（平均每页 ${d.avgChars} 个字符），
-          说明是 Word、WPS 之类导出的 PDF。<b>这类文件压完会把清晰的文字变成模糊的图片，
-          体积未必小多少，阅读体验却明显变差。</b>你仍然可以继续，但我建议你别。`;
+        hd.textContent = '检测结果：发现文字层';
+        bd.textContent = `第 ${textPage} 页含文字。继续压缩会把文字转成图片，无法复制或搜索。`;
       }
       say('');
       setBusy(false);
     } catch (e) {
+      if (srcFile !== f) return;
       pdf = null; setBusy(false);
       say('读不了这个 PDF：' + e.message + '（如果设了打开密码，请先取消密码）', 's-err');
     }

@@ -31,6 +31,7 @@
   // 单元格内的分隔符。「---」是原始数据里多值合并用的，单个短横线不能拆，
   // 否则会把 6222-0212-3456 这种写法的卡号切碎。
   const SPLIT_RE = /(?:-{2,})|[,\t;，、|\s]+/;
+  const IPV4_IN_TEXT = /(?<![\d.:])(?:\d{1,3}\.){3}\d{1,3}(?![\d.]|:[\da-f]*:)/gi;
 
   /** 从一段文本里挑出符合识别器的值 */
   function pick(text, matcher, acc) {
@@ -43,6 +44,10 @@
         const v = tok.trim();
         if (!v) return;
         acc.scanned++;
+        if (matcher === MATCH.ipv4) {
+          const ips = (v.match(IPV4_IN_TEXT) || []).map(matcher).filter(Boolean);
+          if (ips.length) { acc.items.push(...ips); return; }
+        }
         const m = matcher(v);
         if (m) acc.items.push(m); else acc.skipped.push(v);
       });
@@ -108,13 +113,11 @@
   function renderTable(wrapEl, headers, rows, maxRows) {
     const cap = maxRows || 500;
     const shown = rows.slice(0, cap);
-    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-
-    const th = headers.map(h => `<th>${esc(h)}</th>`).join('');
+    const th = headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
     const tb = shown.map(r => '<tr>' + r.map(c => {
       const v = (c && typeof c === 'object') ? c.v : c;
       const cls = (c && typeof c === 'object' && c.cls) ? ` class="${c.cls}"` : '';
-      return `<td${cls}>${esc(v == null ? '' : v)}</td>`;
+      return `<td${cls}>${escapeHtml(v == null ? '' : v)}</td>`;
     }).join('') + '</tr>').join('');
 
     wrapEl.innerHTML = `<table class="res"><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table>` +
@@ -123,6 +126,7 @@
         : '');
   }
 
+  const escapeHtml = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const plain = rows => rows.map(r => r.map(c => (c && typeof c === 'object') ? c.v : c));
 
   /*
@@ -137,14 +141,16 @@
   const estimateXlsxSeconds = n => Math.max(1, Math.round(n / 14000));
 
   async function exportXlsx(headers, rows, filename, onStatus) {
+    const getRows = typeof rows === 'function' ? rows : () => rows;
     if (typeof XLSX === 'undefined' && onStatus) onStatus('正在加载 Excel 库…');
     await ensureXlsx();
     if (onStatus) {
-      onStatus(`正在生成 Excel（${rows.length.toLocaleString()} 条，预计 ${estimateXlsxSeconds(rows.length)} 秒）…`);
+      const count = getRows().length;
+      onStatus(`正在生成 Excel（${count.toLocaleString()} 条，预计 ${estimateXlsxSeconds(count)} 秒）…`);
       // 让出一帧，否则下面的同步编码会把这句提示也一起卡住，用户看不到
       await new Promise(r => setTimeout(r, 50));
     }
-    const aoa = [headers].concat(plain(rows));
+    const aoa = [headers].concat(plain(getRows()));
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     // 列宽只用前 300 行估算。原先每列都遍历全表，10 万行 × 10 列 = 100 万次
     // 字符串转换，导出会卡住几十秒；列宽本来就只是观感，不值这个代价。
@@ -215,7 +221,7 @@
   }
 
   global.Batch = {
-    MATCH, readEntries, readPasted, renderTable, ensureXlsx,
+    MATCH, readEntries, readPasted, renderTable, ensureXlsx, escapeHtml,
     exportXlsx, exportCsv, copyTsv, stamp, mapChunked, debounce,
     BIG_EXPORT, estimateXlsxSeconds
   };

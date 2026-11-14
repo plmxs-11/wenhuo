@@ -125,7 +125,7 @@
     if (!f || !/\.pdf$/i.test(f.name)) return say('只支持 .pdf 文件。', 's-err');
     say('正在读取…', 's-run');
     try {
-      const doc = await PDFLib.PDFDocument.load(await f.arrayBuffer(), { ignoreEncryption: true });
+      const doc = await PDFLib.PDFDocument.load(await f.arrayBuffer());
       total = doc.getPageCount();
       file = f;
       info(`${f.name} · 共 ${total} 页 · ${fmtSize(f.size)}`, 's-ok');
@@ -162,7 +162,7 @@
 
     try {
       const bytes = await file.arrayBuffer();
-      const src = await PDFLib.PDFDocument.load(bytes, { ignoreEncryption: true });
+      const src = await PDFLib.PDFDocument.load(bytes);
       const base = baseName(file.name);
 
       if (mode === 'extract' || mode === 'remove') {

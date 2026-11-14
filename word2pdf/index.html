@@ -21,16 +21,6 @@
      早期这个页面自带了一份完整拷贝，已删除以免和全站不一致。 */
   :root{ --paper-w:794px; }
 
-  #drop{border:1.5px dashed var(--line);border-radius:var(--r-md);padding:44px var(--sp-4);
-    text-align:center;cursor:pointer;background:var(--card-2);
-    transition:border-color .18s var(--ease),background .18s var(--ease)}
-  #drop:hover,#drop.over{border-color:var(--brand);background:var(--brand-soft)}
-  #drop .ico{color:var(--muted);line-height:1}
-  #drop .ico .i{width:34px;height:34px;stroke-width:1.4}
-  #drop:hover .ico,#drop.over .ico{color:var(--brand)}
-  #drop .t{font-size:var(--fs-md);font-weight:600;margin:var(--sp-2) 0 4px}
-  #drop .h{font-size:var(--fs-sm);color:var(--muted)}
-
   #status{margin-top:var(--sp-3);font-size:var(--fs-sm);min-height:22px;
     display:flex;align-items:center;gap:6px}
 
@@ -82,7 +72,7 @@
   </header>
 
   <div class="card">
-    <div id="drop">
+    <div id="drop" class="drop">
       <div class="ico"><svg class="i"><use href="/assets/icons.svg#file-type-docx"></use></svg></div>
       <div class="t">点击选择，或把 .docx 文件拖到这里</div>
       <div class="h">仅支持 .docx（Word 2007 及以后）；旧版 .doc 请先用 Word 另存为 .docx</div>
@@ -326,8 +316,9 @@
 
     const d = ifr.contentDocument;
     d.open();
-    d.write(`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>${baseName}</title><style>${css}</style></head><body>${paper.innerHTML}</body></html>`);
+    d.write(`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title></title><style>${css}</style></head><body>${paper.innerHTML}</body></html>`);
     d.close();
+    d.title = baseName;
 
     say('已打开打印窗口，目标请选择「另存为 PDF」', 's-run');
     const go = () => {

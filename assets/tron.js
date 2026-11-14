@@ -299,9 +299,11 @@
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
   };
 
-  const fmtAmount = n =>
-    (n === null || isNaN(n)) ? '' :
-    n.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+  const fmtAmount = n => {
+    if (n === null || isNaN(n)) return '';
+    const displayed = Math.abs(n) < 0.0000005 ? 0 : n;
+    return displayed.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+  };
 
   const shortAddr = a => (!a || a.length < 14) ? (a || '') : a.slice(0, 6) + '…' + a.slice(-6);
 

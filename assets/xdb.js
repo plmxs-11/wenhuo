@@ -198,16 +198,27 @@
     const hit = await cache.match(url);
     if (!hit) return false;
     const buf = await hit.arrayBuffer();
-    adoptFull(buf);
-    return true;
+    try {
+      adoptFull(buf);
+      return true;
+    } catch (e) {
+      await cache.delete(url);
+      return false;
+    }
   }
 
   function adoptFull(buf) {
+    const view = new DataView(buf);
+    if (buf.byteLength < HEADER_LEN || view.getUint16(0, true) !== 3 ||
+        view.getUint32(12, true) < HEADER_LEN + VECTOR_LEN ||
+        view.getUint32(12, true) + SEG_LEN > buf.byteLength) {
+      throw new Error('IP 数据库不完整或格式不正确，请重试');
+    }
     const u8 = new Uint8Array(buf);
-    chunks = [{ start: 0, end: u8.length, u8, view: new DataView(buf) }];
+    chunks = [{ start: 0, end: u8.length, u8, view }];
     fileSize = u8.length;
-    fullyLoaded = true;
     readHeader();
+    fullyLoaded = true;
   }
 
   /** 带进度的整包下载；命中 Cache Storage 时直接返回，不再走网络 */
@@ -222,8 +233,9 @@
     let cache = null;
     try { cache = await caches.open(CACHE_NAME); } catch (e) { /* 隐私模式下没有 caches */ }
 
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error('IP 数据库下载失败（HTTP ' + resp.status + '）');
+    // 避免浏览器用先前按 Range 下载的分片响应整包请求。
+    const resp = await fetch(url, { cache: 'reload' });
+    if (resp.status !== 200) throw new Error('IP 数据库下载失败（HTTP ' + resp.status + '）');
     const total = +(resp.headers.get('content-length') || 0);
     let buf;
 
@@ -251,10 +263,10 @@
       buf = await resp.arrayBuffer();
     }
 
+    adoptFull(buf);
     if (cache) {
       try { await cache.put(url, new Response(buf.slice(0))); } catch (e) { /* 超配额就算了 */ }
     }
-    adoptFull(buf);
   }
 
   /**

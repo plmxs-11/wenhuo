@@ -198,7 +198,7 @@
     btnGo.disabled = true;
     say('正在保存…', 's-run');
     try {
-      const doc = await PDFLib.PDFDocument.load(await file.arrayBuffer(), { ignoreEncryption: true });
+      const doc = await PDFLib.PDFDocument.load(await file.arrayBuffer());
       const pages = doc.getPages();
       let changed = 0;
       pages.forEach((p, i) => {

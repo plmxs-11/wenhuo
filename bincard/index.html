@@ -117,6 +117,15 @@
   const HEADERS = ['序号','卡号','发卡行','卡种','卡产品','BIN','可判归属地','长度校验','Luhn 校验'];
   const BIN_URL = '/assets/data/bin.csv';
   let rows = [], entries = [];
+  const displayRows = (source = rows) => {
+    if (!$('#chkMask').checked) return source;
+    return source.map(([index, card, ...rest]) =>
+      [index, { v: BinCard.mask(card.v), cls: card.cls }, ...rest]);
+  };
+  const renderResults = () => Batch.renderTable(tbl, HEADERS, displayRows());
+  $('#chkMask').addEventListener('change', () => {
+    if (rows.length) renderResults();
+  });
 
   // 号段库 211 KB，等用户粘完卡号再拉的话，那 0.5~1 秒全压在「开始查询」那一下。
   // 页面一打开就在后台拉，用户还在粘贴时就下完了。失败不用管，查询时会再试一次。
@@ -161,7 +170,7 @@
     const bits = [`大小 <b>${fmtSize(file.size)}</b>`, `识别出 <b>${r.items.length}</b> 个卡号`];
     if (r.skipped.length) {
       const eg = r.skipped.slice(0, 3).map(s => s.length > 12 ? s.slice(0, 12) + '…' : s).join('、');
-      bits.push(`已忽略 <b>${r.skipped.length}</b> 项不像卡号的内容（如 ${eg}）`);
+      bits.push(`已忽略 <b>${r.skipped.length}</b> 项不像卡号的内容（如 ${Batch.escapeHtml(eg)}）`);
     }
     $('#upMeta').innerHTML = bits.join('　·　') +
       (r.items.length ? '' : '<div class="warn" style="margin-top:6px">没有识别到任何卡号，请确认文件里有 12～19 位的卡号。</div>');
@@ -203,7 +212,6 @@
       if (!BinCard.isLoaded()) say('正在加载 BIN 号段库…', 's-run');
       await BinCard.load(BIN_URL);
 
-      const doMask = $('#chkMask').checked;
       let ok = 0, fail = 0;
       const prog = $('#prog'), bar = $('#bar'), progTxt = $('#progTxt');
       const tick = (done, total) => {
@@ -215,11 +223,9 @@
       rows = await Batch.mapChunked(entries, (raw, i) => {
         const digits = String(raw).replace(/\D/g, '');
         const info = digits ? BinCard.lookup(digits) : null;
-        const shown = doMask ? BinCard.mask(digits) : digits;
-
         if (!info) {
           fail++;
-          return [ i+1, {v: shown || raw, cls:'mono'},
+          return [ i+1, {v: digits, cls:'mono'},
                    {v:'未匹配到 BIN', cls:'fail'}, '', '', '', '',
                    digits ? '' : {v:'不是数字', cls:'fail'},
                    digits ? (BinCard.luhnValid(digits) ? '通过' : {v:'不通过', cls:'fail'}) : '' ];
@@ -227,7 +233,7 @@
         ok++;
         return [
           i+1,
-          {v: shown, cls:'mono'},
+          {v: digits, cls:'mono'},
           info.bankName,
           info.cardTypeCn,
           info.cardName,
@@ -245,7 +251,7 @@
         `<span class="ok">识别成功 <b>${ok}</b></span>` +
         `<span class="bad">未匹配 <b>${fail}</b></span>` +
         `<span>号段库 <b>${BinCard.stats().bins}</b> 条</span>`;
-      Batch.renderTable(tbl, HEADERS, rows);
+      renderResults();
       resCard.style.display = '';
       say(`识别完成，成功 ${ok} 条`, 's-ok');
       resCard.scrollIntoView({ block: 'start', behavior: 'smooth' });
@@ -269,15 +275,16 @@
         `确定继续导出 Excel 吗？`)) {
       return say('已取消，建议改用「导出 CSV」', 's-run');
     }
-    await Batch.exportXlsx(HEADERS, rows, `银行卡信息_${Batch.stamp()}.xlsx`, m => say(m, 's-run'));
+    const source = rows;
+    await Batch.exportXlsx(HEADERS, () => displayRows(source), `银行卡信息_${Batch.stamp()}.xlsx`, m => say(m, 's-run'));
     say('Excel 已导出', 's-ok');
   }));
   $('#btnCsv').addEventListener('click', guard(() => {
-    Batch.exportCsv(HEADERS, rows, `银行卡识别_${Batch.stamp()}.csv`);
+    Batch.exportCsv(HEADERS, displayRows(), `银行卡识别_${Batch.stamp()}.csv`);
     say('CSV 已导出', 's-ok');
   }));
   $('#btnCopy').addEventListener('click', guard(async () => {
-    try { await Batch.copyTsv(HEADERS, rows); say('已复制，可直接粘进 Excel', 's-ok'); }
+    try { await Batch.copyTsv(HEADERS, displayRows()); say('已复制，可直接粘进 Excel', 's-ok'); }
     catch (e) { say('复制失败，浏览器可能不允许访问剪贴板，请改用导出。', 's-err'); }
   }));
 
